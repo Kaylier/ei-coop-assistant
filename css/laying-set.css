@@ -1,0 +1,144 @@
+
+.settings {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1em 3em;
+    font-size: 9pt;
+    align-items: center;
+}
+
+input[type=text] {
+    width: 7em;
+}
+
+input[type=checkbox] {
+}
+
+
+main .invalid-text {
+    margin: auto;
+}
+
+
+.main {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    align-items: flex-start;
+}
+
+
+.threshold {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-content: center;
+    align-items: center;
+    height: 4em;
+    /* transition: height 0.5s ease-in-out; */
+}
+
+.threshold-label-frame, .optimal-label-frame {
+    height: 1.5em;
+    width: 6em;
+    display: inline-flex;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    padding-right: 1em;
+}
+
+.threshold-label-frame {
+    padding-right: 0.4em;
+}
+
+.optimal-label-frame {
+    padding-right: 1em;
+    opacity: 0.5;
+}
+
+.threshold-label, .optimal-label {
+    height: 1.5em;
+    background: var(--bg-alt-color);
+    border-radius: 1em;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    align-content: flex-end;
+    padding: 2px;
+    z-index: 1;
+}
+
+.optimal-label {
+    cursor: help;
+}
+
+.threshold-label img, .optimal-label img {
+    height: 100%;
+    width: auto;
+    background: var(--bg-color);
+    border-radius: 1em;
+    padding: 0 0.3em;
+    margin: 0;
+}
+
+.threshold-label span, .optimal-label span {
+    font: 12pt always-together;
+    translate: 0 0.18em;
+    padding: 0 0.3em;
+}
+
+.threshold-rate, .threshold-rate-label {
+    font: 12pt always-together;
+    translate: 0 0.18em;
+}
+
+.threshold-rate-label {
+    color: var(--placeholder-color);
+}
+
+.optimal-label span {
+    color: var(--active-hover-color);
+    display: none;
+}
+
+.optimal-label-frame:hover, .optimal-label-frame:active  {
+    opacity: 1;
+}
+
+.optimal-label-frame:hover .optimal-label span,
+.optimal-label-frame:active .optimal-label span {
+    display: block;
+}
+
+
+
+.entry {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-content: center;
+    align-items: center;
+    position: relative;
+    width: min(max(22em, 50vw), 32em);
+    height: 100%;
+    flex: 1 1 5em;
+}
+
+
+.axis, .axis-start, .axis-end {
+    position: absolute;
+    height: 150%;
+    width: 3px;
+    left: 4.8em;
+    background: #286;
+}
+
+.axis-start {
+    background: linear-gradient(0deg, #286F, #2860);
+}
+
+.axis-end {
+    background: linear-gradient(180deg, #286F, #2860);
+}
+
