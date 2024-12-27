@@ -5,10 +5,13 @@ export default async (request: Request, context: Context) => {
     const url = new URL(request.url);
     const forwardUrl = `${url.href.replace(url.origin + '/api', targetUrl)}`;
 
+    const headers = new Headers();
+    headers.set("Content-Type", "application/x-www-form-urlencoded");
+
     // Prepare the forwarded request
     const init: RequestInit = {
         method: request.method,
-        headers: new Headers(request.headers),
+        headers: headers,
     };
 
     if (request.method === 'POST') {
