@@ -269,7 +269,7 @@ async function queryBackup(eid: string, proto) {
  */
 export async function getInventory(eid: string, orderedStones: boolean = false) {
 
-    const proto = await protobuf.load("/proto/ei.proto");
+    const proto = await window['protobuf'].load("/proto/ei.proto");
     const backup = await queryBackup(eid, proto);
 
     if (!backup.artifactsDb) {
