@@ -3,7 +3,8 @@ import { getKey, itemEffects } from './artifacts.ts'
 
 
 //const ENDPOINT = "https://ctx-dot-auxbrainhome.appspot.com";
-const ENDPOINT = "http://0.0.0.0:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
+//const ENDPOINT = "http://0.0.0.0:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
+const ENDPOINT = "https://ei-coop-assistant.netlify.app/api";
 
 
 

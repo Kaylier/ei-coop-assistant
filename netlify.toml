@@ -1,0 +1,13 @@
+
+[[redirects]]
+  from = "/"
+  to = "/index.xhtml"
+
+[[redirects]]
+  from = "/hoa"
+  to = "/index.xhtml"
+
+[[redirects]]
+  from = "/laying-set"
+  to = "/index.xhtml"
+
