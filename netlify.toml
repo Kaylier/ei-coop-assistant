@@ -2,12 +2,15 @@
 [[redirects]]
   from = "/"
   to = "/index.xhtml"
+  status = 200
 
 [[redirects]]
   from = "/hoa"
   to = "/index.xhtml"
+  status = 200
 
 [[redirects]]
   from = "/laying-set"
   to = "/index.xhtml"
+  status = 200
 
