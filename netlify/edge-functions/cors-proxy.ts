@@ -43,6 +43,6 @@ export default async (request: Request, context: Context) => {
 };
 
 export const config: Config = {
-    path: '/api',
+    path: '/api/*',
 };
 
