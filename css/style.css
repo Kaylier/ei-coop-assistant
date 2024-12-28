@@ -177,6 +177,7 @@ footer a {
     color: var(--valid-color);
     text-decoration: none;
     transition: color 0.1s;
+    margin: 0 1em 0 1em;
 }
 
 footer a:hover {
