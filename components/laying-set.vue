@@ -2,9 +2,9 @@
     <load-eid :inventory="inventory" @onloaded="(x) => inventory = x"></load-eid>
     <section class="settings">
         <div>
-            <label class="tooltip-icon" for="base-laying-rate"
+            <label class="tooltip-icon"
                 title="Maximum laying rate without any artifact equipped. At max Epic and Common Researches, it is 62.869T/min, or 3.772q/h. This is the default if no value is entered.">
-                🛈
+                ⓘ
             </label>
             <label for="base-laying-rate">
                 Base laying rate
@@ -17,9 +17,9 @@
                 ></input>
         </div>
         <div>
-            <label class="tooltip-icon" for="base-shipping-rate"
+            <label class="tooltip-icon"
                 title="Maximum shipping rate without any artifact equipped. At max Epic and Common Researches with all colleggtibles, it is 131.346T/min, or 7.881q/h. This is the default if no value is entered."
-                > 🛈
+                > ⓘ
             </label>
             <label for="base-shipping-rate"
                 > Base shipping rate
