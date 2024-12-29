@@ -24,9 +24,17 @@ main .invalid-text {
 .main {
     display: flex;
     flex-direction: row;
-    align-content: flex-start;
+    align-content: center;
     align-items: flex-start;
     gap: 2em;
+}
+
+@media (max-width: 800px) {
+    .main {
+        flex-direction: column;
+        align-content: flex-start;
+        align-items: center;
+    }
 }
 
 .sets {
@@ -34,10 +42,11 @@ main .invalid-text {
     flex-direction: column;
     align-content: flex-start;
     align-items: flex-start;
-    width: 18em;
+    /*width: 18em;*/
 }
 
 .grid {
-    width: 50vw;
+    /*width: 50vw;*/
+    max-width: 100vw;
 }
 

@@ -100,11 +100,6 @@ function getRarityClass(item: T.Item): string {
     fill: #e0e0e0;
 }
 
-.item-image, .sparkle-image {
-    width: 100%;
-    height: 100%;
-}
-
 .stones-frame {
     position: absolute;
     bottom: 0%;

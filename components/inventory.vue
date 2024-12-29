@@ -36,7 +36,6 @@ const frameStyles = computed(() => {
 <style scoped>
 .frame {
     display: grid;
-    width: 100%;
     height: auto;
     gap: calc(1px + 0.3vw);
     padding: calc(3px + 0.3vw);

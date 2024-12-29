@@ -151,7 +151,7 @@ main {
 }
 
 main img {
-    width: 5em;
+    width: min(4em, 12vw);
     margin: auto;
 }
 
