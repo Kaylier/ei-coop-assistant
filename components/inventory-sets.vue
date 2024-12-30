@@ -68,6 +68,7 @@ function getRarityClass(item: T.Item): string {
     aspect-ratio: 1;
     background: #333333;
     border-radius: 1em;
+    height: 100%;
 }
 
 .item-frame.highlight {

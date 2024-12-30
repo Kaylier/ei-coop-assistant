@@ -42,6 +42,7 @@ function getRarityClass(item: T.Item): string {
     position: relative;
     aspect-ratio: 1;
     margin: auto;
+    height: 100%;
 }
 
 .item-frame.common {
