@@ -90,11 +90,13 @@ main .invalid-text {
 
 .threshold-rate, .threshold-rate-label {
     font: 12pt always-together;
+    font-kerning: none;
     translate: 0 0.18em;
 }
 
 .threshold-rate-label {
     color: var(--placeholder-color);
+    font-kerning: auto;
 }
 
 .optimal-label span {

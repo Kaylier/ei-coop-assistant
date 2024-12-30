@@ -119,7 +119,6 @@ header nav {
 
 .router-link img {
     aspect-ratio: 1;
-    display: normal;
     max-height: 100%;
     max-width: 100%;
     min-width: 2.5em
