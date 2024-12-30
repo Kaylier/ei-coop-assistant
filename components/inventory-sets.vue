@@ -45,7 +45,7 @@ function getRarityClass(item: T.Item): string {
     flex-flow: column nowrap;
     gap: calc(3px + 0.3vw);
     padding: calc(3px + 0.3vw);
-    overflow: scroll;
+    overflow: auto;
     background: #333333;
     border-radius: 1em;
 }
@@ -68,7 +68,8 @@ function getRarityClass(item: T.Item): string {
     aspect-ratio: 1;
     background: #333333;
     border-radius: 1em;
-    height: 100%;
+    height: min(4em, 12vw);
+    width: min(4em, 12vw);
 }
 
 .item-frame.highlight {

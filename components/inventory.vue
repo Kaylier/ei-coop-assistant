@@ -39,7 +39,7 @@ const frameStyles = computed(() => {
     height: auto;
     gap: calc(1px + 0.3vw);
     padding: calc(3px + 0.3vw);
-    overflow: scroll;
+    overflow: auto;
     background: #404040;
     border-radius: 1em;
 }

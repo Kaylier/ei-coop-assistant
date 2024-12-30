@@ -50,8 +50,9 @@ Vue.onMounted(async () => {
                 eid.value;
 
     let saved = JSON.parse(localStorage.getItem('inventory'));
-    if (saved && saved['date']) saved['date'] = new Date(saved['date'])
     if (saved) {
+        if (saved['date'])
+            saved['date'] = new Date(saved['date']);
         emit('onloaded', saved);
     } else if (checkEID(eid.value)) {
         load(eid.value);
