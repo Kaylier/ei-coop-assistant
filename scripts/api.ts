@@ -3,9 +3,14 @@ import { getKey, itemEffects } from './artifacts.ts'
 import { checkSID } from '/scripts/utils.ts';
 
 
+// The endpoint is blocked by CORS, so we need a proxy to bypass it
 //const ENDPOINT = "https://ctx-dot-auxbrainhome.appspot.com";
-//const ENDPOINT = "http://0.0.0.0:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
+
+// A CORS proxy is hosted at this URL, redirecting all queries to the URL above
 const ENDPOINT = "https://ei-coop-assistant.netlify.app/api";
+
+// For local hosting, change the endpoint to your local CORS proxy
+//const ENDPOINT = "http://0.0.0.0:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
 
 
 
