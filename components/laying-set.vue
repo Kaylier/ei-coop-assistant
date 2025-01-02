@@ -191,11 +191,6 @@ function getGroupedArtifacts(artifacts) {
         }
     }
 
-    // Sort by tier so it favours highest artifact tiers on equal bonuses
-    for (const key in ret) {
-        ret[key].sort((a, b) => b.tier - a.tier || b.rarity - a.rarity);
-    }
-
     return ret;
 }
 
@@ -236,21 +231,25 @@ function getArtifactSets(artifacts) {
 function compute() {
     if (!inventory.value) return [];
 
-    // Group artifacts by families
+    // Group artifacts by families, sorted in prefered order
     const artifacts = getGroupedArtifacts(inventory.value.items);
+    for (const key in artifacts) {
+        artifacts[key].sort((a, b) => b.deflectorBonus - a.deflectorBonus || b.tier - a.tier || b.rarity - a.rarity);
+    }
 
     // Remove suboptimal artifacts (outperformed by an other on both laying and shipping bonuses)
     for (const family in artifacts)
-        artifacts[family] = minmaxReduce(artifacts[family], 'layingBonus', 'shippingBonus');
+        artifacts[family] = minmaxReduce(artifacts[family], 'layingBonus', 'shippingBonus', true);
 
-    // Get all candidate artifact sets
+    // Get all candidate artifact sets, sorted to prefer higher deflector bonuses
     let sets = getArtifactSets(artifacts);
+    sets.sort((a, b) => b.deflectorBonus - a.deflectorBonus);
 
     // Get optimal sets
     sets = minmaxReduce(sets, 'layingBonus', 'shippingBonus', true);
 
     // A set is optimal when the deflector bonus received is shippingBonus/layingBonus
-    // Sort them by deflector bonus
+    // Sort them by optimal received deflector bonus
     sets.sort((a, b) => a.shippingBonus/a.layingBonus - b.shippingBonus/b.layingBonus);
 
     // Update the artifacts shown on the view

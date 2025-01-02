@@ -85,6 +85,7 @@ export function formatRateString(r: number, timeUnit: string = 'h'): string {
  * Returns a sublist of minmaxed elements.
  * An element is considered minmaxed if for every other element in the sorted array,
  * it has a lower value for either key0 or key1.
+ * On equalities on both keys, the order is preserved.
  * @param list The array of objects to be sorted and filtered.
  * @param key0 The first key to sort by.
  * @param key1 The second key to sort by.
@@ -92,13 +93,19 @@ export function formatRateString(r: number, timeUnit: string = 'h'): string {
  * @returns A sublist of objects containing only minmaxed elements.
  */
 export function minmaxReduce(list: any[], key0: string, key1: string, strict: boolean = true) {
+    // Create a map to store each element's original index
+    const indexMap = new Map(list.map((element, index) => [element, index]));
+
     // Primary sorting by key0 in decreasing order
     // Secondary sorting by key1 in increasing for non-strict mode, decreasing order for strict mode
-    // Tertiary sorting by id to keep the sort stable
-    if (strict)
-        list.sort((a, b) => b[key0] - a[key0] || b[key1] - a[key1] || b.id - a.id)
-    else
-        list.sort((a, b) => b[key0] - a[key0] || a[key1] - b[key1] || b.id - a.id)
+    // Tertiary sorting by original index to keep the sort stable
+    list.sort((a, b) => {
+        return (
+            b[key0] - a[key0] ||
+            (strict ? b[key1] - a[key1] : a[key1] - b[key1]) ||
+            (indexMap.get(a) - indexMap.get(b))
+        );
+    });
 
     const result: any[] = [];
     let bestKey1 = -Infinity;
