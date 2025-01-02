@@ -3,7 +3,7 @@
     <section class="settings">
         <div>
             <label class="tooltip-icon"
-                title="Maximum laying rate without any artifact equipped. At max Epic and Common Researches, it is 62.869T/min, or 3.772q/h. This is the default if no value is entered.">
+                title="Maximum laying rate with full habs, without any artifact equipped. At max Epic and Common Researches, it is 62.869T/min, or 3.772q/h. This is the default if no value is entered.">
                 ⓘ
             </label>
             <label for="base-laying-rate">
