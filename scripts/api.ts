@@ -1,5 +1,6 @@
 import * as T from './types.ts'
 import { getKey, itemEffects } from './artifacts.ts'
+import { checkSID } from '/scripts/utils.ts';
 
 
 //const ENDPOINT = "https://ctx-dot-auxbrainhome.appspot.com";
@@ -263,15 +264,35 @@ async function queryBackup(eid: string, proto) {
 
 
 /**
+ * Load a special inventory.
+ * They are stored in /examples/SI*.json, and follow the structure of backup data from proto files
+ * (unused fields can be omited).
+ */
+async function getSpecialBackup(sid: string) {
+    const filePath = `/examples/${sid}.json`;
+    const response = await fetch(filePath);
+
+    if (!response.ok) {
+        throw new Error(`Failed to load file: ${filePath}, Status: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+
+/**
  * Return the inventory of a player EID.
  * Identical items are grouped and an extra property `quantity` is added.
  * If the parameter orderedStones is set to true, the stone order matters and can prevent
  * some items from being grouped together.
  */
 export async function getInventory(eid: string, orderedStones: boolean = false) {
-
     const proto = await window['protobuf'].load("/proto/ei.proto");
-    const backup = await queryBackup(eid, proto);
+    const backup = checkSID(eid) ? await getSpecialBackup(eid) : await queryBackup(eid, proto);
+
+    if (!backup) {
+        throw Error(`Failed to load backup for EID: ${eid}`);
+    }
 
     if (!backup.artifactsDb) {
         console.warn(backup);

@@ -1,0 +1,1158 @@
+{
+    "artifactsDb": {
+        "inventoryItems": [
+            {
+                "itemId": 0,
+                "quantity": 72020,
+                "artifact": {
+                    "spec": { "name": 26, "level": 0, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 1,
+                "quantity": 12003,
+                "artifact": {
+                    "spec": { "name": 26, "level": 1, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 2,
+                "quantity": 1200,
+                "artifact": {
+                    "spec": { "name": 26, "level": 2, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 3,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 26, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 4,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 26, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 5,
+                "quantity": 118,
+                "artifact": {
+                    "spec": { "name": 26, "level": 2, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 6,
+                "quantity": 100,
+                "artifact": {
+                    "spec": { "name": 26, "level": 3, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 7,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 26, "level": 3, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 8,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 26, "level": 3, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 9,
+                "quantity": 8,
+                "artifact": {
+                    "spec": { "name": 26, "level": 3, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 10,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 26, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 11,
+                "quantity": 302656,
+                "artifact": {
+                    "spec": { "name": 24, "level": 0, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 12,
+                "quantity": 60531,
+                "artifact": {
+                    "spec": { "name": 24, "level": 1, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 13,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 1, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 14,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 1, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 15,
+                "quantity": 6051,
+                "artifact": {
+                    "spec": { "name": 24, "level": 1, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 16,
+                "quantity": 8647,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 17,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 18,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 19,
+                "quantity": 862,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 20,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 21,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 22,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 2 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 23,
+                "quantity": 169,
+                "artifact": {
+                    "spec": { "name": 24, "level": 2, "rarity": 2 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 24,
+                "quantity": 960,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 25,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 26,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 27,
+                "quantity": 94,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 28,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 29,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 30,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 31,
+                "quantity": 16,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 2 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 32,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 33,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 34,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 24, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 35,
+                "quantity": 909699,
+                "artifact": {
+                    "spec": { "name": 27, "level": 0, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 36,
+                "quantity": 151616,
+                "artifact": {
+                    "spec": { "name": 27, "level": 1, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 37,
+                "quantity": 18952,
+                "artifact": {
+                    "spec": { "name": 27, "level": 2, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 38,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 39,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 40,
+                "quantity": 1893,
+                "artifact": {
+                    "spec": { "name": 27, "level": 2, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 41,
+                "quantity": 1895,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 42,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 43,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 44,
+                "quantity": 187,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 45,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 46,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 47,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 48,
+                "quantity": 34,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 2 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 49,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 50,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 51,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 52,
+                "quantity": 4,
+                "artifact": {
+                    "spec": { "name": 27, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 53,
+                "quantity": 639921,
+                "artifact": {
+                    "spec": { "name": 8, "level": 0, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 54,
+                "quantity": 127984,
+                "artifact": {
+                    "spec": { "name": 8, "level": 1, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 55,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 1, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 56,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 1, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 57,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 1, "rarity": 2 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 58,
+                "quantity": 2556,
+                "artifact": {
+                    "spec": { "name": 8, "level": 1, "rarity": 2 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 59,
+                "quantity": 21330,
+                "artifact": {
+                    "spec": { "name": 8, "level": 2, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 60,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 61,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 2, "rarity": 1 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 62,
+                "quantity": 2131,
+                "artifact": {
+                    "spec": { "name": 8, "level": 2, "rarity": 1 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 63,
+                "quantity": 2666,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 0 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 64,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 65,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 66,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 2 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 67,
+                "quantity": 50,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 2 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 68,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 69,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 70,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 71,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 72,
+                "quantity": 6,
+                "artifact": {
+                    "spec": { "name": 8, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 73,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 74,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 75,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 76,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 77,
+                "quantity": 2,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 78,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 79,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 80,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 81,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 82,
+                "quantity": 2,
+                "artifact": {
+                    "spec": { "name": 21, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 83,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 84,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 85,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 86,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 87,
+                "quantity": 43,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 88,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 89,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 90,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 91,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 92,
+                "quantity": 43,
+                "artifact": {
+                    "spec": { "name": 6, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 93,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 94,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 95,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 96,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 97,
+                "quantity": 34,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 98,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 99,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 100,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 101,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 102,
+                "quantity": 34,
+                "artifact": {
+                    "spec": { "name": 3, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 103,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 104,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 105,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 106,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 107,
+                "quantity": 12,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            },
+            {
+                "itemId": 108,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 109,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 110,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name":  1, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 111,
+                "quantity": 1,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": [
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 },
+                        { "name": 36, "level": 2, "rarity": 0 }
+                    ]
+                }
+            },
+            {
+                "itemId": 112,
+                "quantity": 12,
+                "artifact": {
+                    "spec": { "name": 12, "level": 3, "rarity": 3 },
+                    "stones": []
+                }
+            }
+        ],
+        "savedArtifactSets": [
+        ]
+    },
+    "approxTime": 1735664400
+}

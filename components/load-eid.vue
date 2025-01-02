@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { checkEID } from '/scripts/utils.ts';
+import { checkEID, checkSID } from '/scripts/utils.ts';
 import { getInventory } from '/scripts/api.ts';
 
 const props = defineProps<{
@@ -82,7 +82,9 @@ async function load(eid: String) {
         return
     }
 
-    localStorage.setItem('player-eid', eid);
+    if (!checkSID(eid)) {
+        localStorage.setItem('player-eid', eid);
+    }
 
     emit('onloaded', inventory);
 }

@@ -9,7 +9,11 @@ const units: string[] = [
 
 
 export function checkEID(eid) {
-    return /^\s*EI[0-9]{16}\s*$/.test(eid);
+    return /^\s*EI\d{16}\s*$/.test(eid) || checkSID(eid);
+}
+
+export function checkSID(eid) {
+    return /^\s*SI\d+\s*$/.test(eid);
 }
 
 
