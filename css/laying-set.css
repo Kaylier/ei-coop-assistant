@@ -122,7 +122,6 @@ main .invalid-text {
     align-content: center;
     align-items: center;
     position: relative;
-    width: min(max(22em, 50vw), 32em);
     height: 100%;
     flex: 1 1 5em;
 }
