@@ -10,7 +10,7 @@ import { checkSID } from '/scripts/utils.ts';
 const ENDPOINT = "https://ei-coop-assistant.netlify.app/api";
 
 // For local hosting, change the endpoint to your local CORS proxy
-//const ENDPOINT = "http://0.0.0.0:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
+//const ENDPOINT = "http://localhost:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
 
 
 
