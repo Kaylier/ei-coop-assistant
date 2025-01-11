@@ -264,3 +264,33 @@ button.invalid {
     cursor: help;
 }
 
+/*
+ * Centered on icon for large screens, otherwise centered on screen
+ */
+@media (min-width: 1000px) {
+    .tooltip-icon {
+        position: relative;
+    }
+}
+
+.tooltip-text {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    width: max-content;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    background-color: var(--bg-hover-color);
+    text-align: center;
+    border-radius: 1em;
+    padding: 0.75em 1.5em;
+    box-shadow: .25em .5em 1em .03em #0004;
+}
+
+.tooltip-icon:hover .tooltip-text,
+.tooltip-icon:active .tooltip-text {
+    visibility: visible;
+    opacity: 0.8;
+}
+
