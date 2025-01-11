@@ -21,6 +21,13 @@
         </div>
         <div v-else-if="inventory.items.length" class="valid-text">
             {{ (inventory.items.reduce((tot, cur) => tot + cur.quantity, 0)).toLocaleString() }} items loaded - {{ inventory.date.toLocaleString() }}
+            <span v-if="Date.now() - inventory.date > 3600000*24*7" class="tooltip-icon warning-text">
+                ⚠
+                <span class="tooltip-text">
+                    This inventory has not been updated for over a week.<br/>
+                    Load it again to take new artifacts into account.
+                </span>
+            </span>
         </div>
         <div v-else class="invalid-text">
             Empty inventory
@@ -46,7 +53,8 @@ const isLoadingEID = ref(false);
 const errorMsg = ref(null);
 
 Vue.onMounted(async () => {
-    eid.value = localStorage.getItem('player-eid') ??
+    eid.value = (new URLSearchParams(window.location.search)).get('eid') ??
+                localStorage.getItem('player-eid') ??
                 eid.value;
 
     let saved = JSON.parse(localStorage.getItem('inventory'));

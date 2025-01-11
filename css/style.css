@@ -12,6 +12,7 @@
     --invalid-hover-color: #544;
     --text-color: #ddd;
     --invalid-text-color: #b43;
+    --warning-text-color: #f80;
     --placeholder-color: #999;
 }
 
@@ -200,6 +201,10 @@ a, input, button {
 
 .valid-text {
     color: var(--active-color);
+}
+
+.warning-text {
+    color: var(--warning-text-color);
 }
 
 
