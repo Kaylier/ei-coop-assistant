@@ -177,7 +177,7 @@ message Backup {
         optional uint32 tank_level = 15;
         repeated double tank_fuels = 16;
         repeated double tank_limits = 18;
-        optional MissionInfo.Spaceship last_fueled_ship = 9;
+        optional ei.MissionInfo.Spaceship last_fueled_ship = 9;
         optional double inventory_score = 10;
         optional double crafting_xp = 17;
         optional bool enabled = 11;
@@ -1540,7 +1540,7 @@ message ArtifactsClientInfo {
 
     repeated LaunchCount launch_counts = 3;
     message LaunchCount {
-        optional MissionInfo.Spaceship ship = 1;
+        optional ei.MissionInfo.Spaceship ship = 1;
         optional uint32 num_launches = 2;
         optional double launch_points = 3;
     }
@@ -1711,7 +1711,7 @@ message ArtifactsConfigurationRequest {
 message ArtifactsConfigurationResponse {
     repeated MissionParameters mission_parameters = 1;
     message MissionParameters {
-        optional MissionInfo.Spaceship ship = 1;
+        optional ei.MissionInfo.Spaceship ship = 1;
 
         repeated Duration durations = 3;
         message Duration {
@@ -1787,14 +1787,14 @@ message CollectContractArtifactRewardsRequest {
     optional uint32 league = 5;
     optional Contract.PlayerGrade grade = 6;
     optional uint32 goal_index = 3;
-    optional MissionInfo.Spaceship best_ship = 4;
+    optional ei.MissionInfo.Spaceship best_ship = 4;
 }
 
 message CollectSeasonArtifactRewardsRequest {
     optional BasicRequestInfo rinfo = 1;
     optional string season_identifier = 2;
     optional double cxp = 3;
-    optional MissionInfo.Spaceship best_ship = 4;
+    optional ei.MissionInfo.Spaceship best_ship = 4;
 }
 
 message CraftArtifactRequest {
@@ -2378,6 +2378,7 @@ message UserVerificationAnalysis {
 
     optional double start_time = 2;
     optional double completion_time = 3;
+    optional int32 verification_count = 37;
     optional double num_prestiges = 14;
     optional double soul_eggs = 15;
     optional uint32 eggs_of_prophecy = 27;

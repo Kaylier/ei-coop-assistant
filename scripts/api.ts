@@ -12,6 +12,10 @@ const ENDPOINT = "https://ei-coop-assistant.netlify.app/api";
 // For local hosting, change the endpoint to your local CORS proxy
 //const ENDPOINT = "http://localhost:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
 
+const CLIENT_VERSION = 68;
+const APP_VERSION = '1.34.1';
+const APP_BUILD = '111300';
+const DEVICE_ID = 'ei-coop-assistant';
 
 
 /**
@@ -222,9 +226,9 @@ async function queryBackup(eid: string, proto) {
     const payload = {
         rinfo: {
             eiUserId: eid,
-            clientVersion: 69,
-            version: '1.34',
-            build: '111299',
+            clientVersion: CLIENT_VERSION,
+            version: APP_VERSION,
+            build: APP_BUILD,
             //platform: 'DROID',
             //country: ,
             //language: ,
@@ -233,9 +237,9 @@ async function queryBackup(eid: string, proto) {
         eiUserId: eid,
         //user_id: ,
         //game_services_id: ,
-        //device_id: ,
+        device_id: DEVICE_ID,
         //username: ,
-        clientVersion: 69,
+        clientVersion: CLIENT_VERSION,
         //platform: Platform.values.DROID,
     }
 
