@@ -215,7 +215,7 @@ input {
     padding: 0.3em 0.7em;
     border-radius: 4px;
     border: none;
-    font-size: 1.2em;
+    font-size: 10pt;
     background-color: var(--bg-alt-color);
     flex-grow: 1;
 }
@@ -232,6 +232,59 @@ input.invalid {
 
 input::placeholder {
     color: var(--placeholder-color);
+}
+
+
+.switch {
+    display: inline-flex;
+    background-color: var(--bg-alt-color);
+    border-radius: 4px;
+    padding: 0.2em;
+}
+
+.switch.disabled {
+    color: var(--placeholder-color);
+    pointer-events: none;
+}
+
+.switch input {
+    position: absolute;
+    opacity: 0;
+    z-index: -1;
+}
+
+.switch:focus-within {
+    box-shadow: 0 0 0.25em var(--valid-color) inset;
+}
+
+.switch label {
+    flex: 1 1 0;
+    padding: 0.2em 0.6em;
+    border: none;
+    transition: background-color 0.15s;
+    cursor: pointer;
+}
+
+.switch label:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+.switch label:last-child {
+    border-radius: 0 3px 3px 0;
+}
+
+.switch label:hover,
+.switch label:focus {
+    background-color: var(--bg-alt-hover-color);
+}
+
+.switch label:has(input[type="radio"]:checked) {
+    background-color: var(--active-color);
+}
+
+.switch label:has(input[type="radio"]:checked):hover,
+.switch label:has(input[type="radio"]:checked):focus {
+    background-color: var(--active-hover-color);
 }
 
 

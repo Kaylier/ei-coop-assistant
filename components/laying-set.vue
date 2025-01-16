@@ -42,10 +42,17 @@
                 ></input>
         </div>
         <div>
-            <input type="checkbox" id="include-deflector" v-model="includeDeflector" />
-            <label for="include-deflector"
-                title="Force the sets to contain a deflector"
-                > Include a deflector
+            <label>
+                <input type="checkbox" id="include-deflector" v-model="includeDeflector" />
+                Include best deflector for
+                <div class="switch" :class="{ disabled: !includeDeflector }">
+                    <label><input type="radio" name="deflector-mode" value="contribution" v-model="deflectorMode" />
+                        contribution
+                    </label>
+                    <label><input type="radio" name="deflector-mode" value="teamwork" v-model="deflectorMode" />
+                        teamwork
+                    </label>
+                </div>
             </label>
         </div>
     </section>
@@ -120,6 +127,7 @@ import { getBonus } from '/scripts/artifacts.ts';
 
 // Template variables declarations and default values
 const includeDeflector = ref(true);
+const deflectorMode = ref("contribution");
 const baseLayingRateString = ref("");
 const baseLayingRate = ref(0);
 const baseShippingRateString = ref("");
@@ -135,6 +143,8 @@ const errorMessage = ref("");
 Vue.onMounted(async () => {
     includeDeflector.value = JSON.parse(localStorage.getItem('include-deflector')) ??
                              includeDeflector.value;
+    deflectorMode.value = JSON.parse(localStorage.getItem('deflector-mode')) ??
+                             deflectorMode.value;
     baseLayingRateString.value = localStorage.getItem('base-laying-rate') ??
                                  baseLayingRateString.value;
     baseShippingRateString.value = localStorage.getItem('base-shipping-rate') ??
@@ -147,7 +157,10 @@ Vue.onMounted(async () => {
 
 
 watch(includeDeflector, () => {
-    localStorage.setItem('include-deflector', includeDeflector.value);
+    localStorage.setItem('include-deflector', JSON.stringify(includeDeflector.value));
+});
+watch(deflectorMode, () => {
+    localStorage.setItem('deflector-mode', JSON.stringify(deflectorMode.value));
 });
 watch(inventory, () => {
     if (!inventory.value) return;
@@ -155,6 +168,7 @@ watch(inventory, () => {
     compute();
 });
 watch(includeDeflector, compute);
+watch(deflectorMode, compute);
 watch(baseLayingRate, updateScale);
 watch(baseShippingRate, updateScale);
 
@@ -247,12 +261,26 @@ function compute() {
         artifacts[key].sort((a, b) => b.deflectorBonus - a.deflectorBonus || b.tier - a.tier || b.rarity - a.rarity);
     }
 
+    // Define the minimal deflector bonus allowed
+    // For teamwork, take the highest deflector available
+    // For contribution, only the presence of a deflector is forced, without minimum
+    const minDeflectorBonus = includeDeflector.value && deflectorMode.value == "teamwork" ?
+                              artifacts[T.ArtifactFamily.TACHYON_DEFLECTOR]?.[0]?.deflectorBonus ?? 0 :
+                              0;
+
     // Remove suboptimal artifacts (outperformed by an other on both laying and shipping bonuses)
-    for (const family in artifacts)
+    for (const family in artifacts) {
+        if (includeDeflector.value && family == T.ArtifactFamily.TACHYON_DEFLECTOR) {
+            // Prevents removing deflectors, they may be suboptimal in regard to laying/shipping,
+            // but still have a better bonus
+            continue;
+        }
         artifacts[family] = minmaxReduce(artifacts[family], 'layingBonus', 'shippingBonus', true);
+    }
 
     // Get all candidate artifact sets, sorted to prefer higher deflector bonuses
     let sets = getArtifactSets(artifacts);
+    sets = sets.filter((el) => el.deflectorBonus >= minDeflectorBonus);
     sets.sort((a, b) => b.deflectorBonus - a.deflectorBonus);
 
     // Get optimal sets
