@@ -104,12 +104,15 @@ main .invalid-text {
     display: none;
 }
 
-.optimal-label-frame:hover, .optimal-label-frame:active  {
+.optimal-label-frame:hover,
+.optimal-label-frame:active,
+.optimal-label-frame:focus-within  {
     opacity: 1;
 }
 
 .optimal-label-frame:hover .optimal-label span,
-.optimal-label-frame:active .optimal-label span {
+.optimal-label-frame:active .optimal-label span,
+.optimal-label-frame:focus-within .optimal-label span {
     display: block;
 }
 

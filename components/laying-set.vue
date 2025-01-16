@@ -2,7 +2,7 @@
     <load-eid :inventory="inventory" @onloaded="(x) => inventory = x"></load-eid>
     <section class="settings">
         <div>
-            <label class="tooltip-icon">
+            <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
                     Maximum laying rate with full habs, without any artifact equipped.<br/>
@@ -22,7 +22,7 @@
                 ></input>
         </div>
         <div>
-            <label class="tooltip-icon">
+            <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
                     Maximum shipping rate without any artifact equipped.<br/>
@@ -42,7 +42,7 @@
                 ></input>
         </div>
         <div>
-            <input type="checkbox" id="include-deflector" v-model="includeDeflector">
+            <input type="checkbox" id="include-deflector" v-model="includeDeflector" />
             <label for="include-deflector"
                 title="Force the sets to contain a deflector"
                 > Include a deflector
@@ -73,7 +73,7 @@
             <div v-if="!entry.hidden" class="entry">
                 <div class="axis"></div>
                 <div class="optimal-label-frame" title="Optimal deflector bonus for this set">
-                    <div v-if="entry.optiThreshold >= 0" class="optimal-label">
+                    <div tabindex="0" v-if="entry.optiThreshold >= 0" class="optimal-label">
                         <span>
                             + {{ entry.optiThreshold.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}) }}
                         </span>

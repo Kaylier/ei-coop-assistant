@@ -86,7 +86,8 @@ header {
     align-self: flex-start;
 }
 
-.logo:hover img {
+.logo:hover img,
+.logo:focus-within img {
     transform: scale(1.02);
 }
 
@@ -111,7 +112,7 @@ header nav {
     text-decoration: none;
     padding: 0 1em 0 0.3em;
     gap: 0.3em;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
     display: inline-flex;
     flex-direction: row;
     align-items: center;
@@ -131,7 +132,8 @@ header nav {
     }
 }
 
-header nav .router-link:not(.router-link-inactive):hover {
+header nav .router-link:not(.router-link-inactive):hover,
+header nav .router-link:not(.router-link-inactive):focus {
     background-color: var(--bg-alt-hover-color);
 }
 
@@ -176,11 +178,12 @@ footer {
 footer a {
     color: var(--valid-color);
     text-decoration: none;
-    transition: color 0.1s;
+    transition: color 0.15s;
     margin: 0 1em 0 1em;
 }
 
-footer a:hover {
+footer a:hover,
+footer a:focus {
     color: var(--valid-hover-color);
 }
 
@@ -212,7 +215,7 @@ input {
     padding: 0.3em 0.7em;
     border-radius: 4px;
     border: none;
-    font-size: 14px;
+    font-size: 1.2em;
     background-color: var(--bg-alt-color);
     flex-grow: 1;
 }
@@ -238,10 +241,10 @@ button {
     border: none;
     background-color: var(--valid-color);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
 }
 
-button:hover {
+button:hover, button:focus {
     background-color: var(--valid-hover-color);
 }
 
@@ -249,7 +252,7 @@ button:enabled:active {
     background-color: var(--active-color);
 }
 
-button:enabled:active:hover {
+button:enabled:active:hover, button:enabled:active:focus {
     background-color: var(--active-hover-color);
 }
 
@@ -294,7 +297,8 @@ button.invalid {
 }
 
 .tooltip-icon:hover .tooltip-text,
-.tooltip-icon:active .tooltip-text {
+.tooltip-icon:active .tooltip-text,
+.tooltip-icon:focus .tooltip-text {
     visibility: visible;
     opacity: 0.8;
 }
