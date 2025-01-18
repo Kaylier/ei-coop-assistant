@@ -1196,5 +1196,13 @@
         "savedArtifactSets": [
         ]
     },
+    "game": {
+        "permitLevel": 1,
+        "hyperloopStation": true,
+        "epicResearch": [
+            { "id": "epic_egg_laying", "level": 20 },
+            { "id": "transportation_lobbyist", "level": 30 }
+        ]
+    },
     "approxTime": 1735664400
 }

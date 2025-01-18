@@ -1,14 +1,12 @@
 <template>
-    <load-eid :inventory="inventory" @onloaded="(x) => inventory = x"></load-eid>
+    <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
     <section class="settings">
         <div>
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
-                    Maximum laying rate with full habs, without any artifact equipped.<br/>
-                    At max Epic and Common Researches,<br/>
-                    it is 62.869T/min, or 3.772q/h.<br/>
-                    This is the default if no value is entered.
+                    Maximum laying rate with full habs<br/>
+                    without any artifact equipped.
                 </span>
             </label>
             <label for="base-laying-rate">
@@ -17,28 +15,24 @@
             <input type="text" id="base-laying-rate"
                 :class="{ invalid: !checkRateString(baseLayingRateString) }"
                 v-model="baseLayingRateString"
-                @change="validateBaseLayingRate(baseLayingRateString)"
-                placeholder="3.772q/h"
+                :placeholder="formatRateString(userData?.baseLayingRate ?? defaultBaseLayingRate)"
                 ></input>
         </div>
         <div>
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
-                    Maximum shipping rate without any artifact equipped.<br/>
-                    At max Epic and Common Researches with all colleggtibles,<br/>
-                    it is 131.346T/min, or 7.881q/h.<br/>
-                    This is the default if no value is entered.
+                    Maximum shipping rate<br/>
+                    without any artifact equipped.
                 </span>
             </label>
-            <label for="base-shipping-rate"
-                > Base shipping rate
+            <label for="base-shipping-rate">
+                Base shipping rate
             </label>
             <input type="text" id="base-shipping-rate"
                 :class="{ invalid: !checkRateString(baseShippingRateString) }"
                 v-model="baseShippingRateString"
-                @change="validateBaseShippingRate(baseShippingRateString)"
-                placeholder="7.881q/h"
+                :placeholder="formatRateString(userData?.baseShippingRate ?? defaultBaseShippingRate)"
                 ></input>
         </div>
         <div>
@@ -128,12 +122,20 @@ import { getBonus } from '/scripts/artifacts.ts';
 // Template variables declarations and default values
 const includeDeflector = ref(true);
 const deflectorMode = ref("contribution");
+
 const baseLayingRateString = ref("");
 const baseLayingRate = ref(0);
+// This default is only used when no user data is loaded, or when it failed to calculate the rate from user data
+// I'm using the value for max ER and CR
+const defaultBaseLayingRate = 1047816000000;
+
 const baseShippingRateString = ref("");
 const baseShippingRate = ref(0);
+// This default is only used when no user data is loaded, or when it failed to calculate the rate from user data
+// I'm using the value for max ER and CR with all colleggtibles
+const defaultBaseShippingRate = 1985572814941.4062*1.05*1.05;
 
-const inventory = ref(null);
+const userData = ref(null);
 const entries = ref([]);
 const entriesStart = ref(0);
 
@@ -149,10 +151,6 @@ Vue.onMounted(async () => {
                                  baseLayingRateString.value;
     baseShippingRateString.value = localStorage.getItem('base-shipping-rate') ??
                                    baseShippingRateString.value;
-
-    validateBaseLayingRate(baseLayingRateString.value);
-    validateBaseShippingRate(baseShippingRateString.value);
-
 });
 
 
@@ -162,32 +160,50 @@ watch(includeDeflector, () => {
 watch(deflectorMode, () => {
     localStorage.setItem('deflector-mode', JSON.stringify(deflectorMode.value));
 });
-watch(inventory, () => {
-    if (!inventory.value) return;
-    localStorage.setItem('inventory', JSON.stringify(inventory.value));
+watch(userData, () => {
+    if (!userData.value) return;
+    localStorage.setItem('user-data', JSON.stringify(userData.value));
+
+    // Update rates in case a new default value must be taken into account
+    validateBaseLayingRate(baseLayingRateString.value, true);
+    validateBaseShippingRate(baseShippingRateString.value, true);
+
     compute();
 });
 watch(includeDeflector, compute);
 watch(deflectorMode, compute);
+watch(baseLayingRateString, validateBaseLayingRate);
+watch(baseShippingRateString, validateBaseShippingRate);
 watch(baseLayingRate, updateScale);
 watch(baseShippingRate, updateScale);
 
-
-function validateBaseLayingRate(s) {
-    if (s && !checkRateString(s))
-        return;
-    localStorage.setItem('base-laying-rate', s);
-    // Default to the base max laying rate (max ER/CR/habs, without artifacts)
-    baseLayingRate.value = s ? parseRateString(s) : 1047816000000.;
+/*
+ * Validate an input string as a rate and change the value of baseLayingRate accordingly.
+ * If the input is invalid, the rate is unchanged, unless reset is set to true.
+ * For an empty input, a default value is assigned
+ */
+function validateBaseLayingRate(s, reset=false) {
+    if (checkRateString(s, false)) {
+        localStorage.setItem('base-laying-rate', s);
+        baseLayingRate.value = parseRateString(s);
+    } else if (!s) {
+        localStorage.setItem('base-laying-rate', s);
+        baseLayingRate.value = userData.value?.baseLayingRate ?? defaultBaseLayingRate;
+    } else if (reset === true) {
+        baseLayingRate.value = userData.value?.baseLayingRate ?? defaultBaseLayingRate;
+    }
 };
 
-function validateBaseShippingRate(s) {
-    if (s && !checkRateString(s))
-        return;
-    localStorage.setItem('base-shipping-rate', s);
-    // Default to the base max shipping rate (max ER/CR/vehicles, without artifacts)
-    // 2 colleggtibles adding 5% each to the base rate
-    baseShippingRate.value = s ? parseRateString(s) : 1985572814941.4062*1.05**2;
+function validateBaseShippingRate(s, reset=false) {
+    if (checkRateString(s, false)) {
+        localStorage.setItem('base-shipping-rate', s);
+        baseShippingRate.value = parseRateString(s);
+    } else if (!s) {
+        localStorage.setItem('base-shipping-rate', s);
+        baseShippingRate.value = userData.value?.baseShippingRate ?? defaultBaseShippingRate;
+    } else if (reset === true) {
+        baseShippingRate.value = userData.value?.baseShippingRate ?? defaultBaseShippingRate;
+    }
 };
 
 
@@ -228,7 +244,9 @@ function getArtifactSets(artifacts) {
 
     let sets = [];
 
-    for (const size of [1, 2, 3, 4]) {
+    const artifactSlotAmount = userData.value?.proPermit ? 4 : 2;
+
+    for (let size = 1; size <= artifactSlotAmount; size++) {
         for (const familySet of combinations(families, size)) {
             if (includeDeflector.value &&
                 !familySet.some(family => family == T.ArtifactFamily.TACHYON_DEFLECTOR)) {
@@ -253,10 +271,10 @@ function getArtifactSets(artifacts) {
 
 
 function compute() {
-    if (!inventory.value) return [];
+    if (!userData.value) return [];
 
     // Group artifacts by families, sorted in prefered order
-    const artifacts = getGroupedArtifacts(inventory.value.items);
+    const artifacts = getGroupedArtifacts(userData.value.items);
     for (const key in artifacts) {
         artifacts[key].sort((a, b) => b.deflectorBonus - a.deflectorBonus || b.tier - a.tier || b.rarity - a.rarity);
     }

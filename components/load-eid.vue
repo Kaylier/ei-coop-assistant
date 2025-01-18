@@ -16,12 +16,12 @@
             <img src="/img/icons/loading.svg">
         </div>
         <pre v-else-if="errorMsg" class="invalid-text" style="white-space:preserve">{{ errorMsg || "Error" }}</pre>
-        <div v-else-if="!inventory || !inventory.items" class="invalid-text">
+        <div v-else-if="!userData || !userData.items" class="invalid-text">
             No inventory loaded
         </div>
-        <div v-else-if="inventory.items.length" class="valid-text">
-            {{ (inventory.items.reduce((tot, cur) => tot + cur.quantity, 0)).toLocaleString() }} items loaded - {{ inventory.date.toLocaleString() }}
-            <span v-if="Date.now() - inventory.date > 3600000*24*7" class="tooltip-icon warning-text">
+        <div v-else-if="userData.items.length" class="valid-text">
+            {{ (userData.items.reduce((tot, cur) => tot + cur.quantity, 0)).toLocaleString() }} items loaded - {{ userData.date.toLocaleString() }}
+            <span v-if="Date.now() - userData.date > 3600000*24*7" class="tooltip-icon warning-text">
                 ⚠
                 <span class="tooltip-text">
                     This inventory has not been updated for over a week.<br/>
@@ -38,14 +38,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { checkEID, checkSID } from '/scripts/utils.ts';
-import { getInventory } from '/scripts/api.ts';
+import { getUserData } from '/scripts/api.ts';
 
 const props = defineProps<{
-    inventory
+    userData
 }>();
 
 const emit = defineEmits<{
-    (e: 'onloaded', inventory: object): void
+    (e: 'onloaded', userData: object): void
 }>();
 
 const eid = ref("");
@@ -57,7 +57,7 @@ Vue.onMounted(async () => {
                 localStorage.getItem('player-eid') ??
                 eid.value;
 
-    let saved = JSON.parse(localStorage.getItem('inventory'));
+    let saved = JSON.parse(localStorage.getItem('user-data'));
     if (saved) {
         if (saved['date'])
             saved['date'] = new Date(saved['date']);
@@ -78,13 +78,13 @@ async function load(eid: String) {
 
     console.log("Loading from EID", eid);
 
-    let inventory = null;
+    let userData = null;
 
     try {
-        inventory = await getInventory(eid);
+        userData = await getUserData(eid);
         isLoadingEID.value = false;
     } catch (e) {
-        console.error("Error loading inventory:", e);
+        console.error("Error loading user data:", e);
         errorMsg.value = e;
         isLoadingEID.value = false;
         return
@@ -94,7 +94,7 @@ async function load(eid: String) {
         localStorage.setItem('player-eid', eid);
     }
 
-    emit('onloaded', inventory);
+    emit('onloaded', userData);
 }
 
 </script>

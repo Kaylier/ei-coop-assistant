@@ -1,5 +1,5 @@
 <template>
-    <load-eid :inventory="inventory" @onloaded="(x) => inventory = x"></load-eid>
+    <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
@@ -15,14 +15,14 @@
 import { ref, watch, computed } from 'vue';
 import { checkEID } from '/scripts/utils.ts';
 import * as T from '/scripts/types.ts';
-import { getInventory } from '/scripts/api.ts';
+import { getUserData } from '/scripts/api.ts';
 
 
 // Template variables declarations and default values
 const eid = ref("");
 const isLoadingEID = ref(false);
 
-const inventory = ref(null);
+const userData = ref(null);
 const grid = ref([]);
 const sets = ref([]);
 const column = ref(16);
@@ -31,15 +31,10 @@ const errorMessage = ref("");
 
 
 // Save to local storage
-watch(inventory, () => {
-    if (!inventory.value) return;
-    localStorage.setItem('inventory', JSON.stringify(inventory.value));
+watch(userData, () => {
+    if (!userData.value) return;
+    localStorage.setItem('user-data', JSON.stringify(userData.value));
     updateView();
-});
-
-
-// Restore from local storage
-Vue.onMounted(async () => {
 });
 
 
@@ -55,7 +50,7 @@ function countRarity(l, rarity) {
 
 function updateView() {
 
-    const items = [...inventory.value.items].sort((a, b) => a.category - b.category
+    const items = [...userData.value.items].sort((a, b) => a.category - b.category
                                                          || a.family - b.family
                                                          || b.tier - a.tier
                                                          || b.rarity - a.rarity
@@ -92,7 +87,7 @@ function updateView() {
             grid.value.push(null);
     }
 
-    sets.value = inventory.value.sets.map(set => set.map(setId => itemIdMap[setId]));
+    sets.value = userData.value.sets.map(set => set.map(setId => itemIdMap[setId]));
 }
 
 </script>

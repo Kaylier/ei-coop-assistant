@@ -295,7 +295,7 @@ async function getSpecialBackup(sid: string) {
  * If the parameter orderedStones is set to true, the stone order matters and can prevent
  * some items from being grouped together.
  */
-export async function getInventory(eid: string, orderedStones: boolean = false) {
+export async function getUserData(eid: string, orderedStones: boolean = false) {
     const proto = await window['protobuf'].load("/proto/ei.proto");
     const backup = checkSID(eid) ? await getSpecialBackup(eid) : await queryBackup(eid, proto);
 
@@ -309,7 +309,7 @@ export async function getInventory(eid: string, orderedStones: boolean = false) 
     }
 
     let itemIdMap = {};
-    let ret = new Map();
+    let items = new Map();
 
     for (const eiItem of backup.artifactsDb.inventoryItems) {
 
@@ -339,12 +339,12 @@ export async function getInventory(eid: string, orderedStones: boolean = false) 
         if (orderedStones) key = [getKey(item), ...stones.map(getKey)].join('/');
         else key = [getKey(item), ...stones.map(getKey).sort()].join('/');
 
-        if (ret.has(key)) {
-            ret.get(key).quantity += item.quantity;
+        if (items.has(key)) {
+            items.get(key).quantity += item.quantity;
         } else {
-            ret.set(key, item);
+            items.set(key, item);
         }
-        itemIdMap[eiItem.itemId] = ret.get(key);
+        itemIdMap[eiItem.itemId] = items.get(key);
     }
 
     let sets = [];
@@ -363,9 +363,39 @@ export async function getInventory(eid: string, orderedStones: boolean = false) 
     }
     sets.reverse();
 
+    const proPermit = (backup.game?.permitLevel === 1);
+
+    const epicResearches = new Map(backup.game?.epicResearch?.map(er => [er.id, er.level]));
+
+    /*
+     * Base egg laying rate is calculated from:
+     *  - Base rate: 2 egg/chicken/min
+     *  - Chicken population: 11.34e9 with all common research
+     *  - Common researches: x1386
+     *  - Epic research: up to x2 (read from backup data)
+     */
+    let baseLayingRate = 523908000000; // in egg/second
+    baseLayingRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
+
+    /*
+     * Base egg shipping rate is calculated from:
+     *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17
+     *  - Common researches: x5606.3232421875
+     *  - Epic research: x2.5 (read from backup data)
+     *  - Colleggtibles: x1.05 x1.05
+     */
+    let baseShippingRate = 79422912597.65625*1.05*1.05; // in egg/second
+    if (backup.game?.hyperloopStation) {
+        baseShippingRate *= 10;
+    }
+    baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
+
     return {
-        items: Array.from(ret.values()),
+        items: Array.from(items.values()),
         sets: sets,
+        baseLayingRate: baseLayingRate,
+        baseShippingRate: baseShippingRate,
+        proPermit: proPermit,
         date: new Date(backup.approxTime*1000)
     };
 }
