@@ -59,7 +59,7 @@
                 <div class="threshold-label-frame" title="Deflector bonus (excluding yours)">
                     <div class="threshold-label">
                         <span v-if="entry.lowerThreshold >= 0">
-                            + {{ entry.lowerThreshold.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}) }}
+                            + {{ entry.lowerThreshold.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, roundingMode: 'ceil'}) }}
                         </span>
                         <img src="/img/icons/deflector-bonus.png"></img>
                     </div>
@@ -76,7 +76,7 @@
                 <div class="optimal-label-frame" title="Optimal deflector bonus for this set">
                     <div tabindex="0" v-if="entry.optiThreshold >= 0" class="optimal-label">
                         <span>
-                            + {{ entry.optiThreshold.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}) }}
+                            + {{ entry.optiThreshold.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, roundingMode: 'ceil'}) }}
                         </span>
                         <img src="/img/icons/deflector-bonus-alt.png"></img>
                     </div>
