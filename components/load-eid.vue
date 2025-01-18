@@ -6,10 +6,12 @@
                 v-model="eid" ></input>
             <button
                 :disabled="!checkEID(eid) || isLoadingEID"
-                :class="{ invalid: !checkEID(eid) }"
-                :title="checkEID(eid) ? '' : 'Player EID must be of the form EI1234567890123456 (16 digits)'"
+                :class="{ invalid: !checkEID(eid), 'tooltip-icon': !checkEID(eid) }"
                 @click="load(eid)">
                 Load from EID
+                <span v-if="!checkEID(eid)" class="tooltip-text invalid-text">
+                    Player EID must be of the form<br/>EI1234567890123456 (16 digits)
+                </span>
             </button>
         </form>
         <div v-if="isLoadingEID" class="active-text">
