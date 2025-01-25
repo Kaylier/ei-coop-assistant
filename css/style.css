@@ -166,6 +166,21 @@ main section {
     flex-grow: 1;
 }
 
+@keyframes demo-fade-in {
+    0% { opacity: 0; }
+    90% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.demo-img {
+    width: min(600px, 100%);
+    border: var(--bg-alt-color) 2px solid;
+    border-radius: 15px;
+    margin-top: 1em;
+    animation: 1s linear 0s 1 demo-fade-in;
+}
+
+
 
 /* Footer */
 footer {

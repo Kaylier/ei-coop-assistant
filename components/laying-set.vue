@@ -104,6 +104,7 @@
                 <div class="axis-end"></div>
             </div>
         </template>
+        <img v-else-if="!userData" src="/examples/demo.png" class="demo-img" />
         <span v-else-if="!errorMessage" class="invalid-text">
             You don't have enough artifacts to build a laying set.
         </span>
