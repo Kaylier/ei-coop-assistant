@@ -83,6 +83,9 @@
                 </div>
                 <inventory-view v-if="entry.artifactSet"
                     :artifacts="entry.artifactSet"
+                    :isSet="true"
+                    :deflectorBonus="entry.optiThreshold"
+                    :proPermit="userData.proPermit"
                     :column=4 :row=1></inventory-view>
             </div>
         </template>
@@ -351,8 +354,13 @@ function updateScale() {
             entry.lowerThreshold = lowerThreshold;
         }
 
-        entry.optiThreshold = optimalBonus;
-        entry.optiRate = shippingRate;
+        if (optimalBonus <= 0) {
+            entry.optiThreshold = 0;
+            entry.optiRate = Math.min(layingRate, shippingRate);
+        } else {
+            entry.optiThreshold = optimalBonus;
+            entry.optiRate = shippingRate;
+        }
 
 
         prevShippingRate = shippingRate;

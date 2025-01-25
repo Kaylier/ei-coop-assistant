@@ -152,7 +152,7 @@ main {
     flex-grow: 1;
 }
 
-main img {
+#page-loading {
     width: min(4em, 12vw);
     margin: auto;
 }
@@ -176,7 +176,7 @@ main section {
     width: min(600px, 100%);
     border: var(--bg-alt-color) 2px solid;
     border-radius: 15px;
-    margin-top: 1em;
+    margin: auto;
     animation: 1s linear 0s 1 demo-fade-in;
 }
 

@@ -400,3 +400,98 @@ export async function getUserData(eid: string, orderedStones: boolean = false) {
     };
 }
 
+
+/**
+ * Generates a link to wasmegg sandbox tool https://wasmegg-carpet.netlify.app/artifact-sandbox
+ */
+export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: float = 0, proPermit: bool = false) {
+    const proto = await window['protobuf'].load("/proto/wasmegg-sandbox.proto");
+    const protoBuilds = proto.lookupType('Builds')
+    const protoArtifactName = proto.lookupEnum('ArtifactSpec.Name');
+
+    const stoneMap = {
+        [T.StoneFamily.PROPHECY_STONE]: protoArtifactName.values.PROPHECY_STONE,
+        [T.StoneFamily.CLARITY_STONE]: protoArtifactName.values.CLARITY_STONE,
+        [T.StoneFamily.DILITHIUM_STONE]: protoArtifactName.values.DILITHIUM_STONE,
+        [T.StoneFamily.LIFE_STONE]: protoArtifactName.values.LIFE_STONE,
+        [T.StoneFamily.QUANTUM_STONE]: protoArtifactName.values.QUANTUM_STONE,
+        [T.StoneFamily.SOUL_STONE]: protoArtifactName.values.SOUL_STONE,
+        [T.StoneFamily.TERRA_STONE]: protoArtifactName.values.TERRA_STONE,
+        [T.StoneFamily.TACHYON_STONE]: protoArtifactName.values.TACHYON_STONE,
+        [T.StoneFamily.SHELL_STONE]: protoArtifactName.values.SHELL_STONE,
+        [T.StoneFamily.LUNAR_STONE]: protoArtifactName.values.LUNAR_STONE,
+    };
+    const artifactMap = {
+        [T.ArtifactFamily.LIGHT_OF_EGGENDIL]: protoArtifactName.values.LIGHT_OF_EGGENDIL,
+        [T.ArtifactFamily.BOOK_OF_BASAN]: protoArtifactName.values.BOOK_OF_BASAN,
+        [T.ArtifactFamily.TACHYON_DEFLECTOR]: protoArtifactName.values.TACHYON_DEFLECTOR,
+        [T.ArtifactFamily.SHIP_IN_A_BOTTLE]: protoArtifactName.values.SHIP_IN_A_BOTTLE,
+        [T.ArtifactFamily.TITANIUM_ACTUATOR]: protoArtifactName.values.TITANIUM_ACTUATOR,
+        [T.ArtifactFamily.DILITHIUM_MONOCLE]: protoArtifactName.values.DILITHIUM_MONOCLE,
+        [T.ArtifactFamily.QUANTUM_METRONOME]: protoArtifactName.values.QUANTUM_METRONOME,
+        [T.ArtifactFamily.PHOENIX_FEATHER]: protoArtifactName.values.PHOENIX_FEATHER,
+        [T.ArtifactFamily.THE_CHALICE]: protoArtifactName.values.THE_CHALICE,
+        [T.ArtifactFamily.INTERSTELLAR_COMPASS]: protoArtifactName.values.INTERSTELLAR_COMPASS,
+        [T.ArtifactFamily.CARVED_RAINSTICK]: protoArtifactName.values.CARVED_RAINSTICK,
+        [T.ArtifactFamily.BEAK_OF_MIDAS]: protoArtifactName.values.BEAK_OF_MIDAS,
+        [T.ArtifactFamily.MERCURYS_LENS]: protoArtifactName.values.MERCURYS_LENS,
+        [T.ArtifactFamily.NEODYMIUM_MEDALLION]: protoArtifactName.values.NEODYMIUM_MEDALLION,
+        [T.ArtifactFamily.ORNATE_GUSSET]: protoArtifactName.values.ORNATE_GUSSET,
+        [T.ArtifactFamily.TUNGSTEN_ANKH]: protoArtifactName.values.TUNGSTEN_ANKH,
+        [T.ArtifactFamily.AURELIAN_BROOCH]: protoArtifactName.values.AURELIAN_BROOCH,
+        [T.ArtifactFamily.VIAL_MARTIAN_DUST]: protoArtifactName.values.VIAL_MARTIAN_DUST,
+        [T.ArtifactFamily.DEMETERS_NECKLACE]: protoArtifactName.values.DEMETERS_NECKLACE,
+        [T.ArtifactFamily.LUNAR_TOTEM]: protoArtifactName.values.LUNAR_TOTEM,
+        [T.ArtifactFamily.PUZZLE_CUBE]: protoArtifactName.values.PUZZLE_CUBE,
+    };
+
+    let payload = {
+        builds: [{ artifacts: [] }],
+        config: {
+            prophecyEggs: 1,
+            soulEggs: 250,
+            soulEggsInput: "0",
+            isEnlightenment: false,
+            missingSoulFood: 0,
+            missingProphecyBonus: 0,
+            missingEpicMultiplier: 0,
+            birdFeedActive: false,
+            tachyonPrismActive: false,
+            soulBeaconActive: false,
+            boostBeaconActive: false,
+            proPermit: proPermit,
+            tachyonDeflectorBonus: deflectorBonus
+        }
+    }
+
+    for (let artifact of artifacts) {
+        let stones = [];
+
+        for (let stone of artifact.stones) {
+            stones.unshift({
+                isEmpty: false,
+                afxId: stoneMap[stone.family],
+                afxLevel: stone.tier - 2
+            });
+        }
+
+        payload.builds[0].artifacts.push({
+            isEmpty: false,
+            afxId: artifactMap[artifact.family],
+            afxLevel: artifact.tier - 1,
+            afxRarity: artifact.rarity,
+            stones: stones
+        });
+    }
+
+    let error = protoBuilds.verify(payload);
+    if (error)
+        throw Error(error);
+    const message = protoBuilds.create(payload);
+    const buffer = protoBuilds.encode(message).finish();
+    const base64Data = btoa(String.fromCharCode(...buffer));
+
+    return `https://wasmegg-carpet.netlify.app/artifact-sandbox/#/b/${encodeURIComponent(base64Data)}`;
+}
+
+

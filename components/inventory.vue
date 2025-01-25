@@ -1,19 +1,26 @@
 <template>
     <div class="frame" :style="frameStyles">
-        <div v-for="item in artifacts" :class="item ? 'subframe' : 'emptyframe'">
+        <div v-for="item in artifacts" class="subframe" :class="{ 'emptyframe': !isSet && !item }">
             <item-view v-if="item" :item="item"></item-view>
         </div>
+        <a v-if="sandboxLink" :href="sandboxLink" class="sandbox-link" target='_blank' title="Open in sandbox">🔗</a>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { getSandboxLink } from '/scripts/api.ts';
 
 const props = defineProps<{
     artifacts: Item[],
+    isSet: bool | undefined,
+    deflectorBonus: float | undefined,
+    proPermit: bool | undefined,
     column: number | undefined,
     row: number | undefined,
 }>();
+
+const sandboxLink = ref(null);
 
 const frameStyles = computed(() => {
     let columns = props.column;
@@ -31,15 +38,28 @@ const frameStyles = computed(() => {
         gridTemplateRows: `repeat(${rows}, 1fr)`,
     };
 });
+
+watch(() => [props.artifacts, props.deflectorBonus], updateSandboxLink, { immediate: true });
+
+async function updateSandboxLink() {
+    if (!props.isSet)
+        return;
+    try {
+        sandboxLink.value = await getSandboxLink(props.artifacts, props.deflectorBonus, props.proPermit); 
+    } catch (e) {
+        sandboxLink.value = null;
+    }
+}
 </script>
 
 <style scoped>
 .frame {
+    position: relative;
     display: grid;
     height: auto;
-    gap: calc(1px + 0.3vw);
-    padding: calc(3px + 0.3vw);
-    overflow: auto;
+    gap: calc(2px + 0.2vw);
+    padding: calc(2px + 0.2vw);
+    overflow: auto clip;
     background: #404040;
     border-radius: 1em;
 }
@@ -52,6 +72,18 @@ const frameStyles = computed(() => {
 
 .emptyframe {
     visibility: hidden;
+    aspect-ratio: 1;
+}
+
+.sandbox-link {
+    position: absolute;
+    top: 0.2em;
+    left: 0.2em;
+    font-size: 0.75em;
+    text-decoration: none;
+    width: 2em;
+    height: 2em;
+    text-align: left;
 }
 
 </style>

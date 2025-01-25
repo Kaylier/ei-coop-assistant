@@ -4,8 +4,20 @@
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
     <section class="main">
-        <div class="sets"><inventory-sets :sets="sets"></inventory-sets></div>
-        <div class="grid"><inventory-view :artifacts="grid" :column="column"></inventory-view></div>
+        <div class="sets">
+            <inventory-view v-for="set in sets"
+                            :artifacts="set"
+                            :isSet="true"
+                            :proPermit="userData.proPermit"
+                            :column=4 :row=1
+                            />
+        </div>
+        <div class="grid">
+            <inventory-view
+                :artifacts="grid"
+                :column="column"
+                />
+        </div>
     </section>
 </template>
 

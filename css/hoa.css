@@ -39,10 +39,12 @@ main .invalid-text {
 
 .sets {
     display: flex;
-    flex-direction: column;
-    align-content: flex-start;
-    align-items: flex-start;
-    /*width: 18em;*/
+    flex-flow: column nowrap;
+    gap: calc(2px + 0.2vw);
+    padding: calc(3px + 0.3vw);
+    overflow: auto;
+    background: #333333;
+    border-radius: 1em;
 }
 
 .grid {

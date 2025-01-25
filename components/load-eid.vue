@@ -153,7 +153,9 @@ async function load(eid: String) {
 }
 
 .loading img {
-    height: 100%;
+    height: min(4em, 12vw);
+    width: min(4em, 12vw);
+    margin: auto;
 }
 
 </style>

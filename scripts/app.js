@@ -43,7 +43,6 @@ app.component('router-link', VueRouter.RouterLink);
 
 app.component('load-eid', defineAsyncComponent(() => loadModule('./components/load-eid.vue', options)));
 app.component('inventory-view', defineAsyncComponent(() => loadModule('./components/inventory.vue', options)));
-app.component('inventory-sets', defineAsyncComponent(() => loadModule('./components/inventory-sets.vue', options)));
 app.component('item-view', defineAsyncComponent(() => loadModule('./components/item.vue', options)));
 
 
