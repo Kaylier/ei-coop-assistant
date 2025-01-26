@@ -1245,5 +1245,102 @@
             { "id": "transportation_lobbyist", "level": 30 }
         ]
     },
+    "contracts": {
+        "archive": [
+            {
+                "contract": { "egg": 200, "customEggId": "carbon-fiber" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "chocolate" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "easter" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "firework" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "lithium" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "pumpkin" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "waterballoon" },
+                "maxFarmSizeReached": 10000000000
+            }
+        ],
+        "customEggInfo": [
+            {
+                "identifier": "carbon-fiber",
+                "buffs": [
+                    { "dimension": 5, "value": 1.01 },
+                    { "dimension": 5, "value": 1.02 },
+                    { "dimension": 5, "value": 1.03 },
+                    { "dimension": 5, "value": 1.05 }
+                ]
+            },
+            {
+                "identifier": "chocolate",
+                "buffs": [
+                    { "dimension": 2, "value": 1.25 },
+                    { "dimension": 2, "value": 1.5 },
+                    { "dimension": 2, "value": 2 },
+                    { "dimension": 2, "value": 3 }
+                ]
+            },
+            {
+                "identifier": "easter",
+                "buffs": [
+                    { "dimension": 3, "value": 1.01 },
+                    { "dimension": 3, "value": 1.02 },
+                    { "dimension": 3, "value": 1.03 },
+                    { "dimension": 3, "value": 1.05 }
+                ]
+            },
+            {
+                "identifier": "firework",
+                "buffs": [
+                    { "dimension": 1, "value": 1.01 },
+                    { "dimension": 1, "value": 1.02 },
+                    { "dimension": 1, "value": 1.03 },
+                    { "dimension": 1, "value": 1.05 }
+                ]
+            },
+            {
+                "identifier": "lithium",
+                "buffs": [
+                    { "dimension": 7, "value": 0.98 },
+                    { "dimension": 7, "value": 0.96 },
+                    { "dimension": 7, "value": 0.93 },
+                    { "dimension": 7, "value": 0.9 }
+                ]
+            },
+            {
+                "identifier": "pumpkin",
+                "buffs": [
+                    { "dimension": 5, "value": 1.01 },
+                    { "dimension": 5, "value": 1.02 },
+                    { "dimension": 5, "value": 1.03 },
+                    { "dimension": 5, "value": 1.05 }
+                ]
+            },
+            {
+                "identifier": "waterballoon",
+                "buffs": [
+                    { "dimension": 9, "value": 0.99 },
+                    { "dimension": 9, "value": 0.98 },
+                    { "dimension": 9, "value": 0.97 },
+                    { "dimension": 9, "value": 0.95 }
+                ]
+            }
+        ]
+    },
     "approxTime": 1735664400
 }

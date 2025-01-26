@@ -308,6 +308,54 @@ export async function getUserData(eid: string, orderedStones: boolean = false) {
         throw Error(`No artifact found in backup for EID: ${eid}`);
     }
 
+    const [items, sets] = getInventory(proto, backup, orderedStones);
+
+    const proPermit = (backup.game?.permitLevel === 1);
+
+    const epicResearches = new Map(backup.game?.epicResearch?.map(er => [er.id, er.level]));
+
+    const protoBuffDimention = proto.lookupEnum('GameModifier.GameDimension');
+    const colleggtibleBuffs = getColleggtibleBuffs(proto, backup);
+
+    /*
+     * Base egg laying rate is calculated from:
+     *  - Base rate: 2 egg/chicken/min
+     *  - Chicken population: 11.34e9 with all common research
+     *  - Common researches: x1386
+     *  - Epic research: up to x2 (read from backup data)
+     *  - Colleggtibles
+     */
+    let baseLayingRate = 523908000000; // in egg/second
+    baseLayingRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
+    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimention.values.EGG_LAYING_RATE) ?? 1;
+    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimention.values.HAB_CAPACITY) ?? 1;
+
+    /*
+     * Base egg shipping rate is calculated from:
+     *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17
+     *  - Common researches: x5606.3232421875
+     *  - Epic research: x2.5 (read from backup data)
+     *  - Colleggtibles
+     */
+    let baseShippingRate = 79422912597.65625; // in egg/second
+    if (backup.game?.hyperloopStation) {
+        baseShippingRate *= 10;
+    }
+    baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
+    baseShippingRate *= colleggtibleBuffs.get(protoBuffDimention.values.SHIPPING_CAPACITY) ?? 1;
+
+
+    return {
+        items: Array.from(items.values()),
+        sets: sets,
+        baseLayingRate: baseLayingRate,
+        baseShippingRate: baseShippingRate,
+        proPermit: proPermit,
+        date: new Date(backup.approxTime*1000)
+    };
+}
+
+function getInventory(proto, backup, orderedStones) {
     let itemIdMap = {};
     let items = new Map();
 
@@ -363,48 +411,60 @@ export async function getUserData(eid: string, orderedStones: boolean = false) {
     }
     sets.reverse();
 
-    const proPermit = (backup.game?.permitLevel === 1);
+    return [ items, sets ];
+}
 
-    const epicResearches = new Map(backup.game?.epicResearch?.map(er => [er.id, er.level]));
-
+function getColleggtibleBuffs(proto, backup) {
     /*
-     * Base egg laying rate is calculated from:
-     *  - Base rate: 2 egg/chicken/min
-     *  - Chicken population: 11.34e9 with all common research
-     *  - Common researches: x1386
-     *  - Epic research: up to x2 (read from backup data)
+     * Iterate through contracts to find colleggtibles. This is the only way to know as far as I know...
+     * For ongoing contracts, assumes the population is maxed
      */
-    let baseLayingRate = 523908000000; // in egg/second
-    baseLayingRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
+    const protoEgg = proto.lookupEnum('Egg');
+    const protoBuffDimention = proto.lookupEnum('GameModifier.GameDimension');
+    const farmSizeThresholds = [10000000, 100000000, 1000000000, 10000000000];
+    const maxFarmSizeReached = new Map<string, number>();
 
-    /*
-     * Base egg shipping rate is calculated from:
-     *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17
-     *  - Common researches: x5606.3232421875
-     *  - Epic research: x2.5 (read from backup data)
-     *  - Colleggtibles: x1.05 x1.05
-     */
-    let baseShippingRate = 79422912597.65625*1.05*1.05; // in egg/second
-    if (backup.game?.hyperloopStation) {
-        baseShippingRate *= 10;
+    if (backup.contracts?.contracts) {
+        for (const contract of backup.contracts?.contracts) {
+            if (contract.contract.egg === protoEgg.values.CUSTOM_EGG) {
+                maxFarmSizeReached.set(contract.contract.customEggId, 11340000000);
+            }
+        }
     }
-    baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
 
-    return {
-        items: Array.from(items.values()),
-        sets: sets,
-        baseLayingRate: baseLayingRate,
-        baseShippingRate: baseShippingRate,
-        proPermit: proPermit,
-        date: new Date(backup.approxTime*1000)
-    };
+    if (backup.contracts?.archive) {
+        for (const contract of backup.contracts?.archive) {
+            if (contract.contract.egg === protoEgg.values.CUSTOM_EGG &&
+                (maxFarmSizeReached.get(contract.contract.customEggId) ?? 0) < contract.maxFarmSizeReached) {
+                maxFarmSizeReached.set(contract.contract.customEggId, contract.maxFarmSizeReached);
+            }
+        }
+    }
+
+    const colleggtibleBuffs = new Map<string, number>();
+
+    if (backup.contracts?.customEggInfo) {
+        for (const customEgg of backup.contracts?.customEggInfo) {
+            // Handle colleggtible with multiple dimensions, just in case. Maybe overkill, let's call it future-proof.
+            let finalBuffs = new Map();
+            for (let i = 0; i < customEgg.buffs.length; i++) {
+                if (farmSizeThresholds[i] <= maxFarmSizeReached.get(customEgg.identifier)) {
+                    const buff = customEgg.buffs[i];
+                    finalBuffs.set(buff.dimension, buff.value);
+                }
+            }
+            finalBuffs.forEach((value, key) => colleggtibleBuffs.set(key, (colleggtibleBuffs.get(key) ?? 1)*value));
+        }
+    }
+
+    return colleggtibleBuffs;
 }
 
 
 /**
  * Generates a link to wasmegg sandbox tool https://wasmegg-carpet.netlify.app/artifact-sandbox
  */
-export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: float = 0, proPermit: bool = false) {
+export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: number = 0, proPermit: bool = false) {
     const proto = await window['protobuf'].load("/proto/wasmegg-sandbox.proto");
     const protoBuilds = proto.lookupType('Builds')
     const protoArtifactName = proto.lookupEnum('ArtifactSpec.Name');

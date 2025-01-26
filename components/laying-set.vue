@@ -130,14 +130,14 @@ const deflectorMode = ref("contribution");
 const baseLayingRateString = ref("");
 const baseLayingRate = ref(0);
 // This default is only used when no user data is loaded, or when it failed to calculate the rate from user data
-// I'm using the value for max ER and CR
+// I'm using the value for max ER and CR without colleggtibles
 const defaultBaseLayingRate = 1047816000000;
 
 const baseShippingRateString = ref("");
 const baseShippingRate = ref(0);
 // This default is only used when no user data is loaded, or when it failed to calculate the rate from user data
-// I'm using the value for max ER and CR with all colleggtibles
-const defaultBaseShippingRate = 1985572814941.4062*1.05*1.05;
+// I'm using the value for max ER and CR without colleggtibles
+const defaultBaseShippingRate = 1985572814941.4062;
 
 const userData = ref(null);
 const entries = ref([]);
