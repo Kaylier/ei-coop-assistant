@@ -3,7 +3,9 @@
         <div v-for="item in artifacts" class="subframe" :class="{ 'emptyframe': !isSet && !item }">
             <item-view v-if="item" :item="item"></item-view>
         </div>
-        <a v-if="sandboxLink" :href="sandboxLink" class="sandbox-link" target='_blank' title="Open in sandbox">🔗</a>
+        <a v-if="sandboxLink" :href="sandboxLink" class="sandbox-link" target='_blank' title="Open in sandbox">
+            <img src="/img/icons/sandbox.png" alt="🔗"/>
+        </a>
     </div>
 </template>
 
@@ -84,6 +86,11 @@ async function updateSandboxLink() {
     width: 2em;
     height: 2em;
     text-align: left;
+}
+
+.sandbox-link img {
+    width: 1.1em;
+    height: 1.1em;
 }
 
 </style>

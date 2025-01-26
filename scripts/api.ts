@@ -525,23 +525,35 @@ export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: numb
     }
 
     for (let artifact of artifacts) {
-        let stones = [];
+        if (artifact) {
+            let stones = [];
 
-        for (let stone of artifact.stones) {
-            stones.unshift({
+            for (let stone of artifact.stones) {
+                if (stone) {
+                    stones.unshift({
+                        isEmpty: false,
+                        afxId: stoneMap[stone.family],
+                        afxLevel: stone.tier - 2
+                    });
+                } else {
+                    stones.unshift({
+                        isEmpty: true,
+                    });
+                }
+            }
+
+            payload.builds[0].artifacts.push({
                 isEmpty: false,
-                afxId: stoneMap[stone.family],
-                afxLevel: stone.tier - 2
+                afxId: artifactMap[artifact.family],
+                afxLevel: artifact.tier - 1,
+                afxRarity: artifact.rarity,
+                stones: stones
+            });
+        } else {
+            payload.builds[0].artifacts.push({
+                isEmpty: true,
             });
         }
-
-        payload.builds[0].artifacts.push({
-            isEmpty: false,
-            afxId: artifactMap[artifact.family],
-            afxLevel: artifact.tier - 1,
-            afxRarity: artifact.rarity,
-            stones: stones
-        });
     }
 
     let error = protoBuilds.verify(payload);
