@@ -21,8 +21,11 @@ Find artifact sets that maximize your contribution for a received deflector bonu
 - Artifacts are read from the player inventory, and no reslotting is performed.
 - Bonuses given to other coop members are not considered. However, you can force the presence of a deflector.
 
-If you haven't completed your Epic Researches, Common Researches or lack relevant collegtibles, you can customize the base laying and shipping rates.
+Epic researches, hyperloop and colleggtibles are read from user EID to calculate base laying and shipping rates.
+If you wish to explore different scenario, you can customize them. Otherwise just leave the fields empty.
 These are the maximum rates achievable without any artifacts (not even a Gusset).
+
+If you don't have a pro permit, the amount of artifact is limited to 2. There are no way to override this setting easily.
 
 ## Dependencies
 This website is purely static and requires no build process.
