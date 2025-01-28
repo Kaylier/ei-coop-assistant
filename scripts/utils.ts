@@ -103,13 +103,9 @@ export function minmaxReduce(list: any[], key0: string, key1: string, strict: bo
     // Primary sorting by key0 in decreasing order
     // Secondary sorting by key1 in increasing for non-strict mode, decreasing order for strict mode
     // Tertiary sorting by original index to keep the sort stable
-    list.sort((a, b) => {
-        return (
-            b[key0] - a[key0] ||
-            (strict ? b[key1] - a[key1] : a[key1] - b[key1]) ||
-            (indexMap.get(a) - indexMap.get(b))
-        );
-    });
+    list.sort((a, b) => b[key0] - a[key0] ||
+                        (strict ? b[key1] - a[key1] : a[key1] - b[key1]) ||
+                        (indexMap.get(a) - indexMap.get(b)));
 
     const result: any[] = [];
     let bestKey1 = -Infinity;

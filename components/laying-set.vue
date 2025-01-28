@@ -2,40 +2,6 @@
     <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
     <section class="settings">
         <div>
-            <label tabindex="0" class="tooltip-icon">
-                ⓘ
-                <span class="tooltip-text">
-                    Maximum laying rate with full habs<br/>
-                    without any artifact equipped.
-                </span>
-            </label>
-            <label for="base-laying-rate">
-                Base laying rate
-            </label>
-            <input type="text" id="base-laying-rate"
-                :class="{ invalid: !checkRateString(baseLayingRateString) }"
-                v-model="baseLayingRateString"
-                :placeholder="formatRateString(userData?.baseLayingRate ?? defaultBaseLayingRate)"
-                ></input>
-        </div>
-        <div>
-            <label tabindex="0" class="tooltip-icon">
-                ⓘ
-                <span class="tooltip-text">
-                    Maximum shipping rate<br/>
-                    without any artifact equipped.
-                </span>
-            </label>
-            <label for="base-shipping-rate">
-                Base shipping rate
-            </label>
-            <input type="text" id="base-shipping-rate"
-                :class="{ invalid: !checkRateString(baseShippingRateString) }"
-                v-model="baseShippingRateString"
-                :placeholder="formatRateString(userData?.baseShippingRate ?? defaultBaseShippingRate)"
-                ></input>
-        </div>
-        <div>
             <label>
                 <input type="checkbox" id="include-deflector" v-model="includeDeflector" />
                 Include best deflector for
@@ -48,6 +14,43 @@
                     </label>
                 </div>
             </label>
+        </div>
+        <a href='#' v-if="!extraOptions" @click="extraOptions = true;">
+            show settings
+        </a>
+        <div v-if="extraOptions">
+            <label tabindex="0" class="tooltip-icon">
+                ⓘ
+                <span class="tooltip-text">
+                    Maximum laying rate with full habs<br/>
+                    without any artifact equipped.
+                </span>
+            </label>
+            <label for="base-laying-rate">
+                Base laying rate
+            </label>
+            <input type="text" id="base-laying-rate"
+                    :class="{ invalid: !checkRateString(baseLayingRateString) }"
+                    v-model="baseLayingRateString"
+                    :placeholder="formatRateString(userData?.baseLayingRate ?? defaultBaseLayingRate)">
+            </input>
+        </div>
+        <div v-if="extraOptions">
+            <label tabindex="0" class="tooltip-icon">
+                ⓘ
+                <span class="tooltip-text">
+                    Maximum shipping rate<br/>
+                    without any artifact equipped.
+                </span>
+            </label>
+            <label for="base-shipping-rate">
+                Base shipping rate
+            </label>
+            <input type="text" id="base-shipping-rate"
+                    :class="{ invalid: !checkRateString(baseShippingRateString) }"
+                    v-model="baseShippingRateString"
+                    :placeholder="formatRateString(userData?.baseShippingRate ?? defaultBaseShippingRate)">
+            </input>
         </div>
     </section>
 
@@ -126,6 +129,7 @@ import { getBonus } from '/scripts/artifacts.ts';
 // Template variables declarations and default values
 const includeDeflector = ref(true);
 const deflectorMode = ref("contribution");
+const extraOptions = ref(false);
 
 const baseLayingRateString = ref("");
 const baseLayingRate = ref(0);
@@ -150,7 +154,7 @@ Vue.onMounted(async () => {
     includeDeflector.value = JSON.parse(localStorage.getItem('include-deflector')) ??
                              includeDeflector.value;
     deflectorMode.value = JSON.parse(localStorage.getItem('deflector-mode')) ??
-                             deflectorMode.value;
+                          deflectorMode.value;
     baseLayingRateString.value = localStorage.getItem('base-laying-rate') ??
                                  baseLayingRateString.value;
     baseShippingRateString.value = localStorage.getItem('base-shipping-rate') ??

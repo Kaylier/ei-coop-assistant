@@ -71,13 +71,13 @@ export type Ingredient = {
 };
 
 export type Stone = {
-    category: ItemType.STONE,
+    category: ItemCategory.STONE,
     family: StoneFamily,
     tier: number;
 };
 
 export type Artifact = {
-    category: ItemType.ARTIFACT,
+    category: ItemCategory.ARTIFACT,
     family: ArtifactFamily,
     tier: number;
     rarity: Rarity;
