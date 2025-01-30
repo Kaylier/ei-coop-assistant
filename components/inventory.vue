@@ -1,11 +1,11 @@
 <template>
     <div class="frame" :style="frameStyles">
-        <div v-for="item in artifacts" class="subframe" :class="{ 'emptyframe': !isSet && !item }">
-            <item-view v-if="item" :item="item"></item-view>
-        </div>
         <a v-if="sandboxLink" :href="sandboxLink" class="sandbox-link" target='_blank' title="Open in sandbox">
             <img src="/img/icons/sandbox.png" alt="🔗"/>
         </a>
+        <div v-for="item in artifacts" class="subframe" :class="{ 'emptyframe': !isSet && !item }">
+            <item-view v-if="item" :item="item"></item-view>
+        </div>
     </div>
 </template>
 
@@ -62,12 +62,12 @@ async function updateSandboxLink() {
     gap: calc(2px + 0.2vw);
     padding: calc(2px + 0.2vw);
     overflow: auto clip;
-    background: #404040;
+    background: var(--bg-hover-color);
     border-radius: 1em;
 }
 
 .subframe {
-    background: #333333;
+    background: var(--bg-alt-color);
     border-radius: 1em;
     aspect-ratio: 1;
 }
@@ -86,6 +86,7 @@ async function updateSandboxLink() {
     width: 2em;
     height: 2em;
     text-align: left;
+    z-index: 1;
 }
 
 .sandbox-link img {

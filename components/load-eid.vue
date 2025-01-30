@@ -1,7 +1,8 @@
 <template>
     <section class="loading">
         <form action="javascript:void(0);" id="eid">
-            <input placeholder="EIxxxxxxxxxxxxxxxx"
+            <input type="text"
+                placeholder="EIxxxxxxxxxxxxxxxx"
                 :class="{ invalid: !checkEID(eid) }"
                 v-model="eid" ></input>
             <button

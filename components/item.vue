@@ -1,4 +1,3 @@
-<!-- TODO: handle large size image when zoomed in -->
 <template>
     <div class="item-frame" :class="getRarityClass(item)">
 
@@ -46,22 +45,10 @@ function getRarityClass(item: T.Item): string {
     width: min(4em, 12vw);
 }
 
-.item-frame.common {
-    /* background: sadness; */
-    background: radial-gradient(55% 55% at center, #555, #5550);
-}
-
-.item-frame.rare {
-    background: radial-gradient(55% 55% at center, #37b, #37b0);
-}
-
-.item-frame.epic {
-    background: radial-gradient(55% 55% at center, #b37, #b370);
-}
-
-.item-frame.legendary {
-    background: radial-gradient(55% 55% at center, #b90, #b900);
-}
+.item-frame.common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
+.item-frame.rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }
+.item-frame.epic      { background: radial-gradient(55% 55% at center, var(--epic-color     ), transparent); }
+.item-frame.legendary { background: radial-gradient(55% 55% at center, var(--legendary-color), transparent); }
 
 .item-quantity {
     position: absolute;

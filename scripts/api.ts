@@ -1,5 +1,5 @@
 import * as T from './types.ts'
-import { getKey, itemEffects } from './artifacts.ts'
+import { getKey } from './artifacts.ts'
 import { checkSID } from '/scripts/utils.ts';
 
 
