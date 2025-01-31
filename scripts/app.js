@@ -41,6 +41,7 @@ const app = createApp();
 app.component('router-view', VueRouter.RouterView);
 app.component('router-link', VueRouter.RouterLink);
 
+app.component('item-tooltip', defineAsyncComponent(() => loadModule('./components/item-tooltip.vue', options)));
 app.component('load-eid', defineAsyncComponent(() => loadModule('./components/load-eid.vue', options)));
 app.component('inventory-view', defineAsyncComponent(() => loadModule('./components/inventory.vue', options)));
 app.component('item-view', defineAsyncComponent(() => loadModule('./components/item.vue', options)));
@@ -108,6 +109,9 @@ app.config.errorHandler = (err, instance, info) => {
 };
 
 // Mount app
+const vm = app.mount('#app');
 
-app.mount('#app');
+app.provide("showItemTooltip", (item, event) => vm.$refs.itemTooltip?.show(item, event));
+app.provide("hideItemTooltip", () => vm.$refs.itemTooltip?.hide());
+
 

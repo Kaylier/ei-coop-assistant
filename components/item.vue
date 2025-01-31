@@ -1,5 +1,9 @@
 <template>
-    <div class="item-frame" :class="getRarityClass(item)">
+    <div class="item-frame" :class="getRarityClass(item)"
+       @mouseenter="showItemTooltip(item, $event)"
+       @mouseleave="hideItemTooltip()"
+       @touchstart="showItemTooltip(item, $event)"
+       @touchend="hideItemTooltip()">
 
         <img class="item-image"
             :src="getImageSource(item)"
@@ -22,8 +26,12 @@
 </template>
 
 <script setup lang="ts">
+import { inject } from 'vue';
 import * as T from '/scripts/types.ts';
 import { getImageSource, getName } from '/scripts/artifacts.ts';
+
+const showItemTooltip = inject("showItemTooltip");
+const hideItemTooltip = inject("hideItemTooltip");
 
 const props = defineProps<{
     item: T.Item
