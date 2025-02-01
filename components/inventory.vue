@@ -1,30 +1,43 @@
 <template>
-    <div class="frame" :style="frameStyles">
-        <a v-if="sandboxLink" :href="sandboxLink" class="sandbox-link" target='_blank' title="Open in sandbox">
+    <div class="frame" ref="frame"
+         :style="frameStyles"
+         tabindex="0"
+         @keydown="handleKeydown"
+         @focus="changeFocus(sandboxLink ? -1 : 0)"
+         @blur="changeFocus(null)">
+        <a v-if="sandboxLink" :href="sandboxLink" target='_blank'
+           class="sandbox-link"
+           title="Open in sandbox"
+           tabindex="-1">
             <img src="/img/icons/sandbox.png" alt="🔗"/>
         </a>
-        <div v-for="item in artifacts" class="subframe" :class="{ 'emptyframe': !isSet && !item }">
+        <div v-for="(item, index) in artifacts"
+             class="subframe" :class="{ 'emptyframe': !isSet && !item, 'focused': index === currentFocusIndex }"
+             @click="changeFocus(index)">
             <item-view v-if="item" :item="item"></item-view>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, nextTick } from 'vue';
 import { getSandboxLink } from '/scripts/api.ts';
 
 const props = defineProps<{
     artifacts: Item[],
-    isSet: bool | undefined,
-    deflectorBonus: float | undefined,
-    proPermit: bool | undefined,
+    isSet: boolean | undefined,
+    deflectorBonus: number | undefined,
+    proPermit: boolean | undefined,
     column: number | undefined,
     row: number | undefined,
 }>();
 
-const sandboxLink = ref(null);
+const sandboxLink = ref<string | null>(null);
+const previousFocusIndex = ref<number | null>(null);
+const currentFocusIndex = ref<number>(-1);
+const frame = ref<HTMLElement | null>(null);
 
-const frameStyles = computed(() => {
+const gridDimensions = computed(() => {
     let columns = props.column;
     let rows = props.row;
     if (columns === undefined && rows === undefined) {
@@ -35,17 +48,106 @@ const frameStyles = computed(() => {
     } else if (rows === undefined) {
         rows = Math.ceil(props.artifacts.length / columns);
     }
-    return {
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, 1fr)`,
-    };
+    return { columns, rows };
 });
+
+const frameStyles = computed(() => ({
+    gridTemplateColumns: `repeat(${gridDimensions.value.columns}, 1fr)`,
+    gridTemplateRows   : `repeat(${gridDimensions.value.rows   }, 1fr)`,
+}));
+
+function handleKeydown(event: KeyboardEvent) {
+    const { key } = event;
+    const { columns, rows } = gridDimensions.value;
+
+    // sandbox link is treated as index -1
+    const minIndex = sandboxLink.value ? -1 : 0;
+    const maxIndex = props.artifacts.length - 1;
+    let newIndex = currentFocusIndex.value;
+
+    switch (key) {
+        case 'ArrowRight':
+            // Move right to the first non-empty slot, with wrapping to next line
+            if (newIndex < maxIndex)
+                newIndex += 1;
+            while (!props.artifacts[newIndex] && newIndex < maxIndex) {
+                newIndex += 1;
+            }
+            break;
+        case 'ArrowLeft':
+            // Move left to the first non-empty slot, with wrapping to previous line
+            if (minIndex < newIndex)
+                newIndex -= 1;
+            while (!props.artifacts[newIndex] && minIndex < newIndex) {
+                newIndex -= 1;
+            }
+            break;
+        case 'ArrowDown':
+            // Move down, and then left to the first non-empty slot encountered 
+            newIndex += columns;
+            if (newIndex > props.artifacts.length)
+                newIndex = props.artifacts.length-1;
+            while (!props.artifacts[newIndex] && minIndex < newIndex) {
+                newIndex -= 1;
+            }
+            break;
+        case 'ArrowUp':
+            // Move up, then left to the first non-empty slot encountered
+            newIndex -= columns;
+            if (newIndex < minIndex)
+                newIndex = minIndex;
+            while (!props.artifacts[newIndex] && minIndex < newIndex) {
+                newIndex -= 1;
+            }
+            break;
+        case 'Enter':
+            if (currentFocusIndex.value == -1) {
+                frame.value.querySelector('a')?.click();
+            }
+            break;
+        default:
+            return;
+    }
+
+    if (changeFocus(newIndex))
+        event.preventDefault();
+}
+
+async function changeFocus(index: number) {
+    if (index === currentFocusIndex.value) return false;
+    previousFocusIndex.value = currentFocusIndex.value;
+    currentFocusIndex.value = index;
+
+    await nextTick();
+    if (!frame.value) return;
+
+    const subframes = frame.value.querySelectorAll('.subframe');
+    const prevIndex = previousFocusIndex.value;
+    const currIndex = currentFocusIndex.value;
+
+    if (prevIndex !== null) {
+        subframes[prevIndex]?.querySelector('.item-frame')?.dispatchEvent(new Event('blur'));
+    }
+
+    if (currIndex !== null) {
+        const currItem = subframes[currIndex]?.querySelector('.item-frame');
+        if (currItem) {
+            currItem.dispatchEvent(new Event('focus'));
+
+            subframes[currIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest'
+            });
+        }
+    }
+    return true;
+}
 
 watch(() => [props.artifacts, props.deflectorBonus], updateSandboxLink, { immediate: true });
 
 async function updateSandboxLink() {
-    if (!props.isSet)
-        return;
+    if (!props.isSet) return;
     try {
         sandboxLink.value = await getSandboxLink(props.artifacts, props.deflectorBonus, props.proPermit); 
     } catch (e) {
@@ -70,6 +172,10 @@ async function updateSandboxLink() {
     background: var(--bg-alt-color);
     border-radius: 1em;
     aspect-ratio: 1;
+}
+
+.subframe.focused {
+    outline: auto;
 }
 
 .emptyframe {

@@ -3,7 +3,9 @@
        @mouseenter="showItemTooltip(item, $event)"
        @mouseleave="hideItemTooltip()"
        @touchstart="showItemTooltip(item, $event)"
-       @touchend="hideItemTooltip()">
+       @touchend="hideItemTooltip()"
+       @focus="showItemTooltip(item, $event)"
+       @blur="hideItemTooltip()">
 
         <img class="item-image"
             :src="getImageSource(item)"
