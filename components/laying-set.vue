@@ -89,7 +89,9 @@
                     :isSet="true"
                     :deflectorBonus="entry.optiThreshold"
                     :proPermit="userData.proPermit"
-                    :column=4 :row=1></inventory-view>
+                    :column=4 :row=1
+                    :style="entry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''">
+                </inventory-view>
             </div>
         </template>
         <template v-if="entries.length">
@@ -159,6 +161,8 @@ Vue.onMounted(async () => {
                                  baseLayingRateString.value;
     baseShippingRateString.value = localStorage.getItem('base-shipping-rate') ??
                                    baseShippingRateString.value;
+    if (baseLayingRateString.value || baseShippingRateString.value)
+        extraOptions.value = true;
 });
 
 
@@ -327,6 +331,10 @@ function compute() {
         set.sort((a, b) => a.family - b.family);
         entries.value.push({
             artifactSet: set,
+            // LoE is invalid, because stones have no effect outside of enlightenment
+            // Maybe the user knows more than me
+            // Is it the secret of the soul?
+            rainbowed: set.some(artifact => artifact.family === T.ArtifactFamily.LIGHT_OF_EGGENDIL)
         });
     }
 
