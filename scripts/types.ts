@@ -42,16 +42,16 @@ export enum ArtifactFamily {
     DILITHIUM_MONOCLE,
     QUANTUM_METRONOME,
     PHOENIX_FEATHER,
-    THE_CHALICE,
+    CHALICE,
     INTERSTELLAR_COMPASS,
     CARVED_RAINSTICK,
     BEAK_OF_MIDAS,
     MERCURYS_LENS,
     NEODYMIUM_MEDALLION,
-    ORNATE_GUSSET,
+    GUSSET,
     TUNGSTEN_ANKH,
     AURELIAN_BROOCH,
-    VIAL_MARTIAN_DUST,
+    VIAL_OF_MARTIAN_DUST,
     DEMETERS_NECKLACE,
     LUNAR_TOTEM,
     PUZZLE_CUBE,
@@ -67,21 +67,21 @@ export enum Rarity {
 export type Ingredient = {
     category: ItemCategory.INGREDIENT,
     family: IngredientFamily,
-    tier: number;
+    tier: number
 };
 
 export type Stone = {
     category: ItemCategory.STONE,
     family: StoneFamily,
-    tier: number;
+    tier: number
 };
 
 export type Artifact = {
     category: ItemCategory.ARTIFACT,
     family: ArtifactFamily,
-    tier: number;
-    rarity: Rarity;
-    stones: Stone[];
+    tier: number,
+    rarity: Rarity,
+    stones: Stone[]
 };
 
 export type Item = (Artifact | Stone | Ingredient) & { quantity: number };

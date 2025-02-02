@@ -2,7 +2,7 @@
     <div class="item-frame" :class="getRarityClass(item)">
 
         <img class="item-image"
-            :src="getImgSrc(item)"
+            :src="getImageSource(item)"
             :alt="getName(item)"></img>
 
         <svg v-if="item.quantity > 1"
@@ -14,7 +14,7 @@
         <div class="stones-frame">
             <img v-for="stone in item.stones"
                 class="stone-frame"
-                :src="getImgSrc(stone)"
+                :src="getImageSource(stone)"
                 :alt="getName(stone)"></img>
         </div>
 
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import * as T from '/scripts/types.ts';
-import { getImgSrc, getName } from '/scripts/artifacts.ts';
+import { getImageSource, getName } from '/scripts/artifacts.ts';
 
 const props = defineProps<{
     item: T.Item

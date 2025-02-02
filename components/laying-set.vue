@@ -123,7 +123,7 @@
 import { ref, watch, computed } from 'vue';
 import { checkRateString, parseRateString, formatRateString, minmaxReduce, combinations, product } from '/scripts/utils.ts';
 import * as T from '/scripts/types.ts';
-import { getBonus } from '/scripts/artifacts.ts';
+import { getEffects } from '/scripts/artifacts.ts';
 
 
 // Template variables declarations and default values
@@ -227,7 +227,12 @@ function getGroupedArtifacts(artifacts) {
             continue;
         const family = item.family;
 
-        const { habCapacityBonus , layingBonus , shippingBonus, deflectorBonus } = getBonus(item);
+        const {
+            hab_capacity_bonus: habCapacityBonus,
+            laying_bonus: layingBonus,
+            shipping_bonus: shippingBonus,
+            team_laying_bonus: deflectorBonus
+        } = getEffects(item);
         item.layingBonus = (layingBonus ?? 1)*(habCapacityBonus ?? 1);
         item.shippingBonus = (shippingBonus ?? 1);
         item.deflectorBonus = (deflectorBonus ?? 0);

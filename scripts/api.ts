@@ -1,5 +1,5 @@
 import * as T from './types.ts'
-import { getKey } from './artifacts.ts'
+import { getSortId } from './artifacts.ts'
 import { checkSID } from '/scripts/utils.ts';
 
 
@@ -104,8 +104,8 @@ function getItemFromSpec(spec, proto): T.Item {
         [eiName.values.LIGHT_OF_EGGENDIL]: T.ArtifactFamily.LIGHT_OF_EGGENDIL,
         [eiName.values.DEMETERS_NECKLACE]: T.ArtifactFamily.DEMETERS_NECKLACE,
         [eiName.values.VIAL_MARTIAN_DUST]: T.ArtifactFamily.VIAL_MARTIAN_DUST,
-        [eiName.values.ORNATE_GUSSET]: T.ArtifactFamily.ORNATE_GUSSET,
-        [eiName.values.THE_CHALICE]: T.ArtifactFamily.THE_CHALICE,
+        [eiName.values.ORNATE_GUSSET]: T.ArtifactFamily.GUSSET,
+        [eiName.values.THE_CHALICE]: T.ArtifactFamily.CHALICE,
         [eiName.values.BOOK_OF_BASAN]: T.ArtifactFamily.BOOK_OF_BASAN,
         [eiName.values.PHOENIX_FEATHER]: T.ArtifactFamily.PHOENIX_FEATHER,
         [eiName.values.TUNGSTEN_ANKH]: T.ArtifactFamily.TUNGSTEN_ANKH,
@@ -384,8 +384,8 @@ function getInventory(proto, backup, orderedStones) {
         item.id = eiItem.itemId;
 
         let key;
-        if (orderedStones) key = [getKey(item), ...stones.map(getKey)].join('/');
-        else key = [getKey(item), ...stones.map(getKey).sort()].join('/');
+        if (orderedStones) key = [getSortId(item), ...stones.map(getSortId)].join('/');
+        else key = [getSortId(item), ...stones.map(getSortId).sort()].join('/');
 
         if (items.has(key)) {
             items.get(key).quantity += item.quantity;
@@ -490,16 +490,16 @@ export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: numb
         [T.ArtifactFamily.DILITHIUM_MONOCLE]: protoArtifactName.values.DILITHIUM_MONOCLE,
         [T.ArtifactFamily.QUANTUM_METRONOME]: protoArtifactName.values.QUANTUM_METRONOME,
         [T.ArtifactFamily.PHOENIX_FEATHER]: protoArtifactName.values.PHOENIX_FEATHER,
-        [T.ArtifactFamily.THE_CHALICE]: protoArtifactName.values.THE_CHALICE,
+        [T.ArtifactFamily.CHALICE]: protoArtifactName.values.THE_CHALICE,
         [T.ArtifactFamily.INTERSTELLAR_COMPASS]: protoArtifactName.values.INTERSTELLAR_COMPASS,
         [T.ArtifactFamily.CARVED_RAINSTICK]: protoArtifactName.values.CARVED_RAINSTICK,
         [T.ArtifactFamily.BEAK_OF_MIDAS]: protoArtifactName.values.BEAK_OF_MIDAS,
         [T.ArtifactFamily.MERCURYS_LENS]: protoArtifactName.values.MERCURYS_LENS,
         [T.ArtifactFamily.NEODYMIUM_MEDALLION]: protoArtifactName.values.NEODYMIUM_MEDALLION,
-        [T.ArtifactFamily.ORNATE_GUSSET]: protoArtifactName.values.ORNATE_GUSSET,
+        [T.ArtifactFamily.GUSSET]: protoArtifactName.values.ORNATE_GUSSET,
         [T.ArtifactFamily.TUNGSTEN_ANKH]: protoArtifactName.values.TUNGSTEN_ANKH,
         [T.ArtifactFamily.AURELIAN_BROOCH]: protoArtifactName.values.AURELIAN_BROOCH,
-        [T.ArtifactFamily.VIAL_MARTIAN_DUST]: protoArtifactName.values.VIAL_MARTIAN_DUST,
+        [T.ArtifactFamily.VIAL_OF_MARTIAN_DUST]: protoArtifactName.values.VIAL_OF_MARTIAN_DUST,
         [T.ArtifactFamily.DEMETERS_NECKLACE]: protoArtifactName.values.DEMETERS_NECKLACE,
         [T.ArtifactFamily.LUNAR_TOTEM]: protoArtifactName.values.LUNAR_TOTEM,
         [T.ArtifactFamily.PUZZLE_CUBE]: protoArtifactName.values.PUZZLE_CUBE,
