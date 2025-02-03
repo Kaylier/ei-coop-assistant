@@ -1,5 +1,5 @@
 import * as T from './types.ts'
-import { getSortId } from './artifacts.ts'
+import { getSortId, getSlotCount } from './artifacts.ts'
 import { checkSID } from '/scripts/utils.ts';
 
 
@@ -103,7 +103,7 @@ function getItemFromSpec(spec, proto): T.Item {
         [eiName.values.BEAK_OF_MIDAS]: T.ArtifactFamily.BEAK_OF_MIDAS,
         [eiName.values.LIGHT_OF_EGGENDIL]: T.ArtifactFamily.LIGHT_OF_EGGENDIL,
         [eiName.values.DEMETERS_NECKLACE]: T.ArtifactFamily.DEMETERS_NECKLACE,
-        [eiName.values.VIAL_MARTIAN_DUST]: T.ArtifactFamily.VIAL_MARTIAN_DUST,
+        [eiName.values.VIAL_MARTIAN_DUST]: T.ArtifactFamily.VIAL_OF_MARTIAN_DUST,
         [eiName.values.ORNATE_GUSSET]: T.ArtifactFamily.GUSSET,
         [eiName.values.THE_CHALICE]: T.ArtifactFamily.CHALICE,
         [eiName.values.BOOK_OF_BASAN]: T.ArtifactFamily.BOOK_OF_BASAN,
@@ -252,6 +252,7 @@ async function queryBackup(eid: string, proto) {
     const base64Data = btoa(String.fromCharCode(...buffer));
 
     const response = await fetch(ENDPOINT+"/ei/bot_first_contact", {
+        signal: AbortSignal.timeout(10000),
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -279,7 +280,7 @@ async function queryBackup(eid: string, proto) {
  */
 async function getSpecialBackup(sid: string) {
     const filePath = `/examples/${sid}.json`;
-    const response = await fetch(filePath);
+    const response = await fetch(filePath, { signal: AbortSignal.timeout(10000) });
 
     if (!response.ok) {
         throw new Error(`Failed to load file: ${filePath}, Status: ${response.status}`);
@@ -332,15 +333,13 @@ export async function getUserData(eid: string, orderedStones: boolean = false) {
 
     /*
      * Base egg shipping rate is calculated from:
-     *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17
+     *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17 egg/min
      *  - Common researches: x5606.3232421875
      *  - Epic research: x2.5 (read from backup data)
      *  - Colleggtibles
      */
     let baseShippingRate = 79422912597.65625; // in egg/second
-    if (backup.game?.hyperloopStation) {
-        baseShippingRate *= 10;
-    }
+    baseShippingRate *= backup.game?.hyperloopStation ? 10 : 1;
     baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
     baseShippingRate *= colleggtibleBuffs.get(protoBuffDimention.values.SHIPPING_CAPACITY) ?? 1;
 
@@ -361,6 +360,10 @@ function getInventory(proto, backup, orderedStones) {
 
     for (const eiItem of backup.artifactsDb.inventoryItems) {
 
+        let item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
+        item.quantity = eiItem.quantity;
+        item.id = eiItem.itemId;
+
         let stones: T.Stone[] = []
         for (const eiStone of eiItem.artifact.stones) {
             const { category, family, tier } = getItemFromSpec(eiStone, proto);
@@ -378,10 +381,12 @@ function getInventory(proto, backup, orderedStones) {
             stones.push(stone);
         }
 
-        let item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
+        const maxStoneCount = getSlotCount(item);
+        while (stones.length < maxStoneCount) {
+            stones.push(null);
+        }
+
         item.stones = stones;
-        item.quantity = eiItem.quantity;
-        item.id = eiItem.itemId;
 
         let key;
         if (orderedStones) key = [getSortId(item), ...stones.map(getSortId)].join('/');
@@ -399,11 +404,11 @@ function getInventory(proto, backup, orderedStones) {
     for (const eiSet of backup.artifactsDb.savedArtifactSets) {
         let set = [];
         for (const eiSlot of eiSet.slots) {
-            //set.push(itemIdMap[eiSlot.itemId]);
-            if (eiSlot.occupied)
+            if (eiSlot.occupied) {
                 set.push(itemIdMap[eiSlot.itemId].id);
-            else
+            } else {
                 set.push(null);
+            }
         }
         while (set.length < 4)
             set.push(null);
@@ -499,7 +504,7 @@ export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: numb
         [T.ArtifactFamily.GUSSET]: protoArtifactName.values.ORNATE_GUSSET,
         [T.ArtifactFamily.TUNGSTEN_ANKH]: protoArtifactName.values.TUNGSTEN_ANKH,
         [T.ArtifactFamily.AURELIAN_BROOCH]: protoArtifactName.values.AURELIAN_BROOCH,
-        [T.ArtifactFamily.VIAL_OF_MARTIAN_DUST]: protoArtifactName.values.VIAL_OF_MARTIAN_DUST,
+        [T.ArtifactFamily.VIAL_OF_MARTIAN_DUST]: protoArtifactName.values.VIAL_MARTIAN_DUST,
         [T.ArtifactFamily.DEMETERS_NECKLACE]: protoArtifactName.values.DEMETERS_NECKLACE,
         [T.ArtifactFamily.LUNAR_TOTEM]: protoArtifactName.values.LUNAR_TOTEM,
         [T.ArtifactFamily.PUZZLE_CUBE]: protoArtifactName.values.PUZZLE_CUBE,

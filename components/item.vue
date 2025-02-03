@@ -18,7 +18,7 @@
             ><text x="100%" y="100%" text-anchor="end"> {{ item.quantity.toLocaleString() }} </text></svg>
 
         <div class="stones-frame">
-            <img v-for="stone in item.stones"
+            <img v-for="stone in item.stones.filter(s => s !== null)"
                 class="stone-frame"
                 :src="getImageSource(stone)"
                 :alt="getName(stone)"></img>

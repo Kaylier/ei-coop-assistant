@@ -1615,7 +1615,8 @@ const effectMetadata = {
 /**
  * Return a unique string that can be used to sort items
  */
-export function getSortId(item: T.Item): string {
+export function getSortId(item: T.Item | null): string {
+    if (!item) return null;
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     return item.category == T.ItemCategory.ARTIFACT ? itemData?.rarities?.[item.rarity]?.id : itemData?.id;
 }
@@ -1623,7 +1624,8 @@ export function getSortId(item: T.Item): string {
 /**
  * Returns a readable name for an item
  */
-export function getName(item: T.Item): string {
+export function getName(item: T.Item | null): string {
+    if (!item) return "";
     const itemFamilyData = artifactMetadata[item.category]?.[item.family];
     const itemData = itemFamilyData?.tiers?.[item.tier-1];
     return itemData?.name ?? itemFamilyData?.family_name ?? "Unknown Item";
@@ -1632,7 +1634,8 @@ export function getName(item: T.Item): string {
 /**
  * Returns a list of descriptions for an item effects
  */
-export function getDescriptions(item: T.Item): string[] {
+export function getDescriptions(item: T.Item | null): string[] {
+    if (!item) return [];
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
     const ret = []
@@ -1646,7 +1649,8 @@ export function getDescriptions(item: T.Item): string[] {
 /**
  * Returns the file name of the item image
  */
-export function getImageSource(item: T.Item): string {
+export function getImageSource(item: T.Item | null): string {
+    if (!item) return "/img/icons/stone-slot.png";
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     const filename = itemData?.image;
     return filename ? `/img/items/${filename}.png` : "/img/not-found.png";
@@ -1656,7 +1660,7 @@ export function getImageSource(item: T.Item): string {
  * Returns the amount of stone slots of an artifact
  */
 export function getSlotCount(artifact: T.Artifact): number {
-    const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
+    const itemData = artifactMetadata[artifact.category]?.[artifact.family]?.tiers?.[artifact.tier-1];
     return itemData?.rarities?.[artifact.rarity]?.slot_count;
 }
 
@@ -1665,46 +1669,33 @@ export function getSlotCount(artifact: T.Artifact): number {
  * If the item contains stones, compound their effects.
  * If a certain bonus does not appear, the caller must handle the default value.
  */
-export function getEffects(item: T.Item) {
+export function getEffects(item: T.Item | null) {
+    if (!item) return {};
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
+    const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
+    if (!effects) return {};
+
     const ret = {};
 
-    const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
-    if (effects === undefined) return ret;
-
-    for (const effect of effects) {
-        const target = effect.target;
-        switch (effectMetadata[target]?.type ?? EffectType.UNKNOWN) {
+    function applyEffect(target: string, value: number) {
+        const type = effectMetadata[target]?.["type"] ?? EffectType.UNKNOWN;
+        switch (type) {
             case EffectType.ADDITIVE:
-                ret[target] = (ret[target] ?? 0) + effect.value;
+                ret[target] = (ret[target] ?? 0) + value;
                 break;
             case EffectType.MULTIPLICATIVE:
-                ret[target] = (ret[target] ?? 1) * effect.value;
+                ret[target] = (ret[target] ?? 1) * value;
                 break;
             case EffectType.UNKNOWN:
-                console.log("Unknown effect type, ignoring: ", effect);
+                console.log(`Unknown effect type '${type}' for ${target}, ignoring`);
                 break;
         }
-    }
+    };
 
-    if (item.stones) {
-        for (const stone of item.stones) {
-            const stoneEffects = getEffects(stone);
-            for (const target in stoneEffects) {
-                switch (effectMetadata[target]?.type ?? EffectType.UNKNOWN) {
-                    case EffectType.ADDITIVE:
-                        ret[target] = (ret[target] ?? 0) + stoneEffects[target];
-                        break;
-                    case EffectType.MULTIPLICATIVE:
-                        ret[target] = (ret[target] ?? 1) * stoneEffects[target];
-                        break;
-                    case EffectType.UNKNOWN:
-                        console.log("Unknown effect type, ignoring: ", target);
-                    break;
-                }
-            }
-        }
-    }
+    effects.forEach(({target, value}) => applyEffect(target, value));
+
+    item.stones?.flatMap(stone => Object.entries(getEffects(stone)))
+                .forEach(([target, value]) => applyEffect(target, value));
 
     return ret;
 }

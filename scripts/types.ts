@@ -81,7 +81,7 @@ export type Artifact = {
     family: ArtifactFamily,
     tier: number,
     rarity: Rarity,
-    stones: Stone[]
+    stones: (Stone | null)[]
 };
 
 export type Item = (Artifact | Stone | Ingredient) & { quantity: number };

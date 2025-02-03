@@ -66,7 +66,7 @@ function updateView() {
                                                          || a.family - b.family
                                                          || b.tier - a.tier
                                                          || b.rarity - a.rarity
-                                                         || b.stones.length - a.stones.length
+                                                         || b.stones.filter(s => s !== null).length - a.stones.filter(s => s !== null).length
                                                          || a.id - b.id);
 
     let itemIdMap = {null: null};
