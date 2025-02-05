@@ -15,17 +15,16 @@ If you want to host it locally, you'll need python 3 and the [requests library](
 ## Tools
 ### Hall of Artifacts
 Visualize your current inventory and saved artifact sets.
+Details on bonuses and stone slots are shown on mouse hover or keyboard focus.
 
 ### Laying sets
-Find artifact sets that maximize your contribution for a received deflector bonus, assuming all habitats are filled.
-- Artifacts are read from the player inventory, and no reslotting is performed.
-- Bonuses given to other coop members are not considered. However, you can force the presence of a deflector.
+This tool analyzes a player’s inventory (via their EID) to determine optimal artifact sets and the tipping points between them, balancing egg laying and shipping rates based on deflector bonuses.
 
-Epic researches, hyperloop and colleggtibles are read from user EID to calculate base laying and shipping rates.
-If you wish to explore different scenario, you can customize them. Otherwise just leave the fields empty.
-These are the maximum rates achievable without any artifacts (not even a Gusset).
+It offers three modes: No Forced Deflector (maximizes personal rate without locking a deflector), Forced Deflector for Personal Contribution (includes the deflector that maximizes personal rate), and Forced Deflector for Teamwork (locks in the highest deflector).
 
-If you don't have a pro permit, the amount of artifact is limited to 2. There are no way to override this setting easily.
+The tool assumes all common research, vehicles, habs, and silos are purchased, habs are filled, and artifacts won’t be reslotted.
+Epic research, Hyperloop, and Colleggtibles are read from the user’s EID to calculate base rates (with no artifacts equipped, not even a Gusset).
+These rates can be customized in the settings if needed.
 
 ## Dependencies
 This website is purely static and requires no build process.
