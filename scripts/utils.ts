@@ -8,26 +8,25 @@ const units: string[] = [
 ];
 
 
-export function checkEID(eid) {
+export function checkEID(eid: string): boolean {
     return /^\s*EI\d{16}\s*$/.test(eid) || checkSID(eid);
 }
 
-export function checkSID(eid) {
+export function checkSID(eid: string): boolean {
     return /^\s*SI\d+\s*$/.test(eid);
 }
 
 
-// Regex to match multiple of rate formats: 1b/h, 1 234.456e-5T/min, 0tT/s...
-const regexRate = /^\s*(?<num>[\d, ']*(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*(?<unit>[a-zA-Z]*)\/(?<time>h|min|m|s)\s*$/;
-
-export function checkRateString(s: string, allowEmpty: boolean = true): boolean {
-    return (allowEmpty && s === "") || regexRate.test(s);
-}
-
 /**
  * Parse a string of the form 1.234q/h and return a rate per seconds as a number
+ * If an empty string is given, returns undefined
  */
-export function parseRateString(s: string): number {
+export function parseRateString(s: string): number | undefined {
+    if (s === "")
+        return undefined;
+
+    // Regex to match multiple of rate formats: 1b/h, 1 234.456e-5T/min, 0tT/s...
+    const regexRate = /^\s*(?<num>[\d, ']*(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*(?<unit>[a-zA-Z]*)\/(?<time>h|min|m|s)\s*$/;
     const match = regexRate.exec(s);
 
     if (!match)
@@ -82,6 +81,18 @@ export function formatRateString(r: number, timeUnit: string = 'h'): string {
     }
 
     return r.toLocaleString() + unit + prefix;
+}
+
+
+/**
+ * Round float calculations in a controlled manner
+ * If two sets have the same bonuses but compounded in a different order, it can result in a slightly different
+ * final bonus. One set will then be prioritary over the other, ignoring a preference order that should apply for
+ * equal bonuses
+ * To mitigate that, I round to 9 digits
+ */
+export function round(x, precision = 1e9) {
+    return Math.round(x*precision)/precision;
 }
 
 

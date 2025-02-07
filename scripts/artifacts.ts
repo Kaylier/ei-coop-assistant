@@ -1,4 +1,4 @@
-import * as T from "./types.ts"
+import * as T from "./types.ts";
 
 
 const artifactMetadata = {
@@ -1666,10 +1666,10 @@ export function getSlotCount(artifact: T.Artifact): number {
 
 /**
  * Returns a map of effects for an item
- * If the item contains stones, compound their effects.
+ * If the item contains stones, compound their effects, unless recursive is set to false.
  * If a certain bonus does not appear, the caller must handle the default value.
  */
-export function getEffects(item: T.Item | null) {
+export function getEffects(item: T.Item | null, recursive: boolean = true) {
     if (!item) return {};
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
@@ -1694,10 +1694,21 @@ export function getEffects(item: T.Item | null) {
 
     effects.forEach(({target, value}) => applyEffect(target, value));
 
-    item.stones?.flatMap(stone => Object.entries(getEffects(stone)))
-                .forEach(([target, value]) => applyEffect(target, value));
+    if (recursive) {
+        item.stones?.flatMap(stone => Object.entries(getEffects(stone)))
+                    .forEach(([target, value]) => applyEffect(target, value));
+    }
 
     return ret;
 }
 
+/*
+ * Create a deep copy of an item
+ */
+export function copyItem(item: T.Item): T.Item {
+    return {
+        ...item,
+        stones: item.stones?.map(stone => stone ? { ...stone } : null)
+    };
+}
 
