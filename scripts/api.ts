@@ -1,3 +1,7 @@
+/*
+ * This file handle everything related to external API
+ * This concerns Auxbrain API and carpet wasmegg tool suite
+ */
 import * as T from './types.ts'
 import { getSortId, getSlotCount } from './artifacts.ts'
 import { checkSID } from '/scripts/utils.ts';

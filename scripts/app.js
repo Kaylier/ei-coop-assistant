@@ -1,5 +1,3 @@
-//window.onerror = function(message, source, lineno, colno, error) { alert(message); };
-
 const { loadModule } = window['vue3-sfc-loader'];
 
 const options = {

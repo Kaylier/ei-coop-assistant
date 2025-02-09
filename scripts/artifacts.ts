@@ -1,3 +1,9 @@
+/*
+ * This file contains helpers for getting information related to items,
+ * such as image, effects, readable name...
+ *
+ * Credit to Forzpace for populating artifactMetadata
+ */
 import * as T from "./types.ts"
 
 

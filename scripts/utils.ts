@@ -1,3 +1,6 @@
+/*
+ * This file contains various generic functions
+ */
 
 const units: string[] = [
     '',

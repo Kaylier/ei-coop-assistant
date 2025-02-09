@@ -1,3 +1,6 @@
+/*
+ * This file defines types and enums used in items, artifacts, stones and ingredients
+ */
 
 export enum ItemCategory {
     ARTIFACT,
