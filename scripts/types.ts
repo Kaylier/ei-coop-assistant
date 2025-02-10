@@ -86,3 +86,12 @@ export type Artifact = {
 
 export type Item = (Artifact | Stone | Ingredient) & { quantity: number };
 
+
+
+
+export enum DeflectorMode {
+    NONE = "none",
+    CONTRIBUTION = "contribution",
+    TEAMWORK = "teamwork"
+};
+

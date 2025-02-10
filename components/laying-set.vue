@@ -2,17 +2,42 @@
     <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
     <section class="settings">
         <label>
-            <input type="checkbox" id="allow-reslotting" v-model="allowReslotting" />
-            Allow reslotting
+            <label tabindex="0" class="tooltip-icon">
+                ⓘ
+                <span class="tooltip-text">
+                    Allow reslotting stones in artifacts.<br/>
+                    Stone-holder artifacts are interchangeable and<br/>
+                    stones may be arbitrarily rearranged.
+                </span>
+            </label>
+            Reslotting
+            <div class="switch">
+                <label><input type="radio" name="reslotting" :value="false" v-model="allowReslotting" />
+                    no
+                </label>
+                <label><input type="radio" name="reslotting" :value="true" v-model="allowReslotting" />
+                    yes
+                </label>
+            </div>
         </label>
         <label>
-            <input type="checkbox" id="include-deflector" v-model="includeDeflector" />
-            Include best deflector for
-            <div class="switch" :class="{ disabled: !includeDeflector }">
-                <label><input type="radio" name="deflector-mode" value="contribution" v-model="deflectorMode" />
+            <label tabindex="0" class="tooltip-icon">
+                ⓘ
+                <span class="tooltip-text">
+                    none: do not force a deflector<br/>
+                    contribution: includes the deflector that maximizes user contribution<br/>
+                    teamwork: includes the deflector that maximizes teamwork
+                </span>
+            </label>
+            Deflector
+            <div class="switch">
+                <label><input type="radio" name="deflector-mode" :value="T.DeflectorMode.NONE" v-model="deflectorMode" />
+                    none
+                </label>
+                <label><input type="radio" name="deflector-mode" :value="T.DeflectorMode.CONTRIBUTION" v-model="deflectorMode" />
                     contribution
                 </label>
-                <label><input type="radio" name="deflector-mode" value="teamwork" v-model="deflectorMode" />
+                <label><input type="radio" name="deflector-mode" :value="T.DeflectorMode.TEAMWORK" v-model="deflectorMode" />
                     teamwork
                 </label>
             </div>
@@ -125,6 +150,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import * as T from '/scripts/types.ts';
 import { parseRateString, formatRateString } from '/scripts/utils.ts';
 import { computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '/scripts/laying-set.ts';
 
@@ -137,8 +163,7 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 // Settings variables
 const allowReslotting = ref<boolean>(false);
-const includeDeflector = ref<boolean>(true);
-const deflectorMode = ref<"contribution"|"teamwork">("contribution");
+const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
 const baseLayingRateString = ref("");
 const baseShippingRateString = ref("");
 
@@ -161,7 +186,6 @@ const entries = ref([]); // List of solutions (sets along additional info), popu
 Vue.onMounted(async () => {
     const localStorageSettings = [
         { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
-        { key: 'include-deflector' , ref: includeDeflector, parser: JSON.parse },
         { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
         { key: 'base-laying-rate'  , ref: baseLayingRateString   },
         { key: 'base-shipping-rate', ref: baseShippingRateString },
@@ -186,7 +210,6 @@ Vue.onMounted(async () => {
 
 // Watchers for synchronisation between setting variables, local storage and state variables
 watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
-watch(includeDeflector, () => localStorage.setItem('include-deflector', JSON.stringify(includeDeflector.value)));
 watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.stringify(deflectorMode.value)));
 watch(baseLayingRateString, () => updateBaseLayingRate(baseLayingRateString.value));
 watch(baseShippingRateString, () => updateBaseShippingRate(baseShippingRateString.value));
@@ -232,7 +255,6 @@ function updateBaseShippingRate(valueString, resetOnError = false) {
 // Watchers for triggering recomputations
 watch(userData, updateEntries);
 watch(allowReslotting, updateEntries);
-watch(includeDeflector, updateEntries);
 watch(deflectorMode, updateEntries);
 
 watch(entries, updateThresholds);
@@ -249,8 +271,8 @@ function updateEntries() {
 
     const maxSlot = userData.value?.proPermit ? 4 : 2;
     const sets = allowReslotting.value ?
-                 computeOptimalSetsWithReslotting(userData.value?.items ?? [], includeDeflector.value, deflectorMode.value, maxSlot) :
-                 computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], includeDeflector.value, deflectorMode.value, maxSlot);
+                 computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot) :
+                 computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot);
 
     // A set is optimal when the deflector bonus received is shippingBonus/layingBonusEq
     // Sort them by optimal received deflector bonus

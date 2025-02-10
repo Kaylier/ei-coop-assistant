@@ -115,12 +115,11 @@ function* getArtifactSets(artifacts: Map<T.ArtifactFamily, T.Artifact[]>,
  * Find the minimum deflector bonus allowed according to current settings
  */
 function getMinDeflectorBonus(artifacts: Map<T.ArtifactFamily, T.Artifact[]>,
-                              includeDeflector: boolean,
-                              deflectorMode: 'contribution' | 'teamwork'
+                              deflectorMode: T.DeflectorMode,
                              ): number {
     // If no deflector is forced, no minimum
     // For contribution mode, only the presence of a deflector is forced, without minimum
-    if (!includeDeflector || deflectorMode !== "teamwork") {
+    if (deflectorMode !== T.DeflectorMode.TEAMWORK) {
         return 0;
     }
     // For teamwork mode, take the highest deflector available
@@ -133,12 +132,11 @@ function getMinDeflectorBonus(artifacts: Map<T.ArtifactFamily, T.Artifact[]>,
 
 
 export function computeOptimalSetsWithoutReslotting(items: T.Item[],
-                                                    includeDeflector: boolean,
-                                                    deflectorMode: 'contribution' | 'teamwork',
+                                                    deflectorMode: T.DeflectorMode,
                                                     maxSlot: number
                                                    ): T.Artifact[][] {
     const artifacts: Map<T.ArtifactFamily, T.Artifact[]> = getPreprocessedArtifacts(items);
-    const minDeflectorBonus: number = getMinDeflectorBonus(artifacts, includeDeflector, deflectorMode);
+    const minDeflectorBonus: number = getMinDeflectorBonus(artifacts, deflectorMode);
 
     // Filter out artifacts without relevant bonuses, and sort the remaining ones in prefered order
     for (const family of artifacts.keys()) {
@@ -154,7 +152,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
     // Remove suboptimal artifacts (outperformed by an other on both laying and shipping bonuses)
     for (const family of artifacts.keys()) {
-        if (includeDeflector && family === T.ArtifactFamily.TACHYON_DEFLECTOR) {
+        if (deflectorMode !== T.DeflectorMode.NONE && family === T.ArtifactFamily.TACHYON_DEFLECTOR) {
             // Prevents removing deflectors, they may be suboptimal in regard to laying/shipping,
             // but still have a better bonus
             continue;
@@ -164,7 +162,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
     // Get all candidate artifact sets
     let sets: T.Artifact[][] = [];
-    for (const set of getArtifactSets(artifacts, Array.from(artifacts.keys()), maxSlot, includeDeflector)) {
+    for (const set of getArtifactSets(artifacts, Array.from(artifacts.keys()), maxSlot, deflectorMode !== T.DeflectorMode.NONE)) {
         const [layingBonusEq, shippingBonus, deflectorBonus] = set.reduce(
             ([layingTot, shippingTot, deflectorTot], item) => [
                 layingTot*item.layingBonusEq,
@@ -190,19 +188,18 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
 
 export function computeOptimalSetsWithReslotting(items: T.Item[],
-                                                 includeDeflector: boolean,
-                                                 deflectorMode: 'contribution' | 'teamwork',
+                                                 deflectorMode: T.DeflectorMode,
                                                  maxSlot: number
                                                 ): T.Artifact[][] {
     const artifacts: Map<T.ArtifactFamily, T.Artifact[]> = getPreprocessedArtifacts(items, false);
-    const minDeflectorBonus: number = getMinDeflectorBonus(artifacts, includeDeflector, deflectorMode);
+    const minDeflectorBonus: number = getMinDeflectorBonus(artifacts, deflectorMode);
 
     const contractFamiliesConfig = [
         { family: T.ArtifactFamily.QUANTUM_METRONOME   , bonusProp: 'layingBonusEq' },
         { family: T.ArtifactFamily.INTERSTELLAR_COMPASS, bonusProp: 'shippingBonus' },
         { family: T.ArtifactFamily.GUSSET              , bonusProp: 'layingBonusEq' },
     ];
-    if (includeDeflector) {
+    if (deflectorMode !== T.DeflectorMode.NONE) {
         contractFamiliesConfig.push({ family: T.ArtifactFamily.TACHYON_DEFLECTOR, bonusProp: 'deflectorBonus' });
     }
     const contractFamilies = contractFamiliesConfig.map(({ family }) => family);
@@ -256,7 +253,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 
     // Generate candidate sets
     let sets: T.Artifact[][] = [];
-    for (const set of getArtifactSets(artifacts, contractFamilies, maxSlot, includeDeflector)) {
+    for (const set of getArtifactSets(artifacts, contractFamilies, maxSlot, deflectorMode !== T.DeflectorMode.NONE)) {
         // Complete the set with stone holders
         set.push(...stoneHolders.slice(0, maxSlot - set.length));
 
