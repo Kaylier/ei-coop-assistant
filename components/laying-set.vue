@@ -270,9 +270,17 @@ function updateEntries() {
     if (!userData.value) return [];
 
     const maxSlot = userData.value?.proPermit ? 4 : 2;
-    const sets = allowReslotting.value ?
-                 computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot) :
-                 computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot);
+    let sets;
+    try {
+        errorMessage.value = "";
+        sets = allowReslotting.value ?
+               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot) :
+               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot);
+    } catch (e) {
+        errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+e.message;
+        entries.value = [];
+        return;
+    }
 
     // A set is optimal when the deflector bonus received is shippingBonus/layingBonusEq
     // Sort them by optimal received deflector bonus
@@ -280,8 +288,9 @@ function updateEntries() {
 
     // Update the artifacts shown on the view
     entries.value = [];
-    for (const set of sets) {
-        if (set.length === 0) continue;
+    for (const equivalentSets of sets) {
+        const set = equivalentSets[0];
+        if (!set || set.length === 0) continue;
 
         set.sort((a, b) => a.family - b.family);
 

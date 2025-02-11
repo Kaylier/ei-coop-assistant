@@ -104,10 +104,11 @@ export function round(x, precision = 1e9) {
  * @param list The array of objects to be sorted and filtered.
  * @param key0 The first key to sort by.
  * @param key1 The second key to sort by.
- * @param strict If false, return intermediate elements as well (equal to a minmaxed on key0 or key1)
+ * @param group If true, the returned list contains lists of all elements equal on both keys,
+ *              instead of only the first one found
  * @returns A sublist of objects containing only minmaxed elements.
  */
-export function minmaxReduce(list: any[], key0: string, key1: string, strict: boolean = true) {
+export function minmaxReduce(list: any[], key0: string, key1: string, group: boolean = true) {
     // Create a map to store each element's original index
     const indexMap = new Map(list.map((element, index) => [element, index]));
 
@@ -115,20 +116,24 @@ export function minmaxReduce(list: any[], key0: string, key1: string, strict: bo
     // Secondary sorting by key1 in increasing for non-strict mode, decreasing order for strict mode
     // Tertiary sorting by original index to keep the sort stable
     list.sort((a, b) => b[key0] - a[key0] ||
-                        (strict ? b[key1] - a[key1] : a[key1] - b[key1]) ||
+                        b[key1] - a[key1] ||
                         (indexMap.get(a) - indexMap.get(b)));
 
     const result: any[] = [];
     let bestKey1 = -Infinity;
+    let prevKey0 = -Infinity;
 
     for (const element of list) {
-        if (element[key1] > bestKey1 || (!strict && element[key1] === bestKey1)) {
-            result.push(element);
+        if (group && element[key0] === prevKey0 && element[key1] === bestKey1) {
+            result.at(-1).push(element);
+        } else if (element[key1] > bestKey1) {
+            result.push([element]);
+            prevKey0 = element[key0];
             bestKey1 = element[key1];
         }
     }
 
-    return result;
+    return group ? result : result.map(x => x[0]);
 }
 
 

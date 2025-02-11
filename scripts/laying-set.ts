@@ -157,7 +157,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
             // but still have a better bonus
             continue;
         }
-        artifacts.set(family, minmaxReduce(artifacts.get(family), 'layingBonusEq', 'shippingBonus', true));
+        artifacts.set(family, minmaxReduce(artifacts.get(family), 'layingBonusEq', 'shippingBonus', false));
     }
 
     // Get all candidate artifact sets
@@ -181,7 +181,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
     // Get optimal sets
     sets.sort((a, b) => b.deflectorBonus - a.deflectorBonus);
-    sets = minmaxReduce(sets, 'layingBonusEq', 'shippingBonus', true);
+    sets = minmaxReduce(sets, 'layingBonusEq', 'shippingBonus');
 
     return sets;
 }
@@ -206,10 +206,19 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 
     // Filter out irrelevant artifacts in the contract families
     contractFamiliesConfig.forEach(({ family, bonusProp }) => {
-        const prunedArtifacts = minmaxReduce(artifacts.get(family) ?? [], bonusProp, 'stoneSlotAmount', true);
+        const prunedArtifacts = minmaxReduce(artifacts.get(family) ?? [], bonusProp, 'stoneSlotAmount').flatMap(x => x);
         artifacts.set(family, prunedArtifacts);
     });
 
+    const compareStoneHolder = (a, b) => {
+        const res = b.stoneSlotAmount - a.stoneSlotAmount;
+        if (res) return res;
+
+        const stoneFamilies = [T.StoneFamily.TACHYON_STONE, T.StoneFamily.QUANTUM_STONE];
+        const stoneCountA = a.stones.reduce((tot, cur) => tot + (stoneFamilies.includes(cur?.family) ? 1 : 0), 0);
+        const stoneCountB = b.stones.reduce((tot, cur) => tot + (stoneFamilies.includes(cur?.family) ? 1 : 0), 0);
+        return stoneCountB - stoneCountA;
+    };
     // Find the best stone holders from each non-contract families
     const stoneHolders: T.Artifact[] = [];
     for (const [family, familyArtifacts] of artifacts.entries()) {
@@ -221,7 +230,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         }
 
         const bestArtifact = familyArtifacts.reduce(
-            (best, cur) => cur.stoneSlotAmount > best.stoneSlotAmount ? cur : best,
+            (best, cur) => compareStoneHolder(best, cur)! > 0 ? cur : best,
             familyArtifacts[0]);
 
         if (bestArtifact.stoneSlotAmount > 0) {
@@ -229,7 +238,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         }
     }
     // Only keep the 4 best, we don't need more
-    stoneHolders.sort((a,b) => b.stoneSlotAmount - a.stoneSlotAmount).splice(4, stoneHolders.length);
+    stoneHolders.sort(compareStoneHolder).splice(4, stoneHolders.length);
 
     // Find tachyon and quantum stones, and create a queues of priority
     const tachyonQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.TACHYON_STONE);
@@ -286,29 +295,80 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
             }
         }
     }
-    console.log(sets.length, "candidate sets found");
+    console.log(sets.length, "candidate equivalent sets found");
 
     // Get optimal sets
     sets.sort((a, b) => b.deflectorBonus - a.deflectorBonus);
-    sets = minmaxReduce(sets, 'layingBonusEq', 'shippingBonus', true);
+    sets = minmaxReduce(sets, 'layingBonusEq', 'shippingBonus');
+
+    for (const set of sets) {
+        set.layingBonusEq = set[0].layingBonusEq;
+        set.shippingBonus = set[0].shippingBonus;
+        set.deflectorBonus = set[0].deflectorBonus;
+    }
 
     // Assign stones to artifacts
-    for (const set of sets) {
-        const { tachyonAmount, quantumAmount } = set;
-        set.sort((a, b) => a.family - b.family);
-        const setStones = [
-            ...tachyonQueue.slice(0, tachyonAmount),
-            ...quantumQueue.slice(0, quantumAmount).reverse()
-        ];
-        for (const artifact of set) {
-            artifact.stones = setStones.splice(0, artifact.stoneSlotAmount).reverse();
-            artifact.reslotted = true;
+    for (const equivalentSets of sets) {
+        for (const set of equivalentSets) {
+            const { tachyonAmount, quantumAmount } = set;
+            set.sort((a, b) => a.family - b.family);
+            const setStones = [
+                ...tachyonQueue.slice(0, tachyonAmount),
+                ...quantumQueue.slice(0, quantumAmount).reverse()
+            ];
+            assignStones(set, setStones);
         }
-        if (setStones.length) {
-            console.warn("Unslotted stones", set, setStones);
-        }
+        equivalentSets.sort((a,b) => a.reslotted - b.reslotted);
     }
 
     return sets;
+}
+
+function assignStones(set: T.Artifact[], stones: T.Stone[]): T.Artifact[] {
+    const stoneKey = s => s ? `${s.category}-${s.family}-${s.tier}` : null;
+
+    const stoneCount = new Map<string, number>();
+    for (const stone of stones) {
+        const key = stoneKey(stone);
+        stoneCount.set(key, (stoneCount.get(key) || 0) + 1);
+    }
+
+    const slotsToFill: Array<{ artifact: Artifact; index: number }> = [];
+
+    for (const artifact of set) {
+        for (let i = 0; i < artifact.stones.length; i++) {
+            const key = stoneKey(artifact.stones[i]);
+            if ((stoneCount.get(key) || 0) > 0) {
+                // Stone to keep
+                stoneCount.set(key, stoneCount.get(key)! - 1);
+            } else {
+                // Stone to change
+                slotsToFill.push({ artifact, index: i });
+            }
+        }
+    }
+
+    set.reslotted = slotsToFill.length;
+
+    const remainingStones: Stone[] = [];
+    for (const stone of stones) {
+        const key = stoneKey(stone);
+        if ((stoneCount.get(key) || 0) > 0) {
+            remainingStones.push(stone);
+            stoneCount.set(key, stoneCount.get(key)! - 1);
+        }
+    }
+
+    if (remainingStones.length !== slotsToFill.length) {
+        throw new Error("Mismatch between remaining stones and empty slots.");
+    }
+
+    for (let i = 0; i < slotsToFill.length; i++) {
+        const { artifact, index } = slotsToFill[i];
+        artifact.stones[index] = remainingStones[i];
+        artifact.reslotted = (artifact.reslotted ?? 0) + 1;
+    }
+
+    return set;
 }
 
