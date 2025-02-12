@@ -206,6 +206,88 @@ footer a:focus {
     color: var(--valid-hover-color);
 }
 
+/* Settings */
+
+section.settings {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1em 3em;
+    font-size: 9pt;
+    align-items: center;
+}
+
+section.settings .setting-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2em;
+}
+
+.switch {
+    display: flex;
+    background-color: var(--bg-alt-color);
+    border-radius: 4px;
+    padding: 0.2em;
+    height: 1.6em;
+    align-self: flex-end;
+}
+
+.switch.disabled {
+    color: var(--placeholder-color);
+    pointer-events: none;
+}
+
+.switch input {
+    position: absolute;
+    opacity: 0;
+    z-index: -1;
+}
+
+.switch:focus-within {
+    box-shadow: 0 0 0.25em var(--valid-color) inset;
+}
+
+.switch-option {
+    border: none;
+    transition: background-color 0.15s;
+    cursor: pointer;
+    align-content: center;
+}
+
+.switch-option:focus-within {
+    box-shadow: 0 0 0.25em var(--valid-color) inset;
+}
+
+.switch-option * {
+    padding: 0.2em 0.6em;
+}
+
+.switch-option img {
+    padding: 0 0.4em;
+    height: 100%;
+}
+
+.switch-option:first-child {
+    border-radius: 3px 0 0 3px;
+}
+
+.switch-option:last-child {
+    border-radius: 0 3px 3px 0;
+}
+
+.switch-option:hover,
+.switch-option:focus {
+    background-color: var(--bg-alt-hover-color);
+}
+
+.switch-option:has(input:checked) {
+    background-color: var(--active-color);
+}
+
+.switch-option:has(input:checked):hover,
+.switch-option:has(input:checked):focus {
+    background-color: var(--active-hover-color);
+}
+
 
 /* General styles */
 a, input, button {
@@ -252,60 +334,6 @@ input.invalid {
 input::placeholder {
     color: var(--placeholder-color);
 }
-
-
-.switch {
-    display: inline-flex;
-    background-color: var(--bg-alt-color);
-    border-radius: 4px;
-    padding: 0.2em;
-}
-
-.switch.disabled {
-    color: var(--placeholder-color);
-    pointer-events: none;
-}
-
-.switch input {
-    position: absolute;
-    opacity: 0;
-    z-index: -1;
-}
-
-.switch:focus-within {
-    box-shadow: 0 0 0.25em var(--valid-color) inset;
-}
-
-.switch label {
-    flex: 1 1 0;
-    padding: 0.2em 0.6em;
-    border: none;
-    transition: background-color 0.15s;
-    cursor: pointer;
-}
-
-.switch label:first-child {
-    border-radius: 3px 0 0 3px;
-}
-
-.switch label:last-child {
-    border-radius: 0 3px 3px 0;
-}
-
-.switch label:hover,
-.switch label:focus {
-    background-color: var(--bg-alt-hover-color);
-}
-
-.switch label:has(input[type="radio"]:checked) {
-    background-color: var(--active-color);
-}
-
-.switch label:has(input[type="radio"]:checked):hover,
-.switch label:has(input[type="radio"]:checked):focus {
-    background-color: var(--active-hover-color);
-}
-
 
 button {
     padding: 0.5em 1em;

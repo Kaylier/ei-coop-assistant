@@ -1,7 +1,7 @@
 <template>
     <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
     <section class="settings">
-        <label>
+        <span class="setting-entry">
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
@@ -12,15 +12,19 @@
             </label>
             Reslotting
             <div class="switch">
-                <label><input type="radio" name="reslotting" :value="false" v-model="allowReslotting" />
-                    no
+                <label class="switch-option" for="reslotting-off">
+                    <input type="radio" name="reslotting" id="reslotting-off"
+                           :value="false" v-model="allowReslotting" />
+                    <span>no</span>
                 </label>
-                <label><input type="radio" name="reslotting" :value="true" v-model="allowReslotting" />
-                    yes
+                <label class="switch-option" for="reslotting-on">
+                    <input type="radio" name="reslotting" id="reslotting-on"
+                           :value="true" v-model="allowReslotting" />
+                    <span>yes</span>
                 </label>
             </div>
-        </label>
-        <label>
+        </span>
+        <span class="setting-entry">
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
@@ -31,21 +35,27 @@
             </label>
             Deflector
             <div class="switch">
-                <label><input type="radio" name="deflector-mode" :value="T.DeflectorMode.NONE" v-model="deflectorMode" />
-                    none
+                <label class="switch-option" for="deflector-mode-none">
+                    <input type="radio" name="deflector-mode" id="deflector-mode-none"
+                           :value="T.DeflectorMode.NONE" v-model="deflectorMode" />
+                    <span>none</span>
                 </label>
-                <label><input type="radio" name="deflector-mode" :value="T.DeflectorMode.CONTRIBUTION" v-model="deflectorMode" />
-                    contribution
+                <label class="switch-option" for="deflector-mode-contribution">
+                    <input type="radio" name="deflector-mode" id="deflector-mode-contribution"
+                           :value="T.DeflectorMode.CONTRIBUTION" v-model="deflectorMode" />
+                    <span>contribution</span>
                 </label>
-                <label><input type="radio" name="deflector-mode" :value="T.DeflectorMode.TEAMWORK" v-model="deflectorMode" />
-                    teamwork
+                <label class="switch-option" for="deflector-mode-teamwork">
+                    <input type="radio" name="deflector-mode" id="deflector-mode-teamwork"
+                           :value="T.DeflectorMode.TEAMWORK" v-model="deflectorMode" />
+                    <span>teamwork</span>
                 </label>
             </div>
-        </label>
+        </span>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             show settings
         </a>
-        <div v-if="showExtraSettings">
+        <span v-if="showExtraSettings" class="setting-entry">
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
@@ -61,8 +71,8 @@
                     v-model="baseLayingRateString"
                     :placeholder="formatRateString(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)">
             </input>
-        </div>
-        <div v-if="showExtraSettings">
+        </span>
+        <span v-if="showExtraSettings" class="setting-entry">
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
@@ -78,7 +88,7 @@
                     v-model="baseShippingRateString"
                     :placeholder="formatRateString(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)">
             </input>
-        </div>
+        </span>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
