@@ -292,9 +292,9 @@ function updateEntries() {
         return;
     }
 
-    // A set is optimal when the deflector bonus received is shippingBonus/layingBonusEq
+    // A set is optimal when the deflector bonus received is shippingBonus/maxLayingBonus
     // Sort them by optimal received deflector bonus
-    sets.sort((a, b) => a.shippingBonus/a.layingBonusEq - b.shippingBonus/b.layingBonusEq);
+    sets.sort((a, b) => a.shippingBonus/a.maxLayingBonus - b.shippingBonus/b.maxLayingBonus);
 
     // Update the artifacts shown on the view
     entries.value = [];
@@ -329,7 +329,7 @@ function updateThresholds() {
     for (const idx in entries.value) {
         const entry = entries.value[idx];
         const shippingRate = baseShippingRate.value * entry.artifactSet.shippingBonus;
-        const layingRate = baseLayingRate.value * entry.artifactSet.layingBonusEq;
+        const layingRate = baseLayingRate.value * entry.artifactSet.maxLayingBonus;
 
         let lowerThreshold = prevShippingRate/layingRate - 1;
         const optimalBonus = shippingRate/layingRate - 1;

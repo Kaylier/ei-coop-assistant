@@ -97,43 +97,54 @@ export function round(x, precision = 1e9) {
 
 
 /**
- * Returns a sublist of minmaxed elements.
- * An element is considered minmaxed if for every other element in the sorted array,
- * it has a lower value for either key0 or key1.
- * On equalities on both keys, the order is preserved.
- * @param list The array of objects to be sorted and filtered.
- * @param key0 The first key to sort by.
- * @param key1 The second key to sort by.
- * @param group If true, the returned list contains lists of all elements equal on both keys,
- *              instead of only the first one found
- * @returns A sublist of objects containing only minmaxed elements.
+ * Extracts the Pareto frontier from a list of (x, y, element) tuples.
+ * The frontier consists of non-dominated points.
+ * Returns an array of groups, where each group contains elements with the same (x, y) values.
+ *
+ * Complexity in O(n*log(n)) where n is list.length
  */
-export function minmaxReduce(list: any[], key0: string, key1: string, group: boolean = true) {
-    // Create a map to store each element's original index
-    const indexMap = new Map(list.map((element, index) => [element, index]));
 
-    // Primary sorting by key0 in decreasing order
-    // Secondary sorting by key1 in increasing for non-strict mode, decreasing order for strict mode
-    // Tertiary sorting by original index to keep the sort stable
-    list.sort((a, b) => b[key0] - a[key0] ||
-                        b[key1] - a[key1] ||
-                        (indexMap.get(a) - indexMap.get(b)));
+export function extractParetoFrontier<T>(list: [number, number, T][]): T[][] {
+    // Sort by x (descending) and then by y (descending)
+    const sortedList = list.slice().sort(([ax, ay], [bx, by]) => bx - ax || by - ay);
 
-    const result: any[] = [];
-    let bestKey1 = -Infinity;
-    let prevKey0 = -Infinity;
+    const frontier: T[][] = [];
+    let lastX = 0, lastY = -Infinity;
 
-    for (const element of list) {
-        if (group && element[key0] === prevKey0 && element[key1] === bestKey1) {
-            result.at(-1).push(element);
-        } else if (element[key1] > bestKey1) {
-            result.push([element]);
-            prevKey0 = element[key0];
-            bestKey1 = element[key1];
+    for (const [x, y, element] of sortedList) {
+        if (y > lastY) {
+            frontier.push([element]);
+            lastX = x;
+            lastY = y;
+        } else if (x === lastX && y === lastY) {
+            frontier[frontier.length - 1].push(element);
         }
     }
 
-    return group ? result : result.map(x => x[0]);
+    return frontier;
+}
+
+/*
+ * Extracts the Pareto frontier from a list of (x, y, z, element) tuples.
+ * The frontier consists of non-dominated points.
+ * Returns an array of groups, where each group contains elements with the same (x, y, z) values.
+ *
+ * Complexity in O(n^2) where n is list.length
+ * /!\ This function is significantly slower than extractParetoFrontier
+ */
+export function extractParetoFrontier3<T>(list: [number, number, number, T][]): T[][] {
+    const groups = new Map<string, [number, number, number, T[]]>();
+    for (const [a, b, c, element] of list) {
+        const key = `${a},${b},${c}`;
+        if (!groups.has(key)) {
+            groups.set(key, [a, b, c, []]);
+        }
+        groups.get(key)[3].push(element);
+    }
+    const elements = Array.from(groups.values())
+    return elements.filter(([x,y,z]) =>
+        !elements.some(([u,v,w]) => x <= u && y <= v && z <= w && (x < u || y < v || z < w)))
+        .map(([, , , elements]) => elements);
 }
 
 
@@ -145,23 +156,28 @@ export function minmaxReduce(list: any[], key0: string, key1: string, group: boo
  *
  * @param array The input array from which to generate permutations.
  * @param size The size of each permutation.
+ * @param partials Also returns combinations of lower sizes
  * @returns A generator yielding arrays of elements from the original array.
  */
-export function* combinations<T>(array: T[], size: number): Generator<T[], void, void> {
-    function* aux(tempArray: T[], startIndex: number): Generator<T[], void, void> {
+export function* combinations<T>(array: T[], size: number, partials: boolean = false): Generator<T[], void, void> {
+    function* aux(tempArray: T[], startIndex: number, size: number): Generator<T[], void, void> {
         if (tempArray.length === size) {
             yield [...tempArray];
+            return;
+        } else if (tempArray.length > size) {
             return;
         }
 
         for (let i = startIndex; i < array.length; i++) {
             tempArray.push(array[i]);
-            yield* aux(tempArray, i + 1);
+            yield* aux(tempArray, i + 1, size);
             tempArray.pop();
         }
     }
 
-    yield* aux([], 0);
+    for (let n = (partials ? 0 : size); n <= size; n++) {
+        yield* aux([], 0, n);
+    }
 }
 
 
