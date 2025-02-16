@@ -297,10 +297,8 @@ async function getSpecialBackup(sid: string) {
 /**
  * Return the inventory of a player EID.
  * Identical items are grouped and an extra property `quantity` is added.
- * If the parameter orderedStones is set to true, the stone order matters and can prevent
- * some items from being grouped together.
  */
-export async function getUserData(eid: string, orderedStones: boolean = false) {
+export async function getUserData(eid: string) {
     const proto = await window['protobuf'].load("/proto/ei.proto");
     const backup = checkSID(eid) ? await getSpecialBackup(eid) : await queryBackup(eid, proto);
 
@@ -313,7 +311,7 @@ export async function getUserData(eid: string, orderedStones: boolean = false) {
         throw Error(`No artifact found in backup for EID: ${eid}`);
     }
 
-    const [items, sets] = getInventory(proto, backup, orderedStones);
+    const [items, sets] = getInventory(proto, backup);
 
     const proPermit = (backup.game?.permitLevel === 1);
 
@@ -358,7 +356,7 @@ export async function getUserData(eid: string, orderedStones: boolean = false) {
     };
 }
 
-function getInventory(proto, backup, orderedStones) {
+function getInventory(proto, backup) {
     let itemIdMap = {};
     let items = new Map();
 
@@ -392,9 +390,7 @@ function getInventory(proto, backup, orderedStones) {
 
         item.stones = stones;
 
-        let key;
-        if (orderedStones) key = [getSortId(item), ...stones.map(getSortId)].join('/');
-        else key = [getSortId(item), ...stones.map(getSortId).sort()].join('/');
+        const key = [getSortId(item), ...stones.map(getSortId).sort()].join('/');
 
         if (items.has(key)) {
             items.get(key).quantity += item.quantity;

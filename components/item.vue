@@ -11,7 +11,7 @@
             :src="getImageSource(item)"
             :alt="getName(item)"></img>
 
-        <svg v-if="item.quantity > 1"
+        <svg v-if="item.quantity > 1 && !item.reslotted"
             class="item-quantity"
             viewBox="0 0 100 20"
             preserveAspectRatio="xMaxYMin meet"
@@ -22,6 +22,10 @@
                 class="stone-frame"
                 :src="getImageSource(stone)"
                 :alt="getName(stone)"></img>
+            <img v-if="item.reslotted"
+                class="stone-frame"
+                src="/img/icons/shuffle.png"
+                alt="🔀"></img>
         </div>
 
     </div>

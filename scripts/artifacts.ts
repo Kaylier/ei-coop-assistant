@@ -4,7 +4,7 @@
  *
  * Credit to Forzpace for populating artifactMetadata
  */
-import * as T from "./types.ts"
+import * as T from "./types.ts";
 
 
 const artifactMetadata = {
@@ -116,7 +116,7 @@ const artifactMetadata = {
                     "image": "artifact-tachyon_deflector-1",
                     "name": "Weak Tachyon Deflector",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t1c", "slot_count": 0, "value": 71377.853576, "odds_multiplier": 0.63, "effects": [{"target": "team_laying_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t1c", "slot_count": 0, "value": 71377.853576, "odds_multiplier": 0.63, "effects": [{"target": "team_laying_bonus", "value": 0.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -126,7 +126,7 @@ const artifactMetadata = {
                     "image": "artifact-tachyon_deflector-2",
                     "name": "Tachyon Deflector",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t2c", "slot_count": 0, "value": 184122.244366, "odds_multiplier": 0.45, "effects": [{"target": "team_laying_bonus", "value": 1.08, "text": "+8%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t2c", "slot_count": 0, "value": 184122.244366, "odds_multiplier": 0.45, "effects": [{"target": "team_laying_bonus", "value": 0.08, "text": "+8%"}]}
                     }
                 },
                 {
@@ -136,8 +136,8 @@ const artifactMetadata = {
                     "image": "artifact-tachyon_deflector-3",
                     "name": "Robust Tachyon Deflector",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t3c", "slot_count": 0, "value": 547056.67034, "odds_multiplier": 0.45, "effects": [{"target": "team_laying_bonus", "value": 1.12, "text": "+12%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_deflector_t3r", "slot_count": 1, "value": 1729891.030522, "odds_multiplier": 0.045, "effects": [{"target": "team_laying_bonus", "value": 1.13, "text": "+13%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t3c", "slot_count": 0, "value": 547056.67034, "odds_multiplier": 0.45, "effects": [{"target": "team_laying_bonus", "value": 0.12, "text": "+12%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_deflector_t3r", "slot_count": 1, "value": 1729891.030522, "odds_multiplier": 0.045, "effects": [{"target": "team_laying_bonus", "value": 0.13, "text": "+13%"}]}
                     }
                 },
                 {
@@ -147,10 +147,10 @@ const artifactMetadata = {
                     "image": "artifact-tachyon_deflector-4",
                     "name": "Eggceptional Tachyon Deflector",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t4c", "slot_count": 0, "value": 2886151.042967, "odds_multiplier": 0.09, "effects": [{"target": "team_laying_bonus", "value": 1.15, "text": "+15%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_deflector_t4r", "slot_count": 1, "value": 31615951.75072, "odds_multiplier": 0.00075, "effects": [{"target": "team_laying_bonus", "value": 1.17, "text": "+17%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_deflector_t4e", "slot_count": 2, "value": 64535765.237061, "odds_multiplier": 0.00018, "effects": [{"target": "team_laying_bonus", "value": 1.19, "text": "+19%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_deflector_t4l", "slot_count": 2, "value": 99978363.869322, "odds_multiplier": 7.5E-05, "effects": [{"target": "team_laying_bonus", "value": 1.2, "text": "+20%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_deflector_t4c", "slot_count": 0, "value": 2886151.042967, "odds_multiplier": 0.09, "effects": [{"target": "team_laying_bonus", "value": 0.15, "text": "+15%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_deflector_t4r", "slot_count": 1, "value": 31615951.75072, "odds_multiplier": 0.00075, "effects": [{"target": "team_laying_bonus", "value": 0.17, "text": "+17%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_deflector_t4e", "slot_count": 2, "value": 64535765.237061, "odds_multiplier": 0.00018, "effects": [{"target": "team_laying_bonus", "value": 0.19, "text": "+19%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_deflector_t4l", "slot_count": 2, "value": 99978363.869322, "odds_multiplier": 7.5E-05, "effects": [{"target": "team_laying_bonus", "value": 0.2, "text": "+20%"}]}
                     }
                 }
             ]
@@ -1672,10 +1672,10 @@ export function getSlotCount(artifact: T.Artifact): number {
 
 /**
  * Returns a map of effects for an item
- * If the item contains stones, compound their effects.
+ * If the item contains stones, compound their effects, unless recursive is set to false.
  * If a certain bonus does not appear, the caller must handle the default value.
  */
-export function getEffects(item: T.Item | null) {
+export function getEffects(item: T.Item | null, recursive: boolean = true) {
     if (!item) return {};
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
@@ -1700,10 +1700,21 @@ export function getEffects(item: T.Item | null) {
 
     effects.forEach(({target, value}) => applyEffect(target, value));
 
-    item.stones?.flatMap(stone => Object.entries(getEffects(stone)))
-                .forEach(([target, value]) => applyEffect(target, value));
+    if (recursive) {
+        item.stones?.flatMap(stone => Object.entries(getEffects(stone)))
+                    .forEach(([target, value]) => applyEffect(target, value));
+    }
 
     return ret;
 }
 
+/*
+ * Create a deep copy of an item
+ */
+export function copyItem(item: T.Item): T.Item {
+    return {
+        ...item,
+        stones: item.stones?.map(stone => stone ? { ...stone } : null)
+    };
+}
 
