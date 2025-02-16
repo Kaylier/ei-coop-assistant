@@ -14,6 +14,10 @@
                 </span>
             </div>
         </span>
+        <span v-if="item?.reslotted" class="stone-line reslot-line">
+            <img src="/img/icons/shuffle.png" alt="🔀"/>
+            <span class="description-container">Stones have been reslotted</span>
+        </span>
         <span v-if="item" v-for="stone in item.stones.filter(s => s !== null)" class="stone-line">
             <img :src="getImageSource(stone)" />
             <div class="description-container">
@@ -198,6 +202,21 @@ function getStamp(item) {
 
 .bonus-value {
     color: color-mix(in srgb, var(--active-color) 75%, white);
+}
+
+.reslot-line {
+    height: 1em;
+}
+
+.reslot-line img {
+    height: 100%;
+    width: auto;
+}
+
+.reslot-line span {
+    font-size: 10pt;
+    font-style: italic;
+    color: var(--warning-text-color);
 }
 
 </style>
