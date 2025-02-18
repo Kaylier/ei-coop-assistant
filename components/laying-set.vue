@@ -52,10 +52,55 @@
                 </label>
             </div>
         </span>
-        <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
-            show settings
-        </a>
-        <span v-if="showExtraSettings" class="setting-entry">
+        <span v-if="showExtraSettings || showExtraSettingGusset" class="setting-entry">
+            <label tabindex="0" class="tooltip-icon">
+                ⓘ
+                <span class="tooltip-text">
+                    Force to use a specific gusset.<br/>
+                    Only your best gussets are shown.<br/>
+                    Disabled on "any".
+                </span>
+            </label>
+            Gusset
+            <div class="switch">
+                <label v-for="gusset in allowedGussetChoices" class="switch-option" :for="gusset">
+                    <input type="radio" name="allowed-gusset" :id="gusset"
+                           :value="gusset" v-model="allowedGusset" />
+                    <span v-if="gusset === T.AllowedGusset.ANY">any</span>
+                    <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
+                    <img v-else :class="getGussetClass(gusset)"
+                         :src="getGussetImage(gusset)"
+                         :alt="getGussetName(gusset)"></img>
+                </label>
+                <label v-if="allowedGussetChoices.length < 10" class="switch-option" @click="showAllGussets">
+                    …
+                </label>
+            </div>
+        </span>
+        <span v-if="showExtraSettings || showExtraSettingVariant" class="setting-entry">
+            <label tabindex="0" class="tooltip-icon">
+                ⓘ
+                <span class="tooltip-text">
+                    Show variant sets,<br/>
+                    stone-holder artifacts are interchangeable.<br/>
+                    The view is limited to 6 sets
+                </span>
+            </label>
+            Show variants
+            <div class="switch">
+                <label class="switch-option" for="show-variant-off">
+                    <input type="radio" name="show-variants" id="show-variant-off"
+                           :value="false" v-model="showVariants" />
+                    <span>no</span>
+                </label>
+                <label class="switch-option" for="show-variant-on">
+                    <input type="radio" name="show-variants" id="show-variant-on"
+                           :value="true" v-model="showVariants" />
+                    <span>yes</span>
+                </label>
+            </div>
+        </span>
+        <span v-if="showExtraSettings || showExtraSettingLaying" class="setting-entry">
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
@@ -72,7 +117,7 @@
                     :placeholder="formatRateString(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)">
             </input>
         </span>
-        <span v-if="showExtraSettings" class="setting-entry">
+        <span v-if="showExtraSettings || showExtraSettingShipping" class="setting-entry">
             <label tabindex="0" class="tooltip-icon">
                 ⓘ
                 <span class="tooltip-text">
@@ -89,6 +134,9 @@
                     :placeholder="formatRateString(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)">
             </input>
         </span>
+        <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
+            show settings
+        </a>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
@@ -121,14 +169,24 @@
                         <img src="/img/icons/deflector-bonus-alt.png"></img>
                     </div>
                 </div>
-                <inventory-view v-if="entry.artifactSet"
-                    :artifacts="entry.artifactSet"
-                    :isSet="true"
-                    :deflectorBonus="entry.optiThreshold"
-                    :proPermit="userData.proPermit"
-                    :column=4 :row=1
-                    :style="entry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''">
-                </inventory-view>
+                <div class="entry-sets">
+                    <inventory-view v-if="entry.artifactSet"
+                        :artifacts="entry.artifactSet"
+                        :isSet="true"
+                        :deflectorBonus="entry.optiThreshold"
+                        :proPermit="userData.proPermit"
+                        :column=4 :row=1
+                        :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''">
+                    </inventory-view>
+                    <inventory-view v-if="showVariants" v-for="subentry in entry.variants"
+                        :artifacts="subentry"
+                        :isSet="true"
+                        :deflectorBonus="entry.optiThreshold"
+                        :proPermit="userData.proPermit"
+                        :column=4 :row=1
+                        :style="subentry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''">
+                    </inventory-view>
+                </div>
             </div>
         </template>
         <template v-if="entries.length">
@@ -162,7 +220,7 @@
 import { ref, watch } from 'vue';
 import * as T from '/scripts/types.ts';
 import { parseRateString, formatRateString } from '/scripts/utils.ts';
-import { computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '/scripts/laying-set.ts';
+import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '/scripts/laying-set.ts';
 
 
 // These defaults are only used when no user data is loaded, or when it failed to calculate the rate from user data
@@ -172,15 +230,22 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 
 // Settings variables
-const allowReslotting = ref<boolean>(false);
 const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
+const allowReslotting = ref<boolean>(false);
+const allowedGusset = ref<string>(T.AllowedGusset.ANY);
 const baseLayingRateString = ref("");
 const baseShippingRateString = ref("");
+const showVariants = ref<boolean>(false);
 
 
 // State variables
-const showExtraSettings = ref<boolen>(false);
+const showExtraSettings = ref<boolean>(false);
+const showExtraSettingGusset = ref<boolean>(false);
+const showExtraSettingVariant = ref<boolean>(false);
+const showExtraSettingLaying = ref<boolean>(false);
+const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref("");
+const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const baseLayingRateStringIsValid = ref(true);
 const baseShippingRateStringIsValid = ref(true);
 const baseLayingRate = ref(DEFAULT_BASE_LAYING_RATE);
@@ -195,8 +260,10 @@ const entries = ref([]); // List of solutions (sets along additional info), popu
 // Load settings from local storage at start
 Vue.onMounted(async () => {
     const localStorageSettings = [
-        { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
         { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
+        { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
+        { key: 'allowed-gusset'    , ref: allowedGusset   , parser: JSON.parse },
+        { key: 'show-variants'     , ref: showVariants    , parser: JSON.parse },
         { key: 'base-laying-rate'  , ref: baseLayingRateString   },
         { key: 'base-shipping-rate', ref: baseShippingRateString },
     ];
@@ -214,13 +281,18 @@ Vue.onMounted(async () => {
     });
 
     // Show extra settings if they have been modified
-    showExtraSettings.value = baseLayingRateString.value || baseShippingRateString.value;
+    showExtraSettingGusset.value = allowedGusset.value !== T.AllowedGusset.ANY;
+    showExtraSettingLaying.value = baseLayingRateString.value;
+    showExtraSettingShipping.value = baseShippingRateString.value;
+    showExtraSettingVariant.value = showVariants.value !== false;
 });
 
 
 // Watchers for synchronisation between setting variables, local storage and state variables
-watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
 watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.stringify(deflectorMode.value)));
+watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
+watch(allowedGusset   , () => localStorage.setItem('allowed-gusset'   , JSON.stringify(allowedGusset.value)));
+watch(showVariants    , () => localStorage.setItem('show-variants'    , JSON.stringify(showVariants.value)));
 watch(baseLayingRateString, () => updateBaseLayingRate(baseLayingRateString.value));
 watch(baseShippingRateString, () => updateBaseShippingRate(baseShippingRateString.value));
 
@@ -266,10 +338,23 @@ function updateBaseShippingRate(valueString, resetOnError = false) {
 watch(userData, updateEntries);
 watch(allowReslotting, updateEntries);
 watch(deflectorMode, updateEntries);
+watch(allowedGusset, updateEntries);
 
+watch(entries, updateAllowedGussets);
 watch(entries, updateThresholds);
 watch(baseLayingRate, updateThresholds);
 watch(baseShippingRate, updateThresholds);
+
+
+function updateAllowedGussets() {
+    const choices = getOptimalGussets(userData.value?.items ?? []);
+    if (allowedGusset.value !== T.AllowedGusset.ANY
+     && allowedGusset.value !== T.AllowedGusset.NONE
+     && !choices.includes(allowedGusset.value)) {
+        choices.push(allowedGusset.value);
+    }
+    allowedGussetChoices.value = [T.AllowedGusset.ANY, T.AllowedGusset.NONE, ...choices.sort()];
+}
 
 
 /**
@@ -284,8 +369,8 @@ function updateEntries() {
     try {
         errorMessage.value = "";
         sets = allowReslotting.value ?
-               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot) :
-               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot);
+               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot, allowedGusset.value) :
+               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot, allowedGusset.value);
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+e.message;
         entries.value = [];
@@ -296,22 +381,52 @@ function updateEntries() {
     // Sort them by optimal received deflector bonus
     sets.sort((a, b) => a.shippingBonus/a.maxLayingBonus - b.shippingBonus/b.maxLayingBonus);
 
+    // Key for determining which artifact sets are considered the same when showVariants is on
+    // Stone holders variations, artifact and stone order are ignored
+    const contractFamilies = [
+        T.ArtifactFamily.TACHYON_DEFLECTOR,
+        T.ArtifactFamily.QUANTUM_METRONOME,
+        T.ArtifactFamily.INTERSTELLAR_COMPASS,
+        T.ArtifactFamily.GUSSET,
+    ]
+    function generateKey(set) {
+        return set.map(artifact => {
+            if (!artifact) return "null";
+            const artiKey = contractFamilies.includes(artifact.family) ?
+                `${artifact.category}-${artifact.family}-${artifact.tier}-${artifact.rarity}` :
+                "holder";
+            const stoneKeys = artifact?.stones.map(stone => (stone ?
+                `${stone.category}-${stone.family}-${stone.tier}` :
+                "null")) ?? [];
+            return artiKey + "(" + stoneKeys.sort().join('+')+")";
+        }).sort().join(',');
+    }
+
     // Update the artifacts shown on the view
     entries.value = [];
     for (const equivalentSets of sets) {
         const set = equivalentSets[0];
-        if (!set || set.length === 0) continue;
 
-        set.sort((a, b) => a.family - b.family);
+        // LoE is invalid, because stones have no effect outside of enlightenment
+        // Maybe the user knows more than me
+        // Is it the secret of the soul?
+        set.rainbowed = set.some(artifact => artifact && artifact.family === 0);
 
-        while (set.length < maxSlot) set.push(null);
+        const seen = new Set();
+        seen.add(generateKey(set));
+        const variants = [];
+        for (const variant of equivalentSets) {
+            const key = generateKey(variant);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            variant.rainbowed = variant.some(artifact => artifact && artifact.family === 0);
+            variants.push(variant);
+            if (seen.size >= 6) break;
+        }
 
         entries.value.push({
             artifactSet: set,
-            // LoE is invalid, because stones have no effect outside of enlightenment
-            // Maybe the user knows more than me
-            // Is it the secret of the soul?
-            rainbowed: set.some(artifact => artifact && artifact.family === 0)
+            variants: variants,
         });
     }
 }
@@ -363,5 +478,34 @@ function updateThresholds() {
     console.log("Deflector bonuses:", X, "\nEffective rates  :", Y);
 }
 
+
+function showAllGussets() {
+    const choices = [
+    "artifact-gusset-1-0",
+    "artifact-gusset-2-0",
+    "artifact-gusset-2-2",
+    "artifact-gusset-3-0",
+    "artifact-gusset-3-1",
+    "artifact-gusset-4-0",
+    "artifact-gusset-4-2",
+    "artifact-gusset-4-3",
+    ];
+    allowedGussetChoices.value = [T.AllowedGusset.ANY, T.AllowedGusset.NONE, ...choices.sort()];
+}
+
+function getGussetName(gusset: string) {
+    const [category,family,tier,rarity] = gusset.split('-');
+    return `t${tier}${"crel"[rarity]}`
+}
+
+function getGussetImage(gusset: string) {
+    const [category,family,tier,rarity] = gusset.split('-');
+    return `/img/items/${category}-${family}-${tier}.png`
+}
+
+function getGussetClass(gusset: string) {
+    const [category,family,tier,rarity] = gusset.split('-');
+    return ["common", "rare", "epic", "legendary"][rarity];
+}
 
 </script>

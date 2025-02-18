@@ -21,6 +21,12 @@ main .invalid-text {
 }
 
 
+.common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
+.rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }
+.epic      { background: radial-gradient(55% 55% at center, var(--epic-color     ), transparent); }
+.legendary { background: radial-gradient(55% 55% at center, var(--legendary-color), transparent); }
+
+
 .threshold {
     display: inline-flex;
     flex-flow: row nowrap;
@@ -121,10 +127,17 @@ main .invalid-text {
     flex: 1 1 5em;
 }
 
+.entry-sets {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    gap: .25em;
+}
+
 
 .axis, .axis-start, .axis-end {
     position: absolute;
-    height: 150%;
+    height: calc(100% + 4em);
     width: 3px;
     left: 4.8em;
     background: #286;
