@@ -218,7 +218,7 @@ section.settings {
 
 section.settings .setting-entry {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.2em;
 }
 
