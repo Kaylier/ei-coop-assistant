@@ -2,15 +2,17 @@
     <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
     <section class="settings">
         <span class="setting-entry">
-            <label tabindex="0" class="tooltip-icon">
-                ⓘ
-                <span class="tooltip-text">
-                    none: do not force a deflector<br/>
-                    contribution: includes the deflector that maximizes user contribution<br/>
-                    teamwork: includes the deflector that maximizes teamwork
-                </span>
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        none: do not force a deflector<br/>
+                        contribution: includes the deflector that maximizes user contribution<br/>
+                        teamwork: includes the deflector that maximizes teamwork
+                    </span>
+                </label>
+                Deflector
             </label>
-            Deflector
             <div class="switch">
                 <label class="switch-option" for="deflector-mode-none">
                     <input type="radio" name="deflector-mode" id="deflector-mode-none"
@@ -30,15 +32,17 @@
             </div>
         </span>
         <span class="setting-entry">
-            <label tabindex="0" class="tooltip-icon">
-                ⓘ
-                <span class="tooltip-text">
-                    Allow reslotting stones in artifacts.<br/>
-                    Stone-holder artifacts are interchangeable and<br/>
-                    stones may be arbitrarily rearranged.
-                </span>
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        Allow reslotting stones in artifacts.<br/>
+                        Stone-holder artifacts are interchangeable and<br/>
+                        stones may be arbitrarily rearranged.
+                    </span>
+                </label>
+                Reslotting
             </label>
-            Reslotting
             <div class="switch">
                 <label class="switch-option" for="reslotting-off">
                     <input type="radio" name="reslotting" id="reslotting-off"
@@ -56,15 +60,17 @@
             show settings
         </a>
         <span v-if="showExtraSettings" class="setting-entry">
-            <label tabindex="0" class="tooltip-icon">
-                ⓘ
-                <span class="tooltip-text">
-                    Maximum laying rate with full habs<br/>
-                    without any artifact equipped.
-                </span>
-            </label>
-            <label for="base-laying-rate">
-                Base laying rate
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        Maximum laying rate with full habs<br/>
+                        without any artifact equipped.
+                    </span>
+                </label>
+                <label for="base-laying-rate">
+                    Base laying rate
+                </label>
             </label>
             <input type="text" id="base-laying-rate"
                     :class="{ invalid: !baseLayingRateStringIsValid }"
@@ -73,15 +79,17 @@
             </input>
         </span>
         <span v-if="showExtraSettings" class="setting-entry">
-            <label tabindex="0" class="tooltip-icon">
-                ⓘ
-                <span class="tooltip-text">
-                    Maximum shipping rate<br/>
-                    without any artifact equipped.
-                </span>
-            </label>
-            <label for="base-shipping-rate">
-                Base shipping rate
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        Maximum shipping rate<br/>
+                        without any artifact equipped.
+                    </span>
+                </label>
+                <label for="base-shipping-rate">
+                    Base shipping rate
+                </label>
             </label>
             <input type="text" id="base-shipping-rate"
                     :class="{ invalid: !baseShippingRateStringIsValid }"
