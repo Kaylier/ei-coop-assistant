@@ -1,11 +1,11 @@
 <template>
-    <div class="item-frame" :class="getRarityClass(item)"
+    <div class="item-frame" :class="[getRarityClass(item), item?.id && highlightedItemId === item.id ? 'highlighted' : '']"
        @mouseenter="showItemTooltip(item, $event)"
        @mouseleave="hideItemTooltip()"
        @touchstart="showItemTooltip(item, $event)"
        @touchend="hideItemTooltip()"
-       @focus="showItemTooltip(item, $event)"
-       @blur="hideItemTooltip()">
+       @focus="onFocusEnter(item, $event)"
+       @blur="onFocusLeave()">
 
         <img class="item-image"
             :src="getImageSource(item)"
@@ -38,6 +38,7 @@ import { getImageSource, getName } from '/scripts/artifacts.ts';
 
 const showItemTooltip = inject("showItemTooltip");
 const hideItemTooltip = inject("hideItemTooltip");
+const highlightedItemId = inject("highlightedItemId");
 
 const props = defineProps<{
     item: T.Item
@@ -46,6 +47,15 @@ const props = defineProps<{
 function getRarityClass(item: T.Item): string {
     const ret = T.Rarity[item.rarity];
     return ret ? ret.toLowerCase() : "";
+}
+
+function onFocusEnter(item, event) {
+    showItemTooltip(item, event);
+    highlightedItemId.value = item.id;
+}
+function onFocusLeave() {
+    hideItemTooltip();
+    highlightedItemId.value = null;
 }
 </script>
 
@@ -57,7 +67,13 @@ function getRarityClass(item: T.Item): string {
     margin: auto;
     height: min(4em, 12vw);
     width: min(4em, 12vw);
+    border-radius: 1em;
 }
+
+.highlighted.item-frame.common    { background: var(--common-color   ); }
+.highlighted.item-frame.rare      { background: var(--rare-color     ); }
+.highlighted.item-frame.epic      { background: var(--epic-color     ); }
+.highlighted.item-frame.legendary { background: var(--legendary-color); }
 
 .item-frame.common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
 .item-frame.rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }

@@ -33,7 +33,7 @@ const options = {
 
 // Assign components
 
-const { createApp, defineAsyncComponent } = Vue;
+const { createApp, defineAsyncComponent, ref } = Vue;
 const app = createApp();
 
 app.component('router-view', VueRouter.RouterView);
@@ -111,5 +111,8 @@ const vm = app.mount('#app');
 
 app.provide("showItemTooltip", (item, event) => vm.$refs.itemTooltip?.show(item, event));
 app.provide("hideItemTooltip", () => vm.$refs.itemTooltip?.hide());
+
+const highlightedItemId = ref(null);
+app.provide("highlightedItemId", highlightedItemId);
 
 
