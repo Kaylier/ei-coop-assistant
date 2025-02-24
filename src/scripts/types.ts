@@ -5,7 +5,7 @@
 export enum ItemCategory {
     ARTIFACT,
     STONE,
-    INGREDIENT
+    INGREDIENT,
 };
 
 export enum IngredientFamily {
@@ -64,32 +64,48 @@ export enum Rarity {
     COMMON = 0,
     RARE = 1,
     EPIC = 2,
-    LEGENDARY = 3
+    LEGENDARY = 3,
 };
 
-export type Ingredient = {
+interface BaseItem {
+    category: ItemCategory,
+    quantity?: number,
+    id?: number,
+}
+
+export type Ingredient = BaseItem & {
     category: ItemCategory.INGREDIENT,
     family: IngredientFamily,
-    tier: number
+    tier: number,
 };
 
-export type Stone = {
+export type Stone = BaseItem & {
     category: ItemCategory.STONE,
     family: StoneFamily,
-    tier: number
+    tier: number,
 };
 
-export type Artifact = {
+export type Artifact = BaseItem & {
     category: ItemCategory.ARTIFACT,
     family: ArtifactFamily,
     tier: number,
     rarity: Rarity,
-    stones: (Stone | null)[]
+    stones: (Stone | null)[],
+    reslotted?: number,
 };
 
-export type Item = (Artifact | Stone | Ingredient) & { quantity: number };
+export type Item = Artifact | Stone | Ingredient;
 
 
+
+export type UserData = null | {
+    items: Item[],
+    sets: (Artifact | null)[][],
+    baseLayingRate: number,
+    baseShippingRate: number,
+    proPermit: boolean,
+    date: Date,
+};
 
 
 export enum DeflectorMode {

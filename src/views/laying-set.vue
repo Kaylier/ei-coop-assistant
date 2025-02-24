@@ -1,5 +1,5 @@
 <template>
-    <load-eid :userData="userData" @onloaded="(x) => userData = x"></load-eid>
+    <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
     <section class="settings">
         <span class="setting-entry">
             <label>
@@ -7,8 +7,8 @@
                     ⓘ
                     <span class="tooltip-text">
                         none: do not force a deflector<br/>
-                        contribution: includes the deflector that maximizes user contribution<br/>
-                        teamwork: includes the deflector that maximizes teamwork
+                        contribution: deflector that maximizes user contribution<br/>
+                        teamwork: deflector that maximizes teamwork
                     </span>
                 </label>
                 Deflector
@@ -129,14 +129,14 @@
                         <img src="/img/icons/deflector-bonus-alt.png"></img>
                     </div>
                 </div>
-                <inventory-view v-if="entry.artifactSet"
-                    :artifacts="entry.artifactSet"
-                    :isSet="true"
-                    :deflectorBonus="entry.optiThreshold"
-                    :proPermit="userData.proPermit"
-                    :column=4 :row=1
-                    :style="entry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''">
-                </inventory-view>
+                <inventory v-if="entry.artifactSet"
+                           :artifacts="entry.artifactSet"
+                           :isSet="true"
+                           :deflectorBonus="entry.optiThreshold"
+                           :proPermit="userData?.proPermit ?? false"
+                           :column=4 :row=1
+                           :style="entry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
+                           />
             </div>
         </template>
         <template v-if="entries.length">
@@ -146,32 +146,45 @@
                         <img src="/img/icons/deflector-bonus.png"></img>
                     </div>
                 </div>
-                <span v-if="entries.at(-1).higherRate" class="threshold-rate">
+                <span v-if="entries.at(-1)!.higherRate" class="threshold-rate">
                     <span class="threshold-rate-label">
                         laying rate
                     </span>
-                    {{ formatRateString(entries.at(-1).higherRate) }}
+                    {{ formatRateString(entries.at(-1)!.higherRate) }}
                 </span>
             </div>
             <div class="entry">
                 <div class="axis-end"></div>
             </div>
         </template>
-        <img v-else-if="!userData" src="/examples/demo.png" class="demo-img" />
+        <img v-else-if="!userData" src="/img/laying-set-demo.png" class="demo-img" />
         <span v-else-if="!errorMessage" class="invalid-text">
             You don't have enough artifacts to build a laying set.
         </span>
     </section>
 </template>
 
-<style scoped src="/css/laying-set.css"></style>
+<style scoped src="@/styles/laying-set.css"></style>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import * as T from '/scripts/types.ts';
-import { parseRateString, formatRateString } from '/scripts/utils.ts';
-import { computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '/scripts/laying-set.ts';
+import { onMounted, ref, watch } from 'vue';
+import * as T from '@/scripts/types.ts';
+import { parseRateString, formatRateString } from '@/scripts/utils.ts';
+import { computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
+import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
+type EntryType = {
+    artifactSet: ArtifactSet<T.Artifact | null>,
+    hidden: boolean,
+    lowerThreshold: number,
+    lowerRate: number,
+    effectiveLowerRate: number,
+    optiThreshold: number,
+    optiRate: number,
+    higherThreshold: number,
+    higherRate: number,
+    rainbowed?: boolean,
+};
 
 // These defaults are only used when no user data is loaded, or when it failed to calculate the rate from user data
 // I'm using the value for max ER and CR without colleggtibles
@@ -182,26 +195,26 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 // Settings variables
 const allowReslotting = ref<boolean>(false);
 const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
-const baseLayingRateString = ref("");
-const baseShippingRateString = ref("");
+const baseLayingRateString = ref<string>("");
+const baseShippingRateString = ref<string>("");
 
 
 // State variables
-const showExtraSettings = ref<boolen>(false);
-const errorMessage = ref("");
-const baseLayingRateStringIsValid = ref(true);
-const baseShippingRateStringIsValid = ref(true);
-const baseLayingRate = ref(DEFAULT_BASE_LAYING_RATE);
-const baseShippingRate = ref(DEFAULT_BASE_SHIPPING_RATE);
+const showExtraSettings = ref<boolean>(false);
+const errorMessage = ref<string>("");
+const baseLayingRateStringIsValid = ref<boolean>(true);
+const baseShippingRateStringIsValid = ref<boolean>(true);
+const baseLayingRate = ref<number>(DEFAULT_BASE_LAYING_RATE);
+const baseShippingRate = ref<number>(DEFAULT_BASE_SHIPPING_RATE);
 
 
 // Data variables
-const userData = ref(null); // loaded via load-eid component
-const entries = ref([]); // List of solutions (sets along additional info), populated via updateEntries
+const userData = ref<T.UserData>(null); // loaded via load-eid component
+const entries = ref<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
 
 
 // Load settings from local storage at start
-Vue.onMounted(async () => {
+onMounted(async () => {
     const localStorageSettings = [
         { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
         { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
@@ -222,7 +235,7 @@ Vue.onMounted(async () => {
     });
 
     // Show extra settings if they have been modified
-    showExtraSettings.value = baseLayingRateString.value || baseShippingRateString.value;
+    showExtraSettings.value = !!(baseLayingRateString.value || baseShippingRateString.value);
 });
 
 
@@ -241,7 +254,7 @@ watch(userData, () => {
     updateBaseShippingRate(baseShippingRateString.value, true);
 });
 
-function updateBaseLayingRate(valueString, resetOnError = false) {
+function updateBaseLayingRate(valueString: string, resetOnError = false) {
     try {
         const parsedValue = parseRateString(valueString);
         baseLayingRateStringIsValid.value = true;
@@ -255,7 +268,7 @@ function updateBaseLayingRate(valueString, resetOnError = false) {
     }
 }
 
-function updateBaseShippingRate(valueString, resetOnError = false) {
+function updateBaseShippingRate(valueString: string, resetOnError = false) {
     try {
         const parsedValue = parseRateString(valueString);
         baseShippingRateStringIsValid.value = true;
@@ -275,7 +288,6 @@ watch(userData, updateEntries);
 watch(allowReslotting, updateEntries);
 watch(deflectorMode, updateEntries);
 
-watch(entries, updateThresholds);
 watch(baseLayingRate, updateThresholds);
 watch(baseShippingRate, updateThresholds);
 
@@ -287,22 +299,23 @@ function updateEntries() {
     console.log("Update entries");
     if (!userData.value) return [];
 
-    const maxSlot = userData.value?.proPermit ? 4 : 2;
-    let sets;
+    const maxSlot: number = userData.value?.proPermit ? 4 : 2;
+    let sets: ArtifactSet<T.Artifact | null>[][];
     try {
         errorMessage.value = "";
         sets = allowReslotting.value ?
                computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot) :
                computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot);
     } catch (e) {
-        errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+e.message;
+        errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
         entries.value = [];
         return;
     }
 
     // A set is optimal when the deflector bonus received is shippingBonus/maxLayingBonus
     // Sort them by optimal received deflector bonus
-    sets.sort((a, b) => a.shippingBonus/a.maxLayingBonus - b.shippingBonus/b.maxLayingBonus);
+    const sortKey = (x: ArtifactSet<T.Artifact | null>[]) => x[0]?.shippingBonus/(x[0]?.maxLayingBonus ?? x[0]?.layingBonus ?? 0);
+    sets.sort((a, b) => sortKey(a) - sortKey(b));
 
     // Update the artifacts shown on the view
     entries.value = [];
@@ -310,18 +323,28 @@ function updateEntries() {
         const set = equivalentSets[0];
         if (!set || set.length === 0) continue;
 
-        set.sort((a, b) => a.family - b.family);
+        set.sort((a, b) => a === null ? 1 : b === null ? -1 : a.family - b.family);
 
         while (set.length < maxSlot) set.push(null);
 
         entries.value.push({
             artifactSet: set,
+            hidden: false,
+            lowerThreshold: NaN,
+            lowerRate: NaN,
+            effectiveLowerRate: NaN,
+            optiThreshold: NaN,
+            optiRate: NaN,
+            higherThreshold: NaN,
+            higherRate: NaN,
             // LoE is invalid, because stones have no effect outside of enlightenment
             // Maybe the user knows more than me
             // Is it the secret of the soul?
             rainbowed: set.some(artifact => artifact && artifact.family === 0)
         });
     }
+
+    updateThresholds();
 }
 
 
@@ -337,7 +360,8 @@ function updateThresholds() {
     for (const idx in entries.value) {
         const entry = entries.value[idx];
         const shippingRate = baseShippingRate.value * entry.artifactSet.shippingBonus;
-        const layingRate = baseLayingRate.value * entry.artifactSet.maxLayingBonus;
+        const layingRate = baseLayingRate.value * (entry.artifactSet.maxLayingBonus ??
+        entry.artifactSet.layingBonus ?? 0);
 
         let lowerThreshold = prevShippingRate/layingRate - 1;
         const optimalBonus = shippingRate/layingRate - 1;
@@ -349,8 +373,8 @@ function updateThresholds() {
         entry.optiThreshold = optimalBonus;
         entry.optiRate = shippingRate;
 
-        if (idx > 0) {
-            entries.value[idx-1].higherThreshold = lowerThreshold;
+        if (Number(idx) > 0) {
+            entries.value[Number(idx)-1].higherThreshold = lowerThreshold;
         }
         entry.higherRate = shippingRate;
         prevShippingRate = shippingRate;

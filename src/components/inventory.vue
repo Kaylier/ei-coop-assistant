@@ -4,7 +4,7 @@
          tabindex="0"
          @keydown="handleKeydown"
          @focus="changeFocus(sandboxLink ? -1 : 0)"
-         @blur="changeFocus(null)">
+         @blur="changeFocus()">
         <a v-if="sandboxLink" :href="sandboxLink" target='_blank'
            class="sandbox-link"
            title="Open in sandbox"
@@ -14,22 +14,23 @@
         <div v-for="(item, index) in artifacts"
              class="subframe" :class="{ 'emptyframe': !isSet && !item, 'focused': index === currentFocusIndex }"
              @click="changeFocus(index)">
-            <item-view v-if="item" :item="item"></item-view>
+            <item v-if="item" :item="item" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue';
-import { getSandboxLink } from '/scripts/api.ts';
+import * as T from '@/scripts/types.ts';
+import { getSandboxLink } from '@/scripts/api.ts';
 
 const props = defineProps<{
-    artifacts: Item[],
-    isSet: boolean | undefined,
-    deflectorBonus: number | undefined,
-    proPermit: boolean | undefined,
-    column: number | undefined,
-    row: number | undefined,
+    artifacts: T.Item[],
+    isSet?: boolean,
+    deflectorBonus?: number,
+    proPermit?: boolean,
+    column?: number,
+    row?: number,
 }>();
 
 const sandboxLink = ref<string | null>(null);
@@ -43,12 +44,12 @@ const gridDimensions = computed(() => {
     if (columns === undefined && rows === undefined) {
         rows = Math.ceil(Math.sqrt(props.artifacts.length));
         columns = Math.ceil(props.artifacts.length / rows);
-    } else if (columns === undefined) {
+    } else if (columns === undefined && rows !== undefined) {
         columns = Math.ceil(props.artifacts.length / rows);
-    } else if (rows === undefined) {
+    } else if (columns !== undefined && rows === undefined) {
         rows = Math.ceil(props.artifacts.length / columns);
     }
-    return { columns, rows };
+    return { columns, rows } as { columns: number, rows: number };
 });
 
 const frameStyles = computed(() => ({
@@ -56,7 +57,7 @@ const frameStyles = computed(() => ({
     gridTemplateRows   : `repeat(${gridDimensions.value.rows   }, 1fr)`,
 }));
 
-function handleKeydown(event: KeyboardEvent) {
+async function handleKeydown(event: KeyboardEvent) {
     const { key } = event;
     const { columns, rows } = gridDimensions.value;
 
@@ -83,7 +84,7 @@ function handleKeydown(event: KeyboardEvent) {
             }
             break;
         case 'ArrowDown':
-            // Move down, and then left to the first non-empty slot encountered 
+            // Move down, and then left to the first non-empty slot encountered
             newIndex += columns;
             if (newIndex > props.artifacts.length)
                 newIndex = props.artifacts.length-1;
@@ -101,25 +102,25 @@ function handleKeydown(event: KeyboardEvent) {
             }
             break;
         case 'Enter':
-            if (currentFocusIndex.value == -1) {
-                frame.value.querySelector('a')?.click();
+            if (currentFocusIndex.value === -1) {
+                frame.value?.querySelector('a')?.click();
             }
             break;
         default:
             return;
     }
 
-    if (changeFocus(newIndex))
+    if (await changeFocus(newIndex))
         event.preventDefault();
 }
 
-async function changeFocus(index: number) {
+async function changeFocus(index?: number) {
     if (index === currentFocusIndex.value) return false;
     previousFocusIndex.value = currentFocusIndex.value;
-    currentFocusIndex.value = index;
+    currentFocusIndex.value = index !== undefined ? index : -1;
 
     await nextTick();
-    if (!frame.value) return;
+    if (!frame.value) return false;
 
     const subframes = frame.value.querySelectorAll('.subframe');
     const prevIndex = previousFocusIndex.value;
@@ -149,7 +150,7 @@ watch(() => [props.artifacts, props.deflectorBonus], updateSandboxLink, { immedi
 async function updateSandboxLink() {
     if (!props.isSet) return;
     try {
-        sandboxLink.value = await getSandboxLink(props.artifacts, props.deflectorBonus, props.proPermit); 
+        sandboxLink.value = await getSandboxLink(props.artifacts as T.Artifact[], props.deflectorBonus, props.proPermit);
     } catch (e) {
         sandboxLink.value = null;
     }

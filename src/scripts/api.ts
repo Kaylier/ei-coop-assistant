@@ -2,19 +2,21 @@
  * This file handle everything related to external API
  * This concerns Auxbrain API and carpet wasmegg tool suite
  */
-import * as T from './types.ts'
-import { getSortId, getSlotCount } from './artifacts.ts'
-import { checkSID } from '/scripts/utils.ts';
+import protobuf from 'protobufjs';
+import * as T from '@/scripts/types.ts';
+import { getSortId, getSlotCount } from '@/scripts/artifacts.ts';
+import { checkSID } from '@/scripts/utils.ts';
+
+import eiProto from '@/assets/proto/ei.proto?raw';
+import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
+
 
 
 // The endpoint is blocked by CORS, so we need a proxy to bypass it
 //const ENDPOINT = "https://ctx-dot-auxbrainhome.appspot.com";
 
-// A CORS proxy is hosted at this URL, redirecting all queries to the URL above
-const ENDPOINT = "https://ei-coop-assistant.netlify.app/api";
-
-// For local hosting, change the endpoint to your local CORS proxy
-//const ENDPOINT = "http://localhost:8080/?url=https://ctx-dot-auxbrainhome.appspot.com";
+// A CORS proxy is deployed at this url
+const ENDPOINT = "/auxbrain_api";
 
 const CLIENT_VERSION = 68;
 const APP_VERSION = '1.34.1';
@@ -25,7 +27,7 @@ const DEVICE_ID = 'ei-coop-assistant';
 /**
  * Convert an ArtifactSpec proto object to an Item typescript object
  */
-function getItemFromSpec(spec, proto): T.Item {
+function getItemFromSpec(spec: any, proto: any): T.Item {
 
     const eiName = proto.lookupEnum('ei.ArtifactSpec.Name');
     const eiLevel = proto.lookupEnum('ei.ArtifactSpec.Level');
@@ -197,20 +199,20 @@ function getItemFromSpec(spec, proto): T.Item {
 
     switch (category) {
         case T.ItemCategory.ARTIFACT:
-            item.tier = tier+1;
-            item.rarity = rarity;
+            (item as T.Artifact).tier = tier+1;
+            (item as T.Artifact).rarity = rarity;
             return item as T.Artifact;
         case T.ItemCategory.STONE:
             if (rarity !== T.Rarity.COMMON)
-                console.warn("A stone with rarity has been found: ", stone);
+                console.warn("A stone with rarity has been found: ", item);
             if (fragment && tier != 0)
                 console.warn("A fragment is not tier 0");
-            item.tier = fragment ? 1 : tier+2;
+            (item as T.Stone).tier = fragment ? 1 : tier+2;
             return item as T.Stone;
         case T.ItemCategory.INGREDIENT:
             if (rarity !== T.Rarity.COMMON)
-                console.warn("An ingredient with rarity has been found: ", stone);
-            item.tier = tier+1;
+                console.warn("An ingredient with rarity has been found: ", item);
+            (item as T.Ingredient).tier = tier+1;
             return item as T.Ingredient;
         default:
             throw Error(`Unknown item category: ${category}`);
@@ -221,7 +223,7 @@ function getItemFromSpec(spec, proto): T.Item {
 /**
  * Request a FirstContact to the API, and returns the Backup proto object
  */
-async function queryBackup(eid: string, proto) {
+async function queryBackup(eid: string, proto: any) {
 
     const EggIncFirstContactRequest = proto.lookupType('ei.EggIncFirstContactRequest');
     const EggIncFirstContactResponse = proto.lookupType('ei.EggIncFirstContactResponse');
@@ -298,8 +300,8 @@ async function getSpecialBackup(sid: string) {
  * Return the inventory of a player EID.
  * Identical items are grouped and an extra property `quantity` is added.
  */
-export async function getUserData(eid: string) {
-    const proto = await window['protobuf'].load("/proto/ei.proto");
+export async function getUserData(eid: string): Promise<T.UserData> {
+    const proto = await protobuf.parse(eiProto).root;
     const backup = checkSID(eid) ? await getSpecialBackup(eid) : await queryBackup(eid, proto);
 
     if (!backup) {
@@ -315,7 +317,7 @@ export async function getUserData(eid: string) {
 
     const proPermit = (backup.game?.permitLevel === 1);
 
-    const epicResearches = new Map(backup.game?.epicResearch?.map(er => [er.id, er.level]));
+    const epicResearches: Map<string, number> = new Map(backup.game?.epicResearch?.map((er: any) => [er.id, er.level]));
 
     const protoBuffDimention = proto.lookupEnum('GameModifier.GameDimension');
     const colleggtibleBuffs = getColleggtibleBuffs(proto, backup);
@@ -347,7 +349,7 @@ export async function getUserData(eid: string) {
 
 
     return {
-        items: Array.from(items.values()),
+        items: items,
         sets: sets,
         baseLayingRate: baseLayingRate,
         baseShippingRate: baseShippingRate,
@@ -356,56 +358,63 @@ export async function getUserData(eid: string) {
     };
 }
 
-function getInventory(proto, backup) {
-    let itemIdMap = {};
-    let items = new Map();
+function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[][]] {
+    let itemIdMap: Map<number, T.Item> = new Map();
+    let items: Map<string, T.Item> = new Map();
 
     for (const eiItem of backup.artifactsDb.inventoryItems) {
 
         let item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
-        item.quantity = eiItem.quantity;
-        item.id = eiItem.itemId;
+        let key: string;
+        item.quantity = eiItem.quantity as number;
+        item.id = eiItem.itemId as number;
 
-        let stones: T.Stone[] = []
-        for (const eiStone of eiItem.artifact.stones) {
-            const { category, family, tier } = getItemFromSpec(eiStone, proto);
+        if (item.category === T.ItemCategory.ARTIFACT) {
+            let stones: (T.Stone | null)[] = []
+            for (const eiStone of eiItem.artifact.stones) {
+                const { category, family, tier } = getItemFromSpec(eiStone, proto);
 
-            if (category != T.ItemCategory.STONE) {
-                console.warn("Item: ", eiItem, "Stone: ", eiStone);
-                throw Error("An item is equipped with something strange");
+                if (category != T.ItemCategory.STONE) {
+                    console.warn("Item: ", eiItem, "Stone: ", eiStone);
+                    throw Error("An item is equipped with something strange");
+                }
+
+                const stone: T.Stone = {
+                    category: category,
+                    family: family,
+                    tier: tier,
+                };
+                stones.push(stone);
             }
 
-            const stone: T.Stone = {
-                category: category,
-                family: family,
-                tier: tier,
-            };
-            stones.push(stone);
+            const maxStoneCount = getSlotCount(item as T.Artifact);
+            while (stones.length < maxStoneCount) {
+                stones.push(null);
+            }
+
+            (item as T.Artifact).stones = stones;
+            key = [getSortId(item), ...stones.map(getSortId).sort()].join('/');
+        } else {
+            key = getSortId(item);
         }
-
-        const maxStoneCount = getSlotCount(item);
-        while (stones.length < maxStoneCount) {
-            stones.push(null);
-        }
-
-        item.stones = stones;
-
-        const key = [getSortId(item), ...stones.map(getSortId).sort()].join('/');
 
         if (items.has(key)) {
-            items.get(key).quantity += item.quantity;
+            items.get(key)!.quantity! += item.quantity;
         } else {
             items.set(key, item);
         }
-        itemIdMap[eiItem.itemId] = items.get(key);
+        itemIdMap.set(eiItem.itemId, items.get(key)!);
     }
 
-    let sets = [];
+    let sets: (T.Artifact | null)[][] = [];
     for (const eiSet of backup.artifactsDb.savedArtifactSets) {
-        let set = [];
+        let set: (T.Artifact | null)[] = [];
         for (const eiSlot of eiSet.slots) {
             if (eiSlot.occupied) {
-                set.push(itemIdMap[eiSlot.itemId].id);
+                const artifact = itemIdMap.get(eiSlot.itemId) ?? null;
+                if (artifact && artifact.category !== T.ItemCategory.ARTIFACT)
+                    throw new Error("Invalid item found in a set");
+                set.push(artifact as T.Artifact);
             } else {
                 set.push(null);
             }
@@ -416,10 +425,10 @@ function getInventory(proto, backup) {
     }
     sets.reverse();
 
-    return [ items, sets ];
+    return [ [...items.values()], sets ];
 }
 
-function getColleggtibleBuffs(proto, backup) {
+function getColleggtibleBuffs(proto: any, backup: any): Map<unknown, number> {
     /*
      * Iterate through contracts to find colleggtibles. This is the only way to know as far as I know...
      * For ongoing contracts, assumes the population is maxed
@@ -446,14 +455,14 @@ function getColleggtibleBuffs(proto, backup) {
         }
     }
 
-    const colleggtibleBuffs = new Map<string, number>();
+    const colleggtibleBuffs = new Map<unknown, number>();
 
     if (backup.contracts?.customEggInfo) {
         for (const customEgg of backup.contracts?.customEggInfo) {
             // Handle colleggtible with multiple dimensions, just in case. Maybe overkill, let's call it future-proof.
             let finalBuffs = new Map();
             for (let i = 0; i < customEgg.buffs.length; i++) {
-                if (farmSizeThresholds[i] <= maxFarmSizeReached.get(customEgg.identifier)) {
+                if (farmSizeThresholds[i] <= (maxFarmSizeReached.get(customEgg.identifier) ?? 0)) {
                     const buff = customEgg.buffs[i];
                     finalBuffs.set(buff.dimension, buff.value);
                 }
@@ -469,8 +478,8 @@ function getColleggtibleBuffs(proto, backup) {
 /**
  * Generates a link to wasmegg sandbox tool https://wasmegg-carpet.netlify.app/artifact-sandbox
  */
-export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: number = 0, proPermit: bool = false) {
-    const proto = await window['protobuf'].load("/proto/wasmegg-sandbox.proto");
+export async function getSandboxLink(artifacts: T.Artifact[], deflectorBonus: number = 0, proPermit: boolean = false) {
+    const proto = await protobuf.parse(sandboxProto).root;
     const protoBuilds = proto.lookupType('Builds')
     const protoArtifactName = proto.lookupEnum('ArtifactSpec.Name');
 
@@ -511,7 +520,7 @@ export async function getSandboxLink(artifacts: T.Artifact, deflectorBonus: numb
     };
 
     let payload = {
-        builds: [{ artifacts: [] }],
+        builds: [{ artifacts: [] as any[] }],
         config: {
             prophecyEggs: 1,
             soulEggs: 250,

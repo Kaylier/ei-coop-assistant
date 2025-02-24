@@ -2,7 +2,7 @@
     <div id="item-tooltip" ref="tooltip"
          class="item-tooltip-container" :class="getRarityClass(item)"
          :style="{ top: position.top + 'px', left: position.left + 'px', visibility: visible ? 'visible' : 'hidden', opacity: visible ? 0.95 : 0 }">
-        <span v-if="item?.quantity > 1" class="quantity">{{ item.quantity ?? 0 }}</span>
+        <span v-if="(item?.quantity ?? 1) > 1" class="quantity">{{ item ? (item.quantity ?? 1) : 0 }}</span>
         <span v-if="item" class="artifact-line">
             <img :src="getImageSource(item)" />
             <div class="description-container">
@@ -14,11 +14,11 @@
                 </span>
             </div>
         </span>
-        <span v-if="item?.reslotted" class="stone-line reslot-line">
+        <span v-if="isArtifact(item) && item.reslotted" class="stone-line reslot-line">
             <img src="/img/icons/shuffle.png" alt="🔀"/>
             <span class="description-container">Stones have been reslotted</span>
         </span>
-        <span v-if="item" v-for="stone in item.stones.filter(s => s !== null)" class="stone-line">
+        <span v-for="stone in getStones(item)" class="stone-line">
             <img :src="getImageSource(stone)" />
             <div class="description-container">
                 <span class="name">
@@ -31,7 +31,7 @@
                 </span>
             </div>
         </span>
-        <span v-if="(emptySlotCount = item?.stones.filter(s => s === null).length)" class="stone-line">
+        <span v-if="emptySlotCount = getEmptySlotCount(item)" class="stone-line">
             <img src="/img/icons/stone-slot.png" />
             <div class="description-container">
                 <span class="name">
@@ -43,24 +43,25 @@
     </div>
 </template>
 
-<script setup>
-import * as T from '/scripts/types.ts';
+<script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
-import { getName, getDescriptions, getImageSource } from 'scripts/artifacts.ts';
+import * as T from '@/scripts/types.ts';
+import { getName, getDescriptions, getImageSource } from '@/scripts/artifacts.ts';
 
-const tooltip = ref(null);
-const visible = ref(false);
-const position = ref({ top: 0, left: 0 });
-const item = ref(null);
-const emptySlotCount = ref(0);
+const tooltip = ref();
+const visible = ref<boolean>(false);
+const position = ref<{ top: number, left: number }>({ top: 0, left: 0 });
+const item = ref<T.Item | null>(null);
+const emptySlotCount = ref<number>(0);
 
-function show(newItem, event) {
+function show(newItem: T.Item, event: Event) {
     item.value = newItem;
     visible.value = true;
 
     nextTick(() => {
         if (!tooltip) return;
-        const rect = event.target.getBoundingClientRect();
+        // @ts-ignore
+        const rect = event.target?.getBoundingClientRect?.() ?? { left: 0, top: 0 };
         const tooltipWidth = tooltip.value.offsetWidth;
         const tooltipHeight = tooltip.value.offsetHeight;
 
@@ -85,14 +86,28 @@ function hide() {
 
 defineExpose({ show, hide });
 
-function getRarityClass(item) {
-    if (!item) return "";
-    const ret = T.Rarity[item.rarity];
+function isArtifact(item: T.Item | null): item is T.Artifact {
+    return item !== null && item.category === T.ItemCategory.ARTIFACT;
+}
+
+function getStones(item: T.Item | null): T.Stone[] {
+    if (!item || item.category !== T.ItemCategory.ARTIFACT) return [];
+    return (item as T.Artifact).stones.filter(s => s !== null);
+}
+
+function getEmptySlotCount(item: T.Item | null): number {
+    if (!item || item.category !== T.ItemCategory.ARTIFACT) return 0;
+    return (item as T.Artifact).stones.filter(s => s === null).length;
+}
+
+function getRarityClass(item: T.Item | null): string {
+    if (!item || item.category !== T.ItemCategory.ARTIFACT) return "";
+    const ret = T.Rarity[(item as T.Artifact).rarity];
     return ret ? ret.toLowerCase() : "";
 }
 
-function getStamp(item) {
-    if (!item) return "";
+function getStamp(item: T.Item): string {
+    if (!item || item.category !== T.ItemCategory.ARTIFACT) return "";
     const m = {
         [T.Rarity.COMMON]: "Common",
         [T.Rarity.RARE]: "Rare",

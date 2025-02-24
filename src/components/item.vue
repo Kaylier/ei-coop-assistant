@@ -1,5 +1,5 @@
 <template>
-    <div class="item-frame" :class="[getRarityClass(item), item?.id && highlightedItemId === item.id ? 'highlighted' : '']"
+    <div class="item-frame" :class="[getRarityClass(item), item.id && highlightedItemId === item.id ? 'highlighted' : '']"
        @mouseenter="showItemTooltip(item, $event)"
        @mouseleave="hideItemTooltip()"
        @touchstart="showItemTooltip(item, $event)"
@@ -11,18 +11,18 @@
             :src="getImageSource(item)"
             :alt="getName(item)"></img>
 
-        <svg v-if="item.quantity > 1 && !item.reslotted"
+        <svg v-if="(item.quantity ?? 1) > 1 && !(item.category === T.ItemCategory.ARTIFACT && item.reslotted)"
             class="item-quantity"
             viewBox="0 0 100 20"
             preserveAspectRatio="xMaxYMin meet"
-            ><text x="100%" y="100%" text-anchor="end"> {{ item.quantity.toLocaleString() }} </text></svg>
+            ><text x="100%" y="100%" text-anchor="end"> {{ item.quantity?.toLocaleString() }} </text></svg>
 
         <div class="stones-frame">
-            <img v-for="stone in item.stones.filter(s => s !== null)"
+            <img v-for="stone in itemStones(item)"
                 class="stone-frame"
                 :src="getImageSource(stone)"
                 :alt="getName(stone)"></img>
-            <img v-if="item.reslotted"
+            <img v-if="item.category === T.ItemCategory.ARTIFACT && item.reslotted"
                 class="stone-frame"
                 src="/img/icons/shuffle.png"
                 alt="🔀"></img>
@@ -32,31 +32,40 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue';
-import * as T from '/scripts/types.ts';
-import { getImageSource, getName } from '/scripts/artifacts.ts';
+import { inject, ref } from 'vue';
+import type { Ref } from 'vue';
+import * as T from '@/scripts/types.ts';
+import { getImageSource, getName } from '@/scripts/artifacts.ts';
 
-const showItemTooltip = inject("showItemTooltip");
-const hideItemTooltip = inject("hideItemTooltip");
-const highlightedItemId = inject("highlightedItemId");
+const showItemTooltip = inject("showItemTooltip") as (item: any, event: Event) => void;
+const hideItemTooltip = inject("hideItemTooltip") as () => void;
+const highlightedItemId = inject<Ref<number | null>>("highlightedItemId", ref(null));
 
 const props = defineProps<{
     item: T.Item
 }>();
 
+function itemStones(item: T.Item): T.Stone[] {
+    if (item.category !== T.ItemCategory.ARTIFACT) return [];
+    return (item as T.Artifact).stones.filter(s => s !== null);
+}
+
 function getRarityClass(item: T.Item): string {
-    const ret = T.Rarity[item.rarity];
+    if (item.category !== T.ItemCategory.ARTIFACT) return "";
+    const ret = T.Rarity[(item as T.Artifact).rarity];
     return ret ? ret.toLowerCase() : "";
 }
 
-function onFocusEnter(item, event) {
+function onFocusEnter(item: T.Item, event: Event) {
     showItemTooltip(item, event);
-    highlightedItemId.value = item.id;
+    highlightedItemId.value = item.id ?? null;
 }
+
 function onFocusLeave() {
     hideItemTooltip();
     highlightedItemId.value = null;
 }
+
 </script>
 
 <style scoped>

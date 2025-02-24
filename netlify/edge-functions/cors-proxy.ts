@@ -3,7 +3,7 @@ import type { Config, Context } from '@netlify/edge-functions';
 export default async (request: Request, context: Context) => {
     const targetUrl = 'https://ctx-dot-auxbrainhome.appspot.com';
     const url = new URL(request.url);
-    const forwardUrl = `${url.href.replace(url.origin + '/api', targetUrl)}`;
+    const forwardUrl = `${url.href.replace(url.origin + '/auxbrain_api', targetUrl)}`;
 
     const headers = new Headers();
     headers.set("Content-Type", "application/x-www-form-urlencoded");
@@ -19,6 +19,7 @@ export default async (request: Request, context: Context) => {
     }
 
     try {
+        console.log("Forward query");
         const forwardedResponse = await fetch(forwardUrl, init);
 
         const responseBody = await forwardedResponse.text();
@@ -43,6 +44,6 @@ export default async (request: Request, context: Context) => {
 };
 
 export const config: Config = {
-    path: '/api/*',
+    path: '/auxbrain_api/*',
 };
 

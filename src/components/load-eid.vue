@@ -11,7 +11,8 @@
                 @click="load(eid)">
                 Load from EID
                 <span v-if="!checkEID(eid)" class="tooltip-text invalid-text">
-                    Player EID must be of the form<br/>EI1234567890123456 (16 digits)
+                    Player EID must be of the form<br/>
+                    EI1234567890123456 (16 digits)
                 </span>
             </button>
         </form>
@@ -23,8 +24,8 @@
             No inventory loaded
         </div>
         <div v-else-if="userData.items.length" class="valid-text">
-            {{ (userData.items.reduce((tot, cur) => tot + cur.quantity, 0)).toLocaleString() }} items loaded - {{ userData.date.toLocaleString() }}
-            <span v-if="Date.now() - userData.date > 3600000*24*7" class="tooltip-icon warning-text">
+            {{ itemCount.toLocaleString() }} items loaded - {{ userData.date.toLocaleString() }}
+            <span v-if="Date.now() - userData.date.getTime() > 3600000*24*7" class="tooltip-icon warning-text">
                 ⚠
                 <span class="tooltip-text">
                     This inventory has not been updated for over a week.<br/>
@@ -39,30 +40,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { checkEID, checkSID } from '/scripts/utils.ts';
-import { getUserData } from '/scripts/api.ts';
+import { onMounted, ref, computed } from 'vue';
+import * as T from '@/scripts/types.ts';
+import { checkEID, checkSID } from '@/scripts/utils.ts';
+import { getUserData } from '@/scripts/api.ts';
 
 const props = defineProps<{
-    userData
+    userData: T.UserData,
 }>();
 
 const emit = defineEmits<{
-    (e: 'onloaded', userData: object): void
+    (e: 'onloaded', userData: T.UserData): void
 }>();
 
-const eid = ref("");
-const isLoadingEID = ref(false);
-const errorMsg = ref(null);
+const eid = ref<string>("");
+const isLoadingEID = ref<boolean>(false);
+const errorMsg = ref<string>("");
 
-Vue.onMounted(async () => {
+const itemCount = computed((): number => {
+  return props.userData?.items?.reduce((tot: number, cur: T.Item) => tot + (cur.quantity ??
+  1), 0) ?? 0;
+});
+
+onMounted(async () => {
     eid.value = (new URLSearchParams(window.location.search)).get('eid') ??
                 localStorage.getItem('player-eid') ??
                 eid.value;
 
-    let saved = JSON.parse(localStorage.getItem('user-data'));
-    if (saved) {
-        if (saved['date'])
+    const savedStr = localStorage.getItem('user-data');
+    if (savedStr) {
+        const saved = JSON.parse(savedStr);
+        if (saved && saved['date'])
             saved['date'] = new Date(saved['date']);
         emit('onloaded', saved);
     } else if (checkEID(eid.value)) {
@@ -71,13 +79,13 @@ Vue.onMounted(async () => {
 });
 
 
-async function load(eid: String) {
+async function load(eid: string) {
     if (!checkEID(eid))
         throw new Error("Invalid EID format");
 
     if (isLoadingEID.value) return;
     isLoadingEID.value = true;
-    errorMsg.value = null;
+    errorMsg.value = "";
 
     console.log("Loading from EID", eid);
 
@@ -88,7 +96,7 @@ async function load(eid: String) {
         isLoadingEID.value = false;
     } catch (e) {
         console.error("Error loading user data:", e);
-        errorMsg.value = e;
+        errorMsg.value = String(e);
         isLoadingEID.value = false;
         return
     }

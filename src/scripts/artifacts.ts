@@ -4,10 +4,80 @@
  *
  * Credit to Forzpace for populating artifactMetadata
  */
-import * as T from "./types.ts";
+import * as T from "@/scripts/types.ts";
 
 
-const artifactMetadata = {
+type Effect = {
+    target: string;
+    value: number;
+    text: string;
+};
+
+type ArtifactRarity = {
+    id: string;
+    slot_count: number;
+    value: number;
+    odds_multiplier: number;
+    effects: Effect[];
+};
+
+type ArtifactTier = {
+    tier: number;
+    qualifier: string;
+    quality: number;
+    image: string;
+    name: string;
+    rarities: {
+      [rarity in T.Rarity]?: {
+      };
+    };
+};
+
+type StoneTier = {
+    tier: number;
+    qualifier: string;
+    quality: number;
+    image: string;
+    name: string;
+    id: string;
+    value: number;
+    odds_multiplier: number;
+    effects?: Effect[];
+};
+
+type IngredientTier = {
+    tier: number;
+    qualifier: string;
+    quality: number;
+    image: string;
+    name: string;
+    id: string;
+    value: number;
+    odds_multiplier: number;
+};
+
+type ArtifactMetadata = {
+    [T.ItemCategory.ARTIFACT]: {
+        [family in T.ArtifactFamily]: {
+            family_name: string;
+            tiers: ArtifactTier[];
+        };
+    };
+    [T.ItemCategory.STONE]: {
+        [family in T.StoneFamily]: {
+            family_name: string;
+            tiers: StoneTier[];
+        };
+    };
+    [T.ItemCategory.INGREDIENT]: {
+        [family in T.IngredientFamily]: {
+            family_name: string;
+            tiers: IngredientTier[];
+        };
+    };
+};
+
+const artifactMetadata: ArtifactMetadata = {
     [T.ItemCategory.ARTIFACT]: {
         [T.ArtifactFamily.LIGHT_OF_EGGENDIL]: {
             "family_name": "Light of Eggendil",
@@ -1591,7 +1661,7 @@ enum EffectType {
     UNKNOWN
 };
 
-const effectMetadata = {
+const effectMetadata: Record<string, { type: EffectType, text: string }> = {
     "enlightenment_earning_bonus": { "type": EffectType.MULTIPLICATIVE, "text": "enlightenment egg value" },
     "prophecy_egg_bonus"         : { "type": EffectType.ADDITIVE      , "text": "to Egg of Prophecy bonus" },
     "team_laying_bonus"          : { "type": EffectType.ADDITIVE      , "text": "co-op teammates' egg laying rate" },
@@ -1622,7 +1692,8 @@ const effectMetadata = {
  * Return a unique string that can be used to sort items
  */
 export function getSortId(item: T.Item | null): string {
-    if (!item) return null;
+    if (!item) return "";
+    // @ts-ignore typescript fails to correlate the category index and the family index type in artifactMetadata
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     return item.category == T.ItemCategory.ARTIFACT ? itemData?.rarities?.[item.rarity]?.id : itemData?.id;
 }
@@ -1632,6 +1703,7 @@ export function getSortId(item: T.Item | null): string {
  */
 export function getName(item: T.Item | null): string {
     if (!item) return "";
+    // @ts-ignore
     const itemFamilyData = artifactMetadata[item.category]?.[item.family];
     const itemData = itemFamilyData?.tiers?.[item.tier-1];
     return itemData?.name ?? itemFamilyData?.family_name ?? "Unknown Item";
@@ -1640,11 +1712,13 @@ export function getName(item: T.Item | null): string {
 /**
  * Returns a list of descriptions for an item effects
  */
-export function getDescriptions(item: T.Item | null): string[] {
+export function getDescriptions(item: T.Item | null): [string, string][] {
     if (!item) return [];
+    // @ts-ignore
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
-    const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
-    const ret = []
+    // @ts-ignore
+    const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
+    const ret: [string, string][] = []
     if (!effects) return ret;
     for (const effect of effects) {
         ret.push([effect.text ?? "unknown", effectMetadata[effect.target]?.["text"] ?? "bonus"]);
@@ -1657,6 +1731,7 @@ export function getDescriptions(item: T.Item | null): string[] {
  */
 export function getImageSource(item: T.Item | null): string {
     if (!item) return "/img/icons/stone-slot.png";
+    // @ts-ignore
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
     const filename = itemData?.image;
     return filename ? `/img/items/${filename}.png` : "/img/not-found.png";
@@ -1666,7 +1741,9 @@ export function getImageSource(item: T.Item | null): string {
  * Returns the amount of stone slots of an artifact
  */
 export function getSlotCount(artifact: T.Artifact): number {
+    // @ts-ignore
     const itemData = artifactMetadata[artifact.category]?.[artifact.family]?.tiers?.[artifact.tier-1];
+    // @ts-ignore
     return itemData?.rarities?.[artifact.rarity]?.slot_count;
 }
 
@@ -1675,16 +1752,18 @@ export function getSlotCount(artifact: T.Artifact): number {
  * If the item contains stones, compound their effects, unless recursive is set to false.
  * If a certain bonus does not appear, the caller must handle the default value.
  */
-export function getEffects(item: T.Item | null, recursive: boolean = true) {
+export function getEffects(item: T.Item | null, recursive: boolean = true): Record<string, number> {
     if (!item) return {};
+    // @ts-ignore
     const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
-    const effects = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
+    // @ts-ignore
+    const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
     if (!effects) return {};
 
-    const ret = {};
+    const ret: Record<string, number> = {};
 
     function applyEffect(target: string, value: number) {
-        const type = effectMetadata[target]?.["type"] ?? EffectType.UNKNOWN;
+        const type: EffectType = effectMetadata[target]?.["type"] ?? EffectType.UNKNOWN;
         switch (type) {
             case EffectType.ADDITIVE:
                 ret[target] = (ret[target] ?? 0) + value;
@@ -1700,8 +1779,9 @@ export function getEffects(item: T.Item | null, recursive: boolean = true) {
 
     effects.forEach(({target, value}) => applyEffect(target, value));
 
-    if (recursive) {
-        item.stones?.flatMap(stone => Object.entries(getEffects(stone)))
+    if (recursive && item.category === T.ItemCategory.ARTIFACT) {
+        const artifact = item as T.Artifact;
+        artifact.stones?.flatMap(stone => Object.entries(getEffects(stone)))
                     .forEach(([target, value]) => applyEffect(target, value));
     }
 
@@ -1712,9 +1792,14 @@ export function getEffects(item: T.Item | null, recursive: boolean = true) {
  * Create a deep copy of an item
  */
 export function copyItem(item: T.Item): T.Item {
+  if (item.category === T.ItemCategory.ARTIFACT) {
+    const artifact = item as T.Artifact;
     return {
-        ...item,
-        stones: item.stones?.map(stone => stone ? { ...stone } : null)
+      ...artifact,
+      stones: artifact.stones.map(stone => (stone ? { ...stone } : null))
     };
+  }
+  return { ...item };
 }
+
 

@@ -1,27 +1,37 @@
-import { round, extractParetoFrontier, extractParetoFrontier3, combinations, product } from '/scripts/utils.ts';
-import * as T from '/scripts/types.ts';
-import { getEffects, copyItem } from '/scripts/artifacts.ts';
+import { round, extractParetoFrontier, extractParetoFrontier3, combinations, product } from '@/scripts/utils.ts';
+import * as T from '@/scripts/types.ts';
+import { getEffects, copyItem } from '@/scripts/artifacts.ts';
 
 
-
-type ArtifactGroup = T.Artifact[] & {
-    deflectorBonus  : number,
-    layingBonus     : number,
-    shippingBonus   : number,
-    habCapacityBonus: number,
-    maxLayingBonus  : number | undefined,
-    stoneSlotAmount : number | undefined,
+type AnnotatedArtifact = {
+    artifact: T.Artifact;
+    deflectorBonus   : number,
+    layingBonus      : number,
+    shippingBonus    : number,
+    habCapacityBonus : number,
+    maxLayingBonus  ?: number,
+    stoneSlotAmount ?: number,
 };
 
-type ArtifactSet<T> = T[] & {
-    deflectorBonus    : number,
-    layingBonus       : number,
-    shippingBonus     : number,
-    habCapacityBonus  : number,
-    maxLayingBonus    : number | undefined,
-    stoneSlotAmount   : number | undefined,
-    tachyonStoneAmount: number | undefined,
-    quantumStoneAmount: number | undefined,
+type ArtifactGroup = T.Artifact[] & {
+    deflectorBonus   : number,
+    layingBonus      : number,
+    shippingBonus    : number,
+    habCapacityBonus : number,
+    maxLayingBonus  ?: number,
+    stoneSlotAmount ?: number,
+};
+
+export type ArtifactSet<T> = T[] & {
+    deflectorBonus     : number,
+    layingBonus        : number,
+    shippingBonus      : number,
+    habCapacityBonus   : number,
+    maxLayingBonus    ?: number,
+    stoneSlotAmount   ?: number,
+    tachyonStoneAmount?: number,
+    quantumStoneAmount?: number,
+    reslotted         ?: number,
 };
 
 
@@ -30,7 +40,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
                                                     deflectorMode: T.DeflectorMode,
                                                     maxSlot: number
                                                    ): ArtifactSet<T.Artifact>[][] {
-    const artifactsByFamily: Map<T.ArtifactFamily, T.Artifact[]> = getArtifacts(items, true);
+    const artifactsByFamily: Map<T.ArtifactFamily, AnnotatedArtifact[]> = getArtifacts(items, true);
 
     // Remove forbidden deflectors
     if (deflectorMode === T.DeflectorMode.TEAMWORK) {
@@ -42,39 +52,41 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
     const artifactGroups: Map<T.ArtifactFamily, ArtifactGroup[]> = new Map();
     for (let [family, artifacts] of artifactsByFamily) {
         if (!artifacts?.length) continue;
+        let paretoAnArtifacts: AnnotatedArtifact[][];
 
         if (family === T.ArtifactFamily.TACHYON_DEFLECTOR) {
-            artifacts = extractParetoFrontier3(artifacts.map(x => [
+            paretoAnArtifacts = extractParetoFrontier3(artifacts.map(x => [
                 (x.layingBonus ?? 1)*(x.habCapacityBonus ?? 1),
                 x.shippingBonus ?? 1,
                 x.deflectorBonus ?? 0,
                 x]));
         } else {
-            artifacts = extractParetoFrontier(artifacts.map(x => [
+            paretoAnArtifacts = extractParetoFrontier(artifacts.map(x => [
                 (x.layingBonus ?? 1)*(x.habCapacityBonus ?? 1),
                 x.shippingBonus ?? 1,
                 x]));
         }
 
         // move effect properties to the group for easier access
-        artifacts.forEach(group => Object.assign(group, {
+        let paretoArtifacts: ArtifactGroup[] = paretoAnArtifacts.map(group => Object.assign(group.map(x => x.artifact), {
             deflectorBonus  : group[0].deflectorBonus,
             layingBonus     : group[0].layingBonus,
             shippingBonus   : group[0].shippingBonus,
             habCapacityBonus: group[0].habCapacityBonus,
         }));
-        artifacts = artifacts.filter(x => x.deflectorBonus !== 0
-                                       || x.layingBonus !== 1
-                                       || x.shippingBonus !== 1
-                                       || x.habCapacityBonus !== 1);
+        paretoArtifacts = paretoArtifacts.filter(x => x.deflectorBonus !== 0
+                                                   || x.layingBonus !== 1
+                                                   || x.shippingBonus !== 1
+                                                   || x.habCapacityBonus !== 1);
 
-        artifactGroups.set(family, artifacts);
+        artifactGroups.set(family, paretoArtifacts);
     }
 
 
     // Build family sets progressively
     let familySets: T.ArtifactFamily[][] = [[]];
-    let families = Object.values(T.ArtifactFamily).reverse().filter(family => (artifactGroups.get(family) ?? []).length > 0);
+    let families = (Object.values(T.ArtifactFamily).filter(family => !isNaN(Number(family))) as T.ArtifactFamily[])
+                   .filter(family => (artifactGroups.get(family) ?? []).length > 0);
     // If deflector is forced, add it first
     if (deflectorMode !== T.DeflectorMode.NONE) {
         familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.TACHYON_DEFLECTOR]);
@@ -121,7 +133,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
     // each set is an array of artifact groups (equivalent artifacts)
     // We expand artifact groups so we now have sets with actual artifacts
     let optimalSets: ArtifactSet<T.Artifact>[][] = paretoSets.map(group => group.flatMap(set =>
-        [...product(...set)].map(x => Object.assign(x.map(copyItem), {
+        [...product(...set)].map(x => Object.assign(x.map(copyItem) as T.Artifact[], {
             deflectorBonus    : set.deflectorBonus,
             layingBonus       : set.layingBonus,
             shippingBonus     : set.shippingBonus,
@@ -175,7 +187,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     }
 
 
-    const artifactsByFamily: Map<T.ArtifactFamily, T.Artifact[]> = getArtifacts(items, false);
+    const artifactsByFamily: Map<T.ArtifactFamily, AnnotatedArtifact[]> = getArtifacts(items, false);
 
     // Remove forbidden deflectors
     if (deflectorMode === T.DeflectorMode.TEAMWORK) {
@@ -191,26 +203,26 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         // Since only a single effect exist in each family, we can shortcut by using a compounded formula
         // For metronome, it will be equivalent to layingBonus for example
         // For non contract families, it is just 1 and we end up with artifacts with the maximum amount of slot
-        artifacts = extractParetoFrontier(artifacts.map(x => [
+        const paretoAnArtifacts: AnnotatedArtifact[][] = extractParetoFrontier(artifacts.map(x => [
             (1 + (x.deflectorBonus ?? 0))*(x.layingBonus ?? 1)*(x.shippingBonus ?? 1)*(x.habCapacityBonus ?? 1),
-            x.stoneSlotAmount,
+            x.stoneSlotAmount ?? 0,
             x]));
 
         // move effect properties to the group for easier access
-        artifacts.forEach(group => Object.assign(group, {
+        let paretoArtifacts: ArtifactGroup[] = paretoAnArtifacts.map(group => Object.assign(group.map(x => x.artifact), {
             deflectorBonus  : group[0].deflectorBonus,
             layingBonus     : group[0].layingBonus,
             shippingBonus   : group[0].shippingBonus,
             habCapacityBonus: group[0].habCapacityBonus,
             stoneSlotAmount : group[0].stoneSlotAmount,
         }));
-        artifacts = artifacts.filter(x => x.deflectorBonus !== 0
-                                       || x.layingBonus !== 1
-                                       || x.shippingBonus !== 1
-                                       || x.habCapacityBonus !== 1
-                                       || x.stoneSlotAmount !== 0);
+        paretoArtifacts = paretoArtifacts.filter(x => x.deflectorBonus !== 0
+                                                   || x.layingBonus !== 1
+                                                   || x.shippingBonus !== 1
+                                                   || x.habCapacityBonus !== 1
+                                                   || x.stoneSlotAmount !== 0);
 
-        artifactGroups.set(family, artifacts);
+        artifactGroups.set(family, paretoArtifacts);
     }
 
 
@@ -218,7 +230,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     // In non-contract families, we organize stone holders by amount of stone first, family second
     // highest stone slot count artifacts are grouped and put in stoneHolders[stoneCount]
     const stoneHolders: T.ArtifactFamily[][] = [[], [], [], []];
-    const stoneHolderFamilies: T.ArtifactFamily[] = Object.values(T.ArtifactFamily)
+    const stoneHolderFamilies: T.ArtifactFamily[] = (Object.values(T.ArtifactFamily).filter(x => !isNaN(Number(x))) as T.ArtifactFamily[])
         .filter(family => (artifactGroups.get(family)?.length ?? 0) > 0
                        && family !== T.ArtifactFamily.TACHYON_DEFLECTOR
                        && family !== T.ArtifactFamily.QUANTUM_METRONOME
@@ -236,20 +248,20 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         })
         .sort((a, b) => {
             // We put prefered families first
-            const arta = artifactGroups.get(a)[0];
-            const artb = artifactGroups.get(b)[0];
-            return artb.stoneSlotAmount - arta.stoneSlotAmount
+            const arta = artifactGroups.get(a)![0]!;
+            const artb = artifactGroups.get(b)![0]!;
+            return (artb.stoneSlotAmount ?? 0) - (arta.stoneSlotAmount ?? 0)
                 || countSlotted(artb) - countSlotted(arta)
-                || artb.reduce((t,c) => t+(c.quantity), 0) - arta.reduce((t,c) => t+(c.quantity), 0) ;
+                || countQuantity(artb) - countQuantity(arta);
         });
     for (const [idx, family] of stoneHolderFamilies.entries()) {
-        const artifacts = artifactGroups.get(family)[0];
+        const artifacts = artifactGroups.get(family)![0]!;
         // We keep families as long as they have at least one slotted artifact
         // Minimum 4 families
         if (countSlotted(artifacts) === 0 && 4 <= idx) {
             break;
         }
-        const stoneSlotAmount = artifacts.stoneSlotAmount;
+        const stoneSlotAmount = artifacts.stoneSlotAmount ?? 0;
         if (!(stoneSlotAmount > 0)) continue;
         if (stoneSlotAmount > 3) {
             throw new Error("Found artifacts with more than 3 stone slots.");
@@ -334,7 +346,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     // each group is an array of equivalent sets regarding maxLayingBonus and shippingBonus,
     // each set is an array of artifact groups (equivalent artifacts)
     // We expand artifact groups so we now have sets with actual artifacts
-    let optimalSets: ArtifactSet<T.Artifact>[][] = paretoSets.map(group => group.flatMap(set => [...product(...set)].map(x => Object.assign(x.map(x => copyItem(x)), {
+    let optimalSets: ArtifactSet<T.Artifact>[][] = paretoSets.map(group => group.flatMap(set => [...product(...set)].map(x => Object.assign(x.map(x => copyItem(x) as T.Artifact), {
         deflectorBonus    : set.deflectorBonus,
         layingBonus       : set.layingBonus,
         shippingBonus     : set.shippingBonus,
@@ -381,8 +393,8 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 /*
  * Group artifacts by families, and annotate them with bonus properties (layingBonus, shippingBonus...)
  */
-function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.ArtifactFamily, T.Artifact[]> {
-    const result = new Map<T.ArtifactFamily, T.Artifact[]>();
+function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.ArtifactFamily, AnnotatedArtifact[]> {
+    const result = new Map<T.ArtifactFamily, AnnotatedArtifact[]>();
 
     items.forEach((item: T.Item) => {
         if (item.category !== T.ItemCategory.ARTIFACT) return;
@@ -395,16 +407,19 @@ function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.Art
             team_laying_bonus : deflectorBonus   = 0
         } = getEffects(artifact, includeStones);
 
-        artifact.layingBonus = round(layingBonus);
-        artifact.habCapacityBonus = round(habCapacityBonus);
-        artifact.shippingBonus = round(shippingBonus);
-        artifact.deflectorBonus = round(deflectorBonus);
-        artifact.stoneSlotAmount = artifact.stones?.length ?? 0;
+        const annotatedArtifact: AnnotatedArtifact = {
+            artifact,
+            layingBonus: round(layingBonus),
+            habCapacityBonus: round(habCapacityBonus),
+            shippingBonus: round(shippingBonus),
+            deflectorBonus: round(deflectorBonus),
+            stoneSlotAmount: artifact.stones?.length ?? 0,
+        };
 
         if (!result.has(artifact.family)) {
             result.set(artifact.family, []);
         }
-        result.get(artifact.family).push(artifact);
+        result.get(artifact.family)!.push(annotatedArtifact);
     });
 
     return result;
@@ -415,7 +430,7 @@ function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.Art
 /*
  * Remove all deflectors but the ones with the highest bonus
  */
-function removeSubDeflectors(artifactsByFamily: Map<T.ArtifactFamily, T.Artifact[]>) {
+function removeSubDeflectors(artifactsByFamily: Map<T.ArtifactFamily, AnnotatedArtifact[]>) {
     const deflectors = artifactsByFamily.get(T.ArtifactFamily.TACHYON_DEFLECTOR);
     if (!deflectors?.length) return;
 
@@ -436,15 +451,22 @@ function countSlotted(artifacts: T.Artifact[]): number {
     let count = 0;
     for (const artifact of artifacts) {
         if (artifact.stones?.some(stone => stone && stone.family === T.StoneFamily.TACHYON_STONE)) {
-            count += artifact.quantity ?? 1;
+            count += (artifact as T.Item).quantity ?? 1;
         }
         if (artifact.stones?.some(stone => stone && stone.family === T.StoneFamily.QUANTUM_STONE)) {
-            count += artifact.quantity ?? 1;
+            count += (artifact as T.Item).quantity ?? 1;
         }
     }
     return count;
 }
 
+
+/*
+ * Count the amount of items in a list, adding all quantities
+ */
+function countQuantity(items: T.Item[]): number {
+    return items.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+}
 
 
 /*
@@ -468,7 +490,8 @@ function getStoneQueue(items: T.Item[], family: T.StoneFamily, queueSize: number
 
     items.forEach((item: T.Item) => {
         addStone(item);
-        item.stones?.forEach(stone => stone && addStone(stone));
+        if (item.category === T.ItemCategory.ARTIFACT)
+          (item as T.Artifact).stones?.forEach(stone => stone && addStone(stone));
     });
 
     // Ignore invalid tiers (0) and fragments (1)
@@ -503,8 +526,8 @@ function getStoneQueue(items: T.Item[], family: T.StoneFamily, queueSize: number
  * If some of the desired stones are already slotted, keep them where they are
  * The missing stones will replace unwanted ones.
  */
-function assignStones(set: T.Artifact[], stones: T.Stone[]): T.Artifact[] {
-    const stoneKey = s => s ? `${s.category}-${s.family}-${s.tier}` : null;
+function assignStones(set: ArtifactSet<T.Artifact>, stones: T.Stone[]): T.Artifact[] {
+    const stoneKey = (s: T.Stone | null) => s ? `${s.category}-${s.family}-${s.tier}` : "null";
 
     const stoneCount = new Map<string, number>();
     for (const stone of stones) {

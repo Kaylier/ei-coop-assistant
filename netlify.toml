@@ -1,16 +1,21 @@
 
+[build]
+  command = "npm run build"
+  publish = "dist"
+  edge_functions = "netlify/edge-functions"
+
 [[redirects]]
   from = "/"
-  to = "/index.xhtml"
+  to = "/index.html"
   status = 200
 
 [[redirects]]
   from = "/hoa"
-  to = "/index.xhtml"
+  to = "/index.html"
   status = 200
 
 [[redirects]]
   from = "/laying-set"
-  to = "/index.xhtml"
+  to = "/index.html"
   status = 200
 

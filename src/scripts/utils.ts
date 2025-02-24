@@ -32,10 +32,10 @@ export function parseRateString(s: string): number | undefined {
     const regexRate = /^\s*(?<num>[\d, ']*(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*(?<unit>[a-zA-Z]*)\/(?<time>h|min|m|s)\s*$/;
     const match = regexRate.exec(s);
 
-    if (!match)
+    if (!match || !match.groups)
         throw new Error(`invalid literal for parseRateString(): '${s}'`);
 
-    const { _, num, unit, time } = match.groups;
+    const { num, unit, time } = match.groups;
 
     let ret: number = parseFloat(num.replace(/[^\d.]/, ''));
 
@@ -94,7 +94,7 @@ export function formatRateString(r: number, timeUnit: string = 'h'): string {
  * equal bonuses
  * To mitigate that, I round to 9 digits
  */
-export function round(x, precision = 1e9) {
+export function round(x: number, precision = 1e9): number {
     return Math.round(x*precision)/precision;
 }
 
@@ -142,7 +142,7 @@ export function extractParetoFrontier3<T>(list: [number, number, number, T][]): 
         if (!groups.has(key)) {
             groups.set(key, [a, b, c, []]);
         }
-        groups.get(key)[3].push(element);
+        groups.get(key)![3].push(element);
     }
     const elements = Array.from(groups.values())
     return elements.filter(([x,y,z]) =>
