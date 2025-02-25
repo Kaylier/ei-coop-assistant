@@ -39,7 +39,7 @@ export type ArtifactSet<T> = T[] & {
 export function computeOptimalSetsWithoutReslotting(items: T.Item[],
                                                     deflectorMode: T.DeflectorMode,
                                                     maxSlot: number
-                                                   ): ArtifactSet<T.Artifact>[][] {
+                                                   ): ArtifactSet<T.Artifact | null>[][] {
     const artifactsByFamily: Map<T.ArtifactFamily, AnnotatedArtifact[]> = getArtifacts(items, true);
 
     // Remove forbidden deflectors
@@ -132,7 +132,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
     // each group is an array of equivalent sets regarding maxLayingBonus and shippingBonus,
     // each set is an array of artifact groups (equivalent artifacts)
     // We expand artifact groups so we now have sets with actual artifacts
-    let optimalSets: ArtifactSet<T.Artifact>[][] = paretoSets.map(group => group.flatMap(set =>
+    let optimalSets: ArtifactSet<T.Artifact | null>[][] = paretoSets.map(group => group.flatMap(set =>
         [...product(...set)].map(x => Object.assign(x.map(copyItem) as T.Artifact[], {
             deflectorBonus    : set.deflectorBonus,
             layingBonus       : set.layingBonus,
@@ -154,6 +154,12 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
         shippingBonus : group[0].shippingBonus,
     }));
 
+    // Sort sets by family and fill empty slots with null
+    optimalSets.forEach(group => group.forEach(set => {
+         set.sort((a,b) => a!.family - b!.family);
+         while (set.length < maxSlot) set.push(null);
+    }));
+
     console.log("Amount of equivalent set for each solution:", optimalSets.map(x => x.length));
 
     return optimalSets;
@@ -164,7 +170,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 export function computeOptimalSetsWithReslotting(items: T.Item[],
                                                  deflectorMode: T.DeflectorMode,
                                                  maxSlot: number
-                                                ): ArtifactSet<T.Artifact>[][] {
+                                                ): ArtifactSet<T.Artifact | null>[][] {
     // Find tachyon and quantum stones, and create queues of priority (highest to lowest tiers)
     const tachyonQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.TACHYON_STONE);
     const quantumQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.QUANTUM_STONE);
@@ -346,7 +352,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     // each group is an array of equivalent sets regarding maxLayingBonus and shippingBonus,
     // each set is an array of artifact groups (equivalent artifacts)
     // We expand artifact groups so we now have sets with actual artifacts
-    let optimalSets: ArtifactSet<T.Artifact>[][] = paretoSets.map(group => group.flatMap(set => [...product(...set)].map(x => Object.assign(x.map(x => copyItem(x) as T.Artifact), {
+    let optimalSets: ArtifactSet<T.Artifact | null>[][] = paretoSets.map(group => group.flatMap(set => [...product(...set)].map(x => Object.assign(x.map(x => copyItem(x) as T.Artifact), {
         deflectorBonus    : set.deflectorBonus,
         layingBonus       : set.layingBonus,
         shippingBonus     : set.shippingBonus,
@@ -378,10 +384,16 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
                 ...tachyonQueue.slice(0, set.tachyonStoneAmount ?? 0),
                 ...quantumQueue.slice(0, set.quantumStoneAmount ?? 0),
             ];
-            assignStones(set, stones);
+            assignStones(set as ArtifactSet<T.Artifact>, stones);
         }
         group.sort((a,b) => (a.reslotted ?? Infinity) - (b.reslotted ?? Infinity));
     }
+
+    // Sort sets by family and fill empty slots with null
+    optimalSets.forEach(group => group.forEach(set => {
+         set.sort((a,b) => a!.family - b!.family);
+         while (set.length < maxSlot) set.push(null);
+    }));
 
     console.log("Amount of equivalent set for each solution:", optimalSets.map(x => x.length));
 

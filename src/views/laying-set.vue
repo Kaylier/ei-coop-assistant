@@ -56,10 +56,7 @@
                 </label>
             </div>
         </span>
-        <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
-            show settings
-        </a>
-        <span v-if="showExtraSettings" class="setting-entry">
+        <span v-if="showExtraSettings || showExtraSettingLaying" class="setting-entry">
             <label>
                 <label tabindex="0" class="tooltip-icon">
                     ⓘ
@@ -78,7 +75,7 @@
                     :placeholder="formatRateString(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)">
             </input>
         </span>
-        <span v-if="showExtraSettings" class="setting-entry">
+        <span v-if="showExtraSettings || showExtraSettingShipping" class="setting-entry">
             <label>
                 <label tabindex="0" class="tooltip-icon">
                     ⓘ
@@ -97,6 +94,9 @@
                     :placeholder="formatRateString(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)">
             </input>
         </span>
+        <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
+            more settings
+        </a>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
@@ -193,14 +193,16 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 
 // Settings variables
-const allowReslotting = ref<boolean>(false);
 const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
+const allowReslotting = ref<boolean>(false);
 const baseLayingRateString = ref<string>("");
 const baseShippingRateString = ref<string>("");
 
 
 // State variables
 const showExtraSettings = ref<boolean>(false);
+const showExtraSettingLaying = ref<boolean>(false);
+const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const baseLayingRateStringIsValid = ref<boolean>(true);
 const baseShippingRateStringIsValid = ref<boolean>(true);
@@ -216,8 +218,8 @@ const entries = ref<EntryType[]>([]); // List of solutions (sets along additiona
 // Load settings from local storage at start
 onMounted(async () => {
     const localStorageSettings = [
-        { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
         { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
+        { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
         { key: 'base-laying-rate'  , ref: baseLayingRateString   },
         { key: 'base-shipping-rate', ref: baseShippingRateString },
     ];
@@ -235,13 +237,14 @@ onMounted(async () => {
     });
 
     // Show extra settings if they have been modified
-    showExtraSettings.value = !!(baseLayingRateString.value || baseShippingRateString.value);
+    showExtraSettingLaying.value = !!baseLayingRateString.value;
+    showExtraSettingShipping.value = !!baseShippingRateString.value;
 });
 
 
 // Watchers for synchronisation between setting variables, local storage and state variables
-watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
 watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.stringify(deflectorMode.value)));
+watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
 watch(baseLayingRateString, () => updateBaseLayingRate(baseLayingRateString.value));
 watch(baseShippingRateString, () => updateBaseShippingRate(baseShippingRateString.value));
 
@@ -285,8 +288,8 @@ function updateBaseShippingRate(valueString: string, resetOnError = false) {
 
 // Watchers for triggering recomputations
 watch(userData, updateEntries);
-watch(allowReslotting, updateEntries);
 watch(deflectorMode, updateEntries);
+watch(allowReslotting, updateEntries);
 
 watch(baseLayingRate, updateThresholds);
 watch(baseShippingRate, updateThresholds);
@@ -322,10 +325,6 @@ function updateEntries() {
     for (const equivalentSets of sets) {
         const set = equivalentSets[0];
         if (!set || set.length === 0) continue;
-
-        set.sort((a, b) => a === null ? 1 : b === null ? -1 : a.family - b.family);
-
-        while (set.length < maxSlot) set.push(null);
 
         entries.value.push({
             artifactSet: set,
