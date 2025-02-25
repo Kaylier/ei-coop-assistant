@@ -237,8 +237,8 @@ onMounted(async () => {
     });
 
     // Show extra settings if they have been modified
-    showExtraSettingLaying.value = baseLayingRateString.value;
-    showExtraSettingShipping.value = baseShippingRateString.value;
+    showExtraSettingLaying.value = !!baseLayingRateString.value;
+    showExtraSettingShipping.value = !!baseShippingRateString.value;
 });
 
 
