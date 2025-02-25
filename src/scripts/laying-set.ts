@@ -154,6 +154,12 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
         shippingBonus : group[0].shippingBonus,
     }));
 
+    // Sort sets by family and fill empty slots with null
+    optimalSets.forEach(group => group.forEach(set => {
+         set.sort((a,b) => a.family - b.family);
+         while (set.length < maxSlot) set.push(null);
+    }));
+
     console.log("Amount of equivalent set for each solution:", optimalSets.map(x => x.length));
 
     return optimalSets;
@@ -382,6 +388,12 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         }
         group.sort((a,b) => (a.reslotted ?? Infinity) - (b.reslotted ?? Infinity));
     }
+
+    // Sort sets by family and fill empty slots with null
+    optimalSets.forEach(group => group.forEach(set => {
+         set.sort((a,b) => a.family - b.family);
+         while (set.length < maxSlot) set.push(null);
+    }));
 
     console.log("Amount of equivalent set for each solution:", optimalSets.map(x => x.length));
 

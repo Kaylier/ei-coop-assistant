@@ -124,7 +124,7 @@ main .invalid-text {
 
 .axis, .axis-start, .axis-end {
     position: absolute;
-    height: 150%;
+    height: calc(100% + 4em);
     width: 3px;
     left: 4.8em;
     background: #286;
