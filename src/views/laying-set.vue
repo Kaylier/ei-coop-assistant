@@ -56,6 +56,33 @@
                 </label>
             </div>
         </span>
+        <span v-if="showExtraSettings || showExtraSettingGusset" class="setting-entry">
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        Force to use a specific gusset.<br/>
+                        Only your best gussets are shown.<br/>
+                        Disabled on "any".
+                    </span>
+                </label>
+                Gusset
+            </label>
+            <div class="switch">
+                <label v-for="gusset in allowedGussetChoices" class="switch-option" :for="gusset">
+                    <input type="radio" name="allowed-gusset" :id="gusset"
+                           :value="gusset" v-model="allowedGusset" />
+                    <span v-if="gusset === T.AllowedGusset.ANY">any</span>
+                    <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
+                    <img v-else :class="getGussetClass(gusset)"
+                         :src="getGussetImage(gusset)"
+                         :alt="getGussetName(gusset)"></img>
+                </label>
+                <label v-if="allowedGussetChoices.length < 10" class="switch-option" @click="showAllGussets">
+                    …
+                </label>
+            </div>
+        </span>
         <span v-if="showExtraSettings || showExtraSettingLaying" class="setting-entry">
             <label>
                 <label tabindex="0" class="tooltip-icon">
@@ -158,6 +185,10 @@
             </div>
         </template>
         <img v-else-if="!userData" src="/img/laying-set-demo.png" class="demo-img" />
+        <span v-else-if="!errorMessage && allowedGusset !== T.AllowedGusset.ANY" class="invalid-text">
+            You don't have enough artifacts to build a laying set<br />
+            with the selected gusset filter.
+        </span>
         <span v-else-if="!errorMessage" class="invalid-text">
             You don't have enough artifacts to build a laying set.
         </span>
@@ -170,7 +201,7 @@
 import { onMounted, ref, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
-import { computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
+import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
 type EntryType = {
@@ -195,15 +226,18 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 // Settings variables
 const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
 const allowReslotting = ref<boolean>(false);
+const allowedGusset = ref<T.AllowedGusset>(T.AllowedGusset.ANY);
 const baseLayingRateString = ref<string>("");
 const baseShippingRateString = ref<string>("");
 
 
 // State variables
 const showExtraSettings = ref<boolean>(false);
+const showExtraSettingGusset = ref<boolean>(false);
 const showExtraSettingLaying = ref<boolean>(false);
 const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
+const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const baseLayingRateStringIsValid = ref<boolean>(true);
 const baseShippingRateStringIsValid = ref<boolean>(true);
 const baseLayingRate = ref<number>(DEFAULT_BASE_LAYING_RATE);
@@ -220,6 +254,7 @@ onMounted(async () => {
     const localStorageSettings = [
         { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
         { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
+        { key: 'allowed-gusset'    , ref: allowedGusset   , parser: JSON.parse },
         { key: 'base-laying-rate'  , ref: baseLayingRateString   },
         { key: 'base-shipping-rate', ref: baseShippingRateString },
     ];
@@ -237,6 +272,7 @@ onMounted(async () => {
     });
 
     // Show extra settings if they have been modified
+    showExtraSettingGusset.value = allowedGusset.value !== T.AllowedGusset.ANY;
     showExtraSettingLaying.value = !!baseLayingRateString.value;
     showExtraSettingShipping.value = !!baseShippingRateString.value;
 });
@@ -245,6 +281,7 @@ onMounted(async () => {
 // Watchers for synchronisation between setting variables, local storage and state variables
 watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.stringify(deflectorMode.value)));
 watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
+watch(allowedGusset   , () => localStorage.setItem('allowed-gusset'   , JSON.stringify(allowedGusset.value)));
 watch(baseLayingRateString, () => updateBaseLayingRate(baseLayingRateString.value));
 watch(baseShippingRateString, () => updateBaseShippingRate(baseShippingRateString.value));
 
@@ -290,9 +327,25 @@ function updateBaseShippingRate(valueString: string, resetOnError = false) {
 watch(userData, updateEntries);
 watch(deflectorMode, updateEntries);
 watch(allowReslotting, updateEntries);
+watch(allowedGusset, updateEntries);
 
+watch(entries, updateAllowedGussets);
 watch(baseLayingRate, updateThresholds);
 watch(baseShippingRate, updateThresholds);
+
+
+/**
+ * Update default gussets shown to the user
+ */
+function updateAllowedGussets() {
+    const choices = getOptimalGussets(userData.value?.items ?? []);
+    if (allowedGusset.value !== T.AllowedGusset.ANY
+     && allowedGusset.value !== T.AllowedGusset.NONE
+     && !choices.includes(allowedGusset.value)) {
+        choices.push(allowedGusset.value);
+    }
+    allowedGussetChoices.value = [T.AllowedGusset.ANY, T.AllowedGusset.NONE, ...choices.sort()];
+}
 
 
 /**
@@ -307,8 +360,10 @@ function updateEntries() {
     try {
         errorMessage.value = "";
         sets = allowReslotting.value ?
-               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot) :
-               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot);
+               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot,
+               allowedGusset.value) :
+               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot,
+               allowedGusset.value);
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
         entries.value = [];
@@ -394,5 +449,34 @@ function updateThresholds() {
     console.log("Deflector bonuses:", X, "\nEffective rates  :", Y);
 }
 
+
+function showAllGussets() {
+    const choices = [
+    "artifact-gusset-1-0" as T.AllowedGusset,
+    "artifact-gusset-2-0" as T.AllowedGusset,
+    "artifact-gusset-2-2" as T.AllowedGusset,
+    "artifact-gusset-3-0" as T.AllowedGusset,
+    "artifact-gusset-3-1" as T.AllowedGusset,
+    "artifact-gusset-4-0" as T.AllowedGusset,
+    "artifact-gusset-4-2" as T.AllowedGusset,
+    "artifact-gusset-4-3" as T.AllowedGusset,
+    ];
+    allowedGussetChoices.value = [T.AllowedGusset.ANY, T.AllowedGusset.NONE, ...choices.sort()];
+}
+
+function getGussetName(gusset: string) {
+    const [category,family,tier,rarity] = gusset.split('-');
+    return `t${tier}${"crel"[Number(rarity)]}`
+}
+
+function getGussetImage(gusset: string) {
+    const [category,family,tier,rarity] = gusset.split('-');
+    return `/img/items/${category}-${family}-${tier}.png`
+}
+
+function getGussetClass(gusset: string) {
+    const [category,family,tier,rarity] = gusset.split('-');
+    return ["common", "rare", "epic", "legendary"][Number(rarity)];
+}
 
 </script>

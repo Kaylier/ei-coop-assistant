@@ -35,16 +35,55 @@ export type ArtifactSet<T> = T[] & {
 };
 
 
+export function getOptimalGussets(items: T.Item[]): T.AllowedGusset[] {
+    const gussets: [number, number, T.AllowedGusset][] = [];
+
+    items.forEach((item: T.Item) => {
+        if (item.category !== T.ItemCategory.ARTIFACT) return;
+        if (item.family !== T.ArtifactFamily.GUSSET) return;
+
+        const {
+            hab_capacity_bonus: habCapacityBonus = 1,
+            laying_bonus      : layingBonus      = 1,
+            shipping_bonus    : shippingBonus    = 1,
+        } = getEffects(item, true);
+
+        gussets.push([
+            layingBonus*habCapacityBonus,
+            shippingBonus,
+            `artifact-gusset-${item.tier}-${item.rarity}` as T.AllowedGusset]);
+    });
+
+    const paretoGussets = extractParetoFrontier(gussets);
+
+    const gussetsSet: T.AllowedGusset[] = [];
+    for (const group of paretoGussets) {
+        for (const gusset of group) {
+            if (gussetsSet.includes(gusset)) continue;
+            gussetsSet.push(gusset);
+        }
+    }
+    return gussetsSet;
+}
+
 
 export function computeOptimalSetsWithoutReslotting(items: T.Item[],
                                                     deflectorMode: T.DeflectorMode,
-                                                    maxSlot: number
+                                                    maxSlot: number,
+                                                    allowedGusset: T.AllowedGusset
                                                    ): ArtifactSet<T.Artifact | null>[][] {
     const artifactsByFamily: Map<T.ArtifactFamily, AnnotatedArtifact[]> = getArtifacts(items, true);
 
     // Remove forbidden deflectors
     if (deflectorMode === T.DeflectorMode.TEAMWORK) {
         removeSubDeflectors(artifactsByFamily);
+    }
+
+    // Remove forbidden gussets
+    if (allowedGusset !== 'any') {
+        let gussets = artifactsByFamily.get(T.ArtifactFamily.GUSSET);
+        gussets = gussets?.filter(gusset => allowedGusset === `artifact-gusset-${gusset.artifact.tier}-${gusset.artifact.rarity}`) ?? [];
+        artifactsByFamily.set(T.ArtifactFamily.GUSSET, gussets);
     }
 
 
@@ -92,6 +131,14 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
         familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.TACHYON_DEFLECTOR]);
         families = families.filter(family => family !== T.ArtifactFamily.TACHYON_DEFLECTOR);
     }
+    // Same for gusset
+    if (allowedGusset !== "any") {
+        if (allowedGusset !== "none") {
+            familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.GUSSET]);
+        }
+        families = families.filter(family => family !== T.ArtifactFamily.GUSSET);
+    }
+
     familySets = familySets.flatMap(familySet => {
         const combs = [...combinations(families, maxSlot - familySet.length, true)];
         return combs.map(x => [...familySet, ...x]);
@@ -169,7 +216,8 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
 export function computeOptimalSetsWithReslotting(items: T.Item[],
                                                  deflectorMode: T.DeflectorMode,
-                                                 maxSlot: number
+                                                 maxSlot: number,
+                                                 allowedGusset: T.AllowedGusset
                                                 ): ArtifactSet<T.Artifact | null>[][] {
     // Find tachyon and quantum stones, and create queues of priority (highest to lowest tiers)
     const tachyonQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.TACHYON_STONE);
@@ -198,6 +246,13 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     // Remove forbidden deflectors
     if (deflectorMode === T.DeflectorMode.TEAMWORK) {
         removeSubDeflectors(artifactsByFamily);
+    }
+
+    // Remove forbidden gussets
+    if (allowedGusset !== 'any') {
+        let gussets = artifactsByFamily.get(T.ArtifactFamily.GUSSET);
+        gussets = gussets?.filter(gusset => allowedGusset === `artifact-gusset-${gusset.artifact.tier}-${gusset.artifact.rarity}`) ?? [];
+        artifactsByFamily.set(T.ArtifactFamily.GUSSET, gussets);
     }
 
 
@@ -290,6 +345,13 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.TACHYON_DEFLECTOR]);
         families = families.filter(family => family !== T.ArtifactFamily.TACHYON_DEFLECTOR);
 
+    }
+    // Same for gusset
+    if (allowedGusset !== "any") {
+        if (allowedGusset !== "none") {
+            familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.GUSSET]);
+        }
+        families = families.filter(family => family !== T.ArtifactFamily.GUSSET);
     }
     // Add combinations of contract families
     familySets = familySets.flatMap(familySet => {

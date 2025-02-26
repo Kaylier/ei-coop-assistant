@@ -123,3 +123,17 @@ export enum DeflectorMode {
     TEAMWORK = "teamwork"
 };
 
+
+export enum AllowedGusset {
+    ANY = "any",
+    NONE = "none",
+    T1C = "artifact-gusset-1-0",
+    T2C = "artifact-gusset-2-0",
+    T2E = "artifact-gusset-2-2",
+    T3C = "artifact-gusset-3-0",
+    T3R = "artifact-gusset-3-1",
+    T4C = "artifact-gusset-4-0",
+    T4E = "artifact-gusset-4-2",
+    T4L = "artifact-gusset-4-3",
+};
+
