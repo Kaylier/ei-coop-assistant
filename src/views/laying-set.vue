@@ -56,6 +56,31 @@
                 </label>
             </div>
         </span>
+        <span v-if="showExtraSettings || showExtraSettingVariant" class="setting-entry">
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        Show variant sets,<br/>
+                        stone-holder artifacts are interchangeable.<br/>
+                        The view is limited to 6 sets
+                    </span>
+                </label>
+                Show variants
+            </label>
+            <div class="switch">
+                <label class="switch-option" for="show-variant-off">
+                    <input type="radio" name="show-variants" id="show-variant-off"
+                           :value="false" v-model="showVariants" />
+                    <span>no</span>
+                </label>
+                <label class="switch-option" for="show-variant-on">
+                    <input type="radio" name="show-variants" id="show-variant-on"
+                           :value="true" v-model="showVariants" />
+                    <span>yes</span>
+                </label>
+            </div>
+        </span>
         <span v-if="showExtraSettings || showExtraSettingGusset" class="setting-entry">
             <label>
                 <label tabindex="0" class="tooltip-icon">
@@ -156,14 +181,24 @@
                         <img src="/img/icons/deflector-bonus-alt.png"></img>
                     </div>
                 </div>
-                <inventory v-if="entry.artifactSet"
-                           :artifacts="entry.artifactSet"
-                           :isSet="true"
-                           :deflectorBonus="entry.optiThreshold"
-                           :userData="userData"
-                           :column=4 :row=1
-                           :style="entry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
-                           />
+                <div class="entry-sets">
+                    <inventory v-if="entry.artifactSet"
+                               :artifacts="entry.artifactSet"
+                               :isSet="true"
+                               :deflectorBonus="entry.optiThreshold"
+                               :userData="userData"
+                               :column="4" :row="1"
+                               :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blu   242 e, green, yellow, orange, red);' : ''"
+                               />
+                    <inventory v-if="showVariants" v-for="subentry in entry.variants"
+                               :artifacts="subentry"
+                               :isSet="true"
+                               :deflectorBonus="entry.optiThreshold"
+                               :userData="userData"
+                               :column="4" :row="1"
+                               :style="subentry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green,   250  yellow, orange, red);' : ''"
+                               />
+                </div>
             </div>
         </template>
         <template v-if="entries.length">
@@ -205,7 +240,8 @@ import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSets
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
 type EntryType = {
-    artifactSet: ArtifactSet<T.Artifact | null>,
+    artifactSet: (ArtifactSet<T.Artifact | null> & { rainbowed: boolean }),
+    variants: (ArtifactSet<T.Artifact | null> & { rainbowed: boolean })[],
     hidden: boolean,
     lowerThreshold: number,
     lowerRate: number,
@@ -214,7 +250,6 @@ type EntryType = {
     optiRate: number,
     higherThreshold: number,
     higherRate: number,
-    rainbowed?: boolean,
 };
 
 // These defaults are only used when no user data is loaded, or when it failed to calculate the rate from user data
@@ -226,6 +261,7 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 // Settings variables
 const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
 const allowReslotting = ref<boolean>(false);
+const showVariants = ref<boolean>(false);
 const allowedGusset = ref<T.AllowedGusset>(T.AllowedGusset.ANY);
 const baseLayingRateString = ref<string>("");
 const baseShippingRateString = ref<string>("");
@@ -234,6 +270,7 @@ const baseShippingRateString = ref<string>("");
 // State variables
 const showExtraSettings = ref<boolean>(false);
 const showExtraSettingGusset = ref<boolean>(false);
+const showExtraSettingVariant = ref<boolean>(false);
 const showExtraSettingLaying = ref<boolean>(false);
 const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
@@ -254,6 +291,7 @@ onMounted(async () => {
     const localStorageSettings = [
         { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
         { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
+        { key: 'show-variants'     , ref: showVariants    , parser: JSON.parse },
         { key: 'allowed-gusset'    , ref: allowedGusset   , parser: JSON.parse },
         { key: 'base-laying-rate'  , ref: baseLayingRateString   },
         { key: 'base-shipping-rate', ref: baseShippingRateString },
@@ -272,6 +310,7 @@ onMounted(async () => {
     });
 
     // Show extra settings if they have been modified
+    showExtraSettingVariant.value = showVariants.value !== false;
     showExtraSettingGusset.value = allowedGusset.value !== T.AllowedGusset.ANY;
     showExtraSettingLaying.value = !!baseLayingRateString.value;
     showExtraSettingShipping.value = !!baseShippingRateString.value;
@@ -281,6 +320,7 @@ onMounted(async () => {
 // Watchers for synchronisation between setting variables, local storage and state variables
 watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.stringify(deflectorMode.value)));
 watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
+watch(showVariants    , () => localStorage.setItem('show-variants'    , JSON.stringify(showVariants.value)));
 watch(allowedGusset   , () => localStorage.setItem('allowed-gusset'   , JSON.stringify(allowedGusset.value)));
 watch(baseLayingRateString, () => updateBaseLayingRate(baseLayingRateString.value));
 watch(baseShippingRateString, () => updateBaseShippingRate(baseShippingRateString.value));
@@ -375,14 +415,55 @@ function updateEntries() {
     const sortKey = (x: ArtifactSet<T.Artifact | null>[]) => x[0]?.shippingBonus/(x[0]?.maxLayingBonus ?? x[0]?.layingBonus ?? 0);
     sets.sort((a, b) => sortKey(a) - sortKey(b));
 
+    // Key for determining which artifact sets are considered the same when showVariants is on
+    // Stone holders variations, artifact and stone order are ignored
+    const contractFamilies = [
+        T.ArtifactFamily.TACHYON_DEFLECTOR,
+        T.ArtifactFamily.QUANTUM_METRONOME,
+        T.ArtifactFamily.INTERSTELLAR_COMPASS,
+        T.ArtifactFamily.GUSSET,
+    ]
+    function generateKey(set: ArtifactSet<T.Artifact | null>) {
+        return set.map(artifact => {
+            if (!artifact) return "null";
+            const artiKey = contractFamilies.includes(artifact.family) ?
+                `${artifact.category}-${artifact.family}-${artifact.tier}-${artifact.rarity}` :
+                "holder";
+            const stoneKeys = artifact?.stones.map(stone => (stone ?
+                `${stone.category}-${stone.family}-${stone.tier}` :
+                "null")) ?? [];
+            return artiKey + "(" + stoneKeys.sort().join('+')+")";
+        }).sort().join(',');
+    }
+
+
     // Update the artifacts shown on the view
     entries.value = [];
     for (const equivalentSets of sets) {
-        const set = equivalentSets[0];
+        const set = equivalentSets[0] as ArtifactSet<T.Artifact | null> & { rainbowed: boolean };
         if (!set || set.length === 0) continue;
+
+        // LoE is invalid, because stones have no effect outside of enlightenment
+        // Maybe the user knows more than me
+        // Is it the secret of the soul?
+        set.rainbowed = set.some(artifact => artifact && artifact.family === 0);
+
+        const seen = new Set();
+        seen.add(generateKey(set));
+        const variants = [];
+        for (const eqSet of equivalentSets) {
+            const variant = eqSet as ArtifactSet<T.Artifact | null> & { rainbowed: boolean };
+            const key = generateKey(variant);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            variant.rainbowed = variant.some(artifact => artifact && artifact.family === 0);
+            variants.push(variant);
+            if (seen.size >= 6) break;
+        }
 
         entries.value.push({
             artifactSet: set,
+            variants: variants,
             hidden: false,
             lowerThreshold: NaN,
             lowerRate: NaN,
@@ -391,10 +472,6 @@ function updateEntries() {
             optiRate: NaN,
             higherThreshold: NaN,
             higherRate: NaN,
-            // LoE is invalid, because stones have no effect outside of enlightenment
-            // Maybe the user knows more than me
-            // Is it the secret of the soul?
-            rainbowed: set.some(artifact => artifact && artifact.family === 0)
         });
     }
 
