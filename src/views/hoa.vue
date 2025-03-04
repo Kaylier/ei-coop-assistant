@@ -6,7 +6,7 @@
             <inventory v-for="set in sets"
                        :artifacts="set"
                        :isSet="true"
-                       :proPermit="userData?.proPermit ?? false"
+                       :userData="userData"
                        :column="4" :row="1"
                        />
         </div>

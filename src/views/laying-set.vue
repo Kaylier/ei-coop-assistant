@@ -72,7 +72,7 @@
             <input type="text" id="base-laying-rate"
                     :class="{ invalid: !baseLayingRateStringIsValid }"
                     v-model="baseLayingRateString"
-                    :placeholder="formatRateString(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)">
+                    :placeholder="formatRate(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)">
             </input>
         </span>
         <span v-if="showExtraSettings || showExtraSettingShipping" class="setting-entry">
@@ -91,7 +91,7 @@
             <input type="text" id="base-shipping-rate"
                     :class="{ invalid: !baseShippingRateStringIsValid }"
                     v-model="baseShippingRateString"
-                    :placeholder="formatRateString(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)">
+                    :placeholder="formatRate(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)">
             </input>
         </span>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
@@ -116,7 +116,7 @@
                     <span class="threshold-rate-label">
                         laying rate
                     </span>
-                    {{ formatRateString(entry.effectiveLowerRate) }}
+                    {{ formatRate(entry.effectiveLowerRate) }}
                 </span>
             </div>
             <div v-if="!entry.hidden" class="entry">
@@ -133,7 +133,7 @@
                            :artifacts="entry.artifactSet"
                            :isSet="true"
                            :deflectorBonus="entry.optiThreshold"
-                           :proPermit="userData?.proPermit ?? false"
+                           :userData="userData"
                            :column=4 :row=1
                            :style="entry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
                            />
@@ -150,7 +150,7 @@
                     <span class="threshold-rate-label">
                         laying rate
                     </span>
-                    {{ formatRateString(entries.at(-1)!.higherRate) }}
+                    {{ formatRate(entries.at(-1)!.higherRate) }}
                 </span>
             </div>
             <div class="entry">
@@ -169,7 +169,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { parseRateString, formatRateString } from '@/scripts/utils.ts';
+import { parseRate, formatRate } from '@/scripts/utils.ts';
 import { computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
@@ -259,7 +259,7 @@ watch(userData, () => {
 
 function updateBaseLayingRate(valueString: string, resetOnError = false) {
     try {
-        const parsedValue = parseRateString(valueString);
+        const parsedValue = parseRate(valueString);
         baseLayingRateStringIsValid.value = true;
         localStorage.setItem('base-laying-rate', valueString);
         baseLayingRate.value = parsedValue ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE;;
@@ -273,7 +273,7 @@ function updateBaseLayingRate(valueString: string, resetOnError = false) {
 
 function updateBaseShippingRate(valueString: string, resetOnError = false) {
     try {
-        const parsedValue = parseRateString(valueString);
+        const parsedValue = parseRate(valueString);
         baseShippingRateStringIsValid.value = true;
         localStorage.setItem('base-shipping-rate', valueString);
         baseShippingRate.value = parsedValue ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE;;

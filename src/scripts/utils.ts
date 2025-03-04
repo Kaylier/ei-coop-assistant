@@ -19,71 +19,100 @@ export function checkSID(eid: string): boolean {
     return /^\s*SI\d+\s*$/.test(eid);
 }
 
-
 /**
- * Parse a string of the form 1.234q/h and return a rate per seconds as a number
- * If an empty string is given, returns undefined
+ * Parse a number from a game format string
  */
-export function parseRateString(s: string): number | undefined {
-    if (s === "")
-        return undefined;
+export function parseNumber(s: string): number {
+    s = s.replace(/[\s,]+/g, '');
 
-    // Regex to match multiple of rate formats: 1b/h, 1 234.456e-5T/min, 0tT/s...
-    const regexRate = /^\s*(?<num>[\d, ']*(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*(?<unit>[a-zA-Z]*)\/(?<time>h|min|m|s)\s*$/;
-    const match = regexRate.exec(s);
-
-    if (!match || !match.groups)
-        throw new Error(`invalid literal for parseRateString(): '${s}'`);
-
-    const { num, unit, time } = match.groups;
-
-    let ret: number = parseFloat(num.replace(/[^\d.]/, ''));
-
-    let idx = units.indexOf(unit);
-    if (idx < 0)
-        throw new Error(`invalid unit: '${unit}'`);
-
-    ret *= Math.pow(10, 3*idx);
-
-    if (time == "h") {
-        ret /= 3600;
-    } else if (time == "m" || time == "min") {
-        ret /= 60;
-    } else {
+    const match = s.match(/^(\d*\.?\d+(?:e-?[0-9]+)?)([a-zA-Z]+)?$/);
+    if (!match) {
+        throw new Error(`Invalid number format: ${s}`);
     }
-    return ret;
+    const num = parseFloat(match[1]);
+    const unit = match[2] || '';
+
+    const index = units.indexOf(unit);
+    if (index === -1) {
+        throw new Error(`Unknown unit: ${unit}`);
+    }
+
+    return num*Math.pow(1000, index);
 }
 
 /**
- * Format into a human-friendly string a rate (given in /s)
+ * Format a number to a game format string
  */
-export function formatRateString(r: number, timeUnit: string = 'h'): string {
+export function formatNumber(x: number, locale?: string): string {
+    x = Number(x);
+    let unit;
+    for (unit of units) {
+        if (x < 1e3) break;
+        x /= 1e3;
+    }
+    return `${x.toLocaleString(locale, { maximumFractionDigits: 3 })}${unit}`;
+}
 
-    let prefix;
+/**
+ * Parse a rate from a game format string
+ * Returns a rate per seconds
+ * If an empty string is given, returns undefined
+ */
+export function parseRate(s: string): number | undefined {
+    if (s === "")
+        return undefined;
+
+    s = s.replace(/[\s,]+/g, '');
+
+    const match = s.match(/^(\d*\.?\d+(?:e-?[0-9]+)?)([a-zA-Z]+)?\/(h|hour|m|min|s)$/);
+
+    if (!match) {
+        throw new Error(`invalid rate format: ${s}`);
+    }
+    const num = parseFloat(match[1]);
+    const unit = match[2] || '';
+    const timeUnit = match[3];
+
+    const index = units.indexOf(unit);
+    if (index === -1) {
+        throw new Error(`Unknown unit: ${unit}`);
+    }
+
+    const timeScales: { [key: string]: number } = {
+        h: 3600,
+        hour: 3600,
+        m: 60,
+        min: 60,
+        s: 1,
+    };
+
+    const timeScale = timeScales[timeUnit];
+    if (!timeScale) {
+        throw new Error(`Unknown time unit: ${timeUnit}`);
+    }
+
+    return num*Math.pow(1000, index)/timeScale;
+}
+
+/**
+ * Format a rate to a game format string
+ * If no time unit is specified, uses per hour
+ */
+export function formatRate(x: number, timeUnit: string = 'h'): string {
+    x = Number(x);
     switch (timeUnit) {
         case 's':
-            prefix = '/s';
             break;
         case 'm':
-            r *= 60;
-            prefix = '/min';
+            x *= 60;
             break;
         case 'h':
-            r *= 3600;
-            prefix = '/h';
+            x *= 3600;
             break;
         default:
             throw new Error(`invalid unit: '${timeUnit}'`);
     }
-
-    let unit;
-    for (unit of units) {
-        if (r < 1e3)
-            break;
-        r /= 1e3;
-    }
-
-    return r.toLocaleString() + unit + prefix;
+    return `${formatNumber(x)}/${timeUnit}`;
 }
 
 

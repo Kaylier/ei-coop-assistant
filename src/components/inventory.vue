@@ -28,7 +28,7 @@ const props = defineProps<{
     artifacts: T.Item[],
     isSet?: boolean,
     deflectorBonus?: number,
-    proPermit?: boolean,
+    userData?: T.UserData,
     column?: number,
     row?: number,
 }>();
@@ -150,7 +150,7 @@ watch(() => [props.artifacts, props.deflectorBonus], updateSandboxLink, { immedi
 async function updateSandboxLink() {
     if (!props.isSet) return;
     try {
-        sandboxLink.value = await getSandboxLink(props.artifacts as T.Artifact[], props.deflectorBonus, props.proPermit);
+        sandboxLink.value = await getSandboxLink(props.artifacts as T.Artifact[], props.userData, props.deflectorBonus);
     } catch (e) {
         sandboxLink.value = null;
     }

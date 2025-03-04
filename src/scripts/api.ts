@@ -5,7 +5,7 @@
 import protobuf from 'protobufjs';
 import * as T from '@/scripts/types.ts';
 import { getSortId, getSlotCount } from '@/scripts/artifacts.ts';
-import { checkSID } from '@/scripts/utils.ts';
+import { checkSID, formatNumber } from '@/scripts/utils.ts';
 
 import eiProto from '@/assets/proto/ei.proto?raw';
 import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
@@ -322,13 +322,18 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const protoBuffDimention = proto.lookupEnum('GameModifier.GameDimension');
     const colleggtibleBuffs = getColleggtibleBuffs(proto, backup);
 
+    const soulEggs = backup.game?.soulEggsD ?? 0;
+    const prophecyEggs = backup.game?.eggsOfProphecy ?? 0;
+    const soulEggBonus = 0.1 + (epicResearches.get('soul_eggs') ?? 0)*0.01;
+    const prophecyEggBonus = 1.05 + (epicResearches.get('prophecy_bonus') ?? 0)*0.01;
+
     /*
      * Base egg laying rate is calculated from:
      *  - Base rate: 2 egg/chicken/min
      *  - Chicken population: 11.34e9 with all common research
      *  - Common researches: x1386
      *  - Epic research: up to x2 (read from backup data)
-     *  - Colleggtibles
+     *  - Colleggtibles (read from backup data)
      */
     let baseLayingRate = 523908000000; // in egg/second
     baseLayingRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
@@ -340,20 +345,62 @@ export async function getUserData(eid: string): Promise<T.UserData> {
      *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17 egg/min
      *  - Common researches: x5606.3232421875
      *  - Epic research: x2.5 (read from backup data)
-     *  - Colleggtibles
+     *  - Colleggtibles (read from backup data)
      */
     let baseShippingRate = 79422912597.65625; // in egg/second
     baseShippingRate *= backup.game?.hyperloopStation ? 10 : 1;
     baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
     baseShippingRate *= colleggtibleBuffs.get(protoBuffDimention.values.SHIPPING_CAPACITY) ?? 1;
 
+    /*
+     * Base earning rate is calculated from:
+     *  - Base laying rate: 2 egg/chicken/min
+     *  - Free Permit penalty: ×0.5 (read from backup data)
+     *  - Epic research: ×2 (read from backup data)
+     *  - Colleggtibles (read from backup data)
+     *  - User naked EB
+     * Common research cost reductions are factored in:
+     *  - Epic research: ×0.5 (read from backup data)
+     *  - Colleggtibles (read from backup data)
+     * Not counted in:
+     *  - Away earning bonuses
+     *  - Running Chicken Bonus
+     */
+    let baseEarningRate = 2/60; // in bocks/eggvalue/chicken/second
+    baseEarningRate *= (proPermit ? 1 : 0.5);
+    baseEarningRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
+    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimention.values.EGG_LAYING_RATE) ?? 1;
+    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimention.values.EARNINGS) ?? 1;
+    baseEarningRate *= 1 + soulEggs*soulEggBonus*Math.pow(prophecyEggBonus, prophecyEggs);
+    baseEarningRate /= 1 - 0.05*(epicResearches.get("cheaper_research") ?? 0);
+    baseEarningRate /= colleggtibleBuffs.get(protoBuffDimention.values.RESEARCH_COST) ?? 1;
+
+    let awayEarningBonus = colleggtibleBuffs.get(protoBuffDimention.values.AWAY_EARNINGS) ?? 1;
+    let mrcbEarningBonus = 340 + 2*(epicResearches.get('epic_multiplier') ?? 0);
+
+    /*
+     * Base Internal Hatchery Rate is calculated from:
+     *  - Common researches: 3720 chicken/hab/min
+     *  - Hab count: ×4 (assumes IHR not decreased by filled habs)
+     *  - Epic research: ×2 (read from backup data)
+     *  - Colleggtibles (read from backup data)
+     * Not counted in:
+     *  - Away IHR bonuses
+     */
+    let baseIHRate = 14880;
+    baseIHRate *= 1 + 0.05*(epicResearches.get("epic_internal_incubators") ?? 0);
+    baseIHRate *= colleggtibleBuffs.get(protoBuffDimention.values.INTERNAL_HATCHERY_RATE) ?? 1;
+
+    let awayIHBonus = 1 + 0.1*(epicResearches.get("int_hatch_calm") ?? 0);
+
 
     return {
-        items: items,
-        sets: sets,
-        baseLayingRate: baseLayingRate,
-        baseShippingRate: baseShippingRate,
-        proPermit: proPermit,
+        items, sets,
+        proPermit, prophecyEggs, soulEggs,
+        baseLayingRate, baseShippingRate,
+        baseIHRate, awayIHBonus,
+        baseEarningRate, awayEarningBonus, mrcbEarningBonus,
+        prophecyEggBonus, soulEggBonus,
         date: new Date(backup.approxTime*1000)
     };
 }
@@ -478,7 +525,10 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<unknown, number> {
 /**
  * Generates a link to wasmegg sandbox tool https://wasmegg-carpet.netlify.app/artifact-sandbox
  */
-export async function getSandboxLink(artifacts: T.Artifact[], deflectorBonus: number = 0, proPermit: boolean = false) {
+export async function getSandboxLink(artifacts: T.Artifact[],
+                                     userData?: T.UserData,
+                                     deflectorBonus: number = 0,
+                                    ) {
     const proto = await protobuf.parse(sandboxProto).root;
     const protoBuilds = proto.lookupType('Builds')
     const protoArtifactName = proto.lookupEnum('ArtifactSpec.Name');
@@ -522,18 +572,18 @@ export async function getSandboxLink(artifacts: T.Artifact[], deflectorBonus: nu
     let payload = {
         builds: [{ artifacts: [] as any[] }],
         config: {
-            prophecyEggs: 1,
-            soulEggs: 250,
-            soulEggsInput: "0",
+            prophecyEggs: userData?.prophecyEggs ?? 1,
+            soulEggs: userData?.soulEggs ?? 250,
+            soulEggsInput: formatNumber(userData?.soulEggs ?? 250, 'en-us'),
             isEnlightenment: false,
-            missingSoulFood: 0,
-            missingProphecyBonus: 0,
-            missingEpicMultiplier: 0,
+            missingSoulFood: Math.round(150 - (userData?.soulEggBonus ?? 1.5)*100),
+            missingProphecyBonus: Math.round(110 - (userData?.prophecyEggBonus ?? 1.1)*100),
+            missingEpicMultiplier: Math.round(270 - (userData?.mrcbEarningBonus ?? 540)/2),
             birdFeedActive: false,
             tachyonPrismActive: false,
             soulBeaconActive: false,
             boostBeaconActive: false,
-            proPermit: proPermit,
+            proPermit: userData?.proPermit ?? true,
             tachyonDeflectorBonus: deflectorBonus
         }
     }

@@ -101,9 +101,18 @@ export type Item = Artifact | Stone | Ingredient;
 export type UserData = null | {
     items: Item[],
     sets: (Artifact | null)[][],
+    proPermit: boolean,
+    prophecyEggs: number,
+    soulEggs: number,
     baseLayingRate: number,
     baseShippingRate: number,
-    proPermit: boolean,
+    baseIHRate: number,
+    awayIHBonus: number,
+    baseEarningRate: number,
+    awayEarningBonus: number,
+    mrcbEarningBonus: number,
+    prophecyEggBonus: number,
+    soulEggBonus: number,
     date: Date,
 };
 
