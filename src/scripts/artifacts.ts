@@ -138,7 +138,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-book_of_basan-1",
                     "name": "Book of Basan",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_book_t1c", "slot_count": 0, "value": 81827.523945, "odds_multiplier": 0.9, "effects": [{"target": "prophecy_egg_bonus", "value": 1.0025, "text": "+0.25%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_book_t1c", "slot_count": 0, "value": 81827.523945, "odds_multiplier": 0.9, "effects": [{"target": "prophecy_egg_bonus", "value": 0.0025, "text": "+0.25%"}]}
                     }
                 },
                 {
@@ -148,7 +148,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-book_of_basan-2",
                     "name": "Collectors Book of Basan",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_book_t2c", "slot_count": 0, "value": 259725.545682, "odds_multiplier": 0.45, "effects": [{"target": "prophecy_egg_bonus", "value": 1.005, "text": "+0.5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_book_t2c", "slot_count": 0, "value": 259725.545682, "odds_multiplier": 0.45, "effects": [{"target": "prophecy_egg_bonus", "value": 0.005, "text": "+0.5%"}]}
                     }
                 },
                 {
@@ -158,8 +158,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-book_of_basan-3",
                     "name": "Fortified Book of Basan",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_book_t3c", "slot_count": 0, "value": 759727.17367, "odds_multiplier": 0.27, "effects": [{"target": "prophecy_egg_bonus", "value": 1.0075, "text": "+0.75%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_book_t3e", "slot_count": 1, "value": 7597046.736699, "odds_multiplier": 0.0027, "effects": [{"target": "prophecy_egg_bonus", "value": 1.008, "text": "+0.8%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_book_t3c", "slot_count": 0, "value": 759727.17367, "odds_multiplier": 0.27, "effects": [{"target": "prophecy_egg_bonus", "value": 0.0075, "text": "+0.75%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_book_t3e", "slot_count": 1, "value": 7597046.736699, "odds_multiplier": 0.0027, "effects": [{"target": "prophecy_egg_bonus", "value": 0.008, "text": "+0.8%"}]}
                     }
                 },
                 {
@@ -169,9 +169,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-book_of_basan-4",
                     "name": "Gilded Book of Basan",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_book_t4c", "slot_count": 0, "value": 1964983.800784, "odds_multiplier": 0.18, "effects": [{"target": "prophecy_egg_bonus", "value": 1.01, "text": "+1%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_book_t4e", "slot_count": 1, "value": 24065757.137559, "odds_multiplier": 0.0012, "effects": [{"target": "prophecy_egg_bonus", "value": 1.011, "text": "+1.1%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_book_t4l", "slot_count": 2, "value": 62137478.188703, "odds_multiplier": 0.00018, "effects": [{"target": "prophecy_egg_bonus", "value": 1.012, "text": "+1.2%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_book_t4c", "slot_count": 0, "value": 1964983.800784, "odds_multiplier": 0.18, "effects": [{"target": "prophecy_egg_bonus", "value": 0.01, "text": "+1%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_book_t4e", "slot_count": 1, "value": 24065757.137559, "odds_multiplier": 0.0012, "effects": [{"target": "prophecy_egg_bonus", "value": 0.011, "text": "+1.1%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_book_t4l", "slot_count": 2, "value": 62137478.188703, "odds_multiplier": 0.00018, "effects": [{"target": "prophecy_egg_bonus", "value": 0.012, "text": "+1.2%"}]}
                     }
                 }
             ]
@@ -235,7 +235,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-ship_in_a_bottle-1",
                     "name": "Ship in a Bottle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_siab_t1c", "slot_count": 0, "value": 36210.297843, "odds_multiplier": 0.9, "effects": [{"target": "team_earning_bonus", "value": 1.2, "text": "+20%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_siab_t1c", "slot_count": 0, "value": 36210.297843, "odds_multiplier": 0.9, "effects": [{"target": "team_earning_bonus", "value": 0.2, "text": "+20%"}]}
                     }
                 },
                 {
@@ -245,7 +245,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-ship_in_a_bottle-2",
                     "name": "Detailed Ship in a Bottle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_siab_t2c", "slot_count": 0, "value": 103128.590442, "odds_multiplier": 0.9, "effects": [{"target": "team_earning_bonus", "value": 1.3, "text": "+30%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_siab_t2c", "slot_count": 0, "value": 103128.590442, "odds_multiplier": 0.9, "effects": [{"target": "team_earning_bonus", "value": 0.3, "text": "+30%"}]}
                     }
                 },
                 {
@@ -255,8 +255,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-ship_in_a_bottle-3",
                     "name": "Complex Ship in a Bottle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_siab_t3c", "slot_count": 0, "value": 283752.328358, "odds_multiplier": 0.9, "effects": [{"target": "team_earning_bonus", "value": 1.5, "text": "+50%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_siab_t3r", "slot_count": 1, "value": 897249.592046, "odds_multiplier": 0.09, "effects": [{"target": "team_earning_bonus", "value": 1.6, "text": "+60%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_siab_t3c", "slot_count": 0, "value": 283752.328358, "odds_multiplier": 0.9, "effects": [{"target": "team_earning_bonus", "value": 0.5, "text": "+50%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_siab_t3r", "slot_count": 1, "value": 897249.592046, "odds_multiplier": 0.09, "effects": [{"target": "team_earning_bonus", "value": 0.6, "text": "+60%"}]}
                     }
                 },
                 {
@@ -266,10 +266,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-ship_in_a_bottle-4",
                     "name": "Eggquisite Ship in a Bottle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_siab_t4c", "slot_count": 0, "value": 902205.06094, "odds_multiplier": 0.45, "effects": [{"target": "team_earning_bonus", "value": 1.7, "text": "+70%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_siab_t4r", "slot_count": 1, "value": 9021825.609396, "odds_multiplier": 0.0045, "effects": [{"target": "team_earning_bonus", "value": 1.8, "text": "+80%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_siab_t4e", "slot_count": 2, "value": 18043626.218793, "odds_multiplier": 0.001125, "effects": [{"target": "team_earning_bonus", "value": 1.9, "text": "+90%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_siab_t4l", "slot_count": 2, "value": 31252459.062461, "odds_multiplier": 0.000375, "effects": [{"target": "team_earning_bonus", "value": 2, "text": "+100%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_siab_t4c", "slot_count": 0, "value": 902205.06094, "odds_multiplier": 0.45, "effects": [{"target": "team_earning_bonus", "value": 0.7, "text": "+70%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_siab_t4r", "slot_count": 1, "value": 9021825.609396, "odds_multiplier": 0.0045, "effects": [{"target": "team_earning_bonus", "value": 0.8, "text": "+80%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_siab_t4e", "slot_count": 2, "value": 18043626.218793, "odds_multiplier": 0.001125, "effects": [{"target": "team_earning_bonus", "value": 0.9, "text": "+90%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_siab_t4l", "slot_count": 2, "value": 31252459.062461, "odds_multiplier": 0.000375, "effects": [{"target": "team_earning_bonus", "value": 1, "text": "+100%"}]}
                     }
                 }
             ]
@@ -332,7 +332,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-1",
                     "name": "Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t1c", "slot_count": 0, "value": 23977.318202, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t1c", "slot_count": 0, "value": 23977.318202, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -342,7 +342,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-2",
                     "name": "Precise Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t2c", "slot_count": 0, "value": 73924.958295, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t2c", "slot_count": 0, "value": 73924.958295, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -352,7 +352,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-3",
                     "name": "Eggsacting Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t3c", "slot_count": 0, "value": 207471.844866, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.15, "text": "+15%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t3c", "slot_count": 0, "value": 207471.844866, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.15, "text": "+15%"}]}
                     }
                 },
                 {
@@ -362,9 +362,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-4",
                     "name": "Flawless Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t4c", "slot_count": 0, "value": 637962.638942, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.2, "text": "+20%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_monocle_t4e", "slot_count": 2, "value": 7813133.515615, "odds_multiplier": 0.006, "effects": [{"target": "boost_bonus", "value": 1.25, "text": "+25%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_monocle_t4l", "slot_count": 3, "value": 20173384.442059, "odds_multiplier": 0.0009, "effects": [{"target": "boost_bonus", "value": 1.3, "text": "+30%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t4c", "slot_count": 0, "value": 637962.638942, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.2, "text": "+20%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_monocle_t4e", "slot_count": 2, "value": 7813133.515615, "odds_multiplier": 0.006, "effects": [{"target": "boost_bonus", "value": 0.25, "text": "+25%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_monocle_t4l", "slot_count": 3, "value": 20173384.442059, "odds_multiplier": 0.0009, "effects": [{"target": "boost_bonus", "value": 0.3, "text": "+30%"}]}
                     }
                 }
             ]
@@ -1134,7 +1134,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_prophecy_t2",
                     "value": 421387.187621,
                     "odds_multiplier": 0.05,
-                    "effects": [{"target": "prophecy_egg_bonus", "value": 1.0005, "text": "+0.05%"}]},
+                    "effects": [{"target": "prophecy_egg_bonus", "value": 0.0005, "text": "+0.05%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1144,7 +1144,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_prophecy_t3",
                     "value": 2016121.313549,
                     "odds_multiplier": 0.03,
-                    "effects": [{"target": "prophecy_egg_bonus", "value": 1.001, "text": "+0.1%"}]},
+                    "effects": [{"target": "prophecy_egg_bonus", "value": 0.001, "text": "+0.1%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Radiant",
@@ -1154,7 +1154,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_prophecy_t4",
                     "value": 6355910.022815,
                     "odds_multiplier": 0.02,
-                    "effects": [{"target": "prophecy_egg_bonus", "value": 1.0015, "text": "+0.15%"}]}
+                    "effects": [{"target": "prophecy_egg_bonus", "value": 0.0015, "text": "+0.15%"}]}
             ]
         },
         [T.StoneFamily.CLARITY_STONE]: {
@@ -1178,7 +1178,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_clarity_t2",
                     "value": 293343.150806,
                     "odds_multiplier": 0.07,
-                    "effects": [{"target": "enlightenment_effectiveness", "value": 25, "text": "25%"}]},
+                    "effects": [{"target": "enlightenment_effectiveness", "value": 0.25, "text": "25%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1188,7 +1188,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_clarity_t3",
                     "value": 1339289.804938,
                     "odds_multiplier": 0.05,
-                    "effects": [{"target": "enlightenment_effectiveness", "value": 50, "text": "50%"}]},
+                    "effects": [{"target": "enlightenment_effectiveness", "value": 0.50, "text": "50%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Eggceptional",
@@ -1198,7 +1198,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_clarity_t4",
                     "value": 6717510.81403,
                     "odds_multiplier": 0.02,
-                    "effects": [{"target": "enlightenment_effectiveness", "value": 100, "text": "100%"}]}
+                    "effects": [{"target": "enlightenment_effectiveness", "value": 1.00, "text": "100%"}]}
             ]
         },
         [T.StoneFamily.LIFE_STONE]: {
@@ -1354,7 +1354,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_soul_t2",
                     "value": 58131.479486,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "soul_egg_bonus", "value": 1.05, "text": "+5%"}]},
+                    "effects": [{"target": "soul_egg_bonus", "value": 0.05, "text": "+5%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1364,7 +1364,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_soul_t3",
                     "value": 524165.1797,
                     "odds_multiplier": 0.05,
-                    "effects": [{"target": "soul_egg_bonus", "value": 1.1, "text": "+10%"}]},
+                    "effects": [{"target": "soul_egg_bonus", "value": 0.1, "text": "+10%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Radiant",
@@ -1374,7 +1374,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_soul_t4",
                     "value": 1880372.644663,
                     "odds_multiplier": 0.04,
-                    "effects": [{"target": "soul_egg_bonus", "value": 1.25, "text": "+25%"}]}
+                    "effects": [{"target": "soul_egg_bonus", "value": 0.25, "text": "+25%"}]}
             ]
         },
         [T.StoneFamily.TERRA_STONE]: {
@@ -1669,16 +1669,16 @@ const effectMetadata: Record<string, { type: EffectType, text: string }> = {
     "hold_to_hatch_bonus"        : { "type": EffectType.ADDITIVE      , "text": "hold to hatch rate" },
     "boost_bonus"                : { "type": EffectType.ADDITIVE      , "text": "boost boost" },
     "laying_bonus"               : { "type": EffectType.MULTIPLICATIVE, "text": "egg laying rate" },
-    "soul_egg_collection_bonus"  : { "type": EffectType.ADDITIVE      , "text": "Soul Egg collection rate" },
+    "soul_egg_collection_bonus"  : { "type": EffectType.MULTIPLICATIVE, "text": "Soul Egg collection rate" },
     "internal_hatchery_bonus"    : { "type": EffectType.MULTIPLICATIVE, "text": "internal hatchery rate" },
     "shipping_bonus"             : { "type": EffectType.MULTIPLICATIVE, "text": "shipping rate" },
-    "drone_cash_bonus"           : { "type": EffectType.ADDITIVE      , "text": "chance of cash in gifts and drones" },
-    "drone_gold_bonus"           : { "type": EffectType.ADDITIVE      , "text": "chance of gold in gifts and drones" },
+    "drone_cash_bonus"           : { "type": EffectType.MULTIPLICATIVE, "text": "chance of cash in gifts and drones" },
+    "drone_gold_bonus"           : { "type": EffectType.MULTIPLICATIVE, "text": "chance of gold in gifts and drones" },
     "farm_value_bonus"           : { "type": EffectType.MULTIPLICATIVE, "text": "farm valuation" },
-    "drone_frequency_bonus"      : { "type": EffectType.ADDITIVE      , "text": "drone frequency" },
+    "drone_frequency_bonus"      : { "type": EffectType.MULTIPLICATIVE, "text": "drone frequency" },
     "hab_capacity_bonus"         : { "type": EffectType.MULTIPLICATIVE, "text": "hab capacity" },
     "egg_value_bonus"            : { "type": EffectType.MULTIPLICATIVE, "text": "egg value" },
-    "drone_reward_bonus"         : { "type": EffectType.ADDITIVE      , "text": "drone rewards" },
+    "drone_reward_bonus"         : { "type": EffectType.MULTIPLICATIVE, "text": "drone rewards" },
     "running_chicken_bonus"      : { "type": EffectType.ADDITIVE      , "text": "max running chicken bonus" },
     "away_earning_bonus"         : { "type": EffectType.MULTIPLICATIVE, "text": "away earnings" },
     "research_cost_bonus"        : { "type": EffectType.MULTIPLICATIVE, "text": "research cost" },
