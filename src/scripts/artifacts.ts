@@ -1719,7 +1719,9 @@ export function getDescriptions(item: T.Item | null): [string, string][] {
     // @ts-ignore
     const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
     const ret: [string, string][] = []
-    if (!effects) return ret;
+    if (!effects) {
+        return [["", "Reload your EID"], ["", "Contact the dev if the problem persists"]];
+    }
     for (const effect of effects) {
         ret.push([effect.text ?? "unknown", effectMetadata[effect.target]?.["text"] ?? "bonus"]);
     }
