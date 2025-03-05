@@ -10,11 +10,13 @@
                        :column="4" :row="1"
                        />
         </div>
-        <div v-if="grid.length" class="grid">
-            <inventory
-                :artifacts="grid"
-                :column="column"
-                />
+        <div v-if="grid.length" class="grid-container">
+            <div class="grid">
+                <inventory
+                    :artifacts="grid"
+                    :column="column"
+                    />
+            </div>
         </div>
     </section>
 </template>

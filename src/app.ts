@@ -25,11 +25,15 @@ import ItemTooltip from '@/components/item-tooltip.vue';
 import LoadEid from '@/components/load-eid.vue';
 import InventoryComponent from '@/components/inventory.vue';
 import ItemComponent from '@/components/item.vue';
+import ArtifactSetCard from '@/components/artifact-set-card.vue';
+import ResearchChart from '@/components/earning-set/research-chart.vue';
 
 app.component('item-tooltip', ItemTooltip);
 app.component('load-eid', LoadEid);
 app.component('inventory', InventoryComponent);
 app.component('item', ItemComponent);
+app.component('artifact-set-card', ArtifactSetCard);
+app.component('research-chart', ResearchChart);
 
 
 
@@ -43,6 +47,11 @@ const routes = [
         path: '/hoa',
         component: () => import('@/views/hoa.vue'),
         meta: { title: "Hall of Artifacts" }
+    },
+    {
+        path: '/earning-set',
+        component: () => import('@/views/earning-set.vue'),
+        meta: { title: "Earning Set" }
     },
     {
         path: '/laying-set',
@@ -74,7 +83,7 @@ const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL
 
 router.afterEach((to, from) => {
     nextTick(() => {
-        document.title = (to.meta.title + " - " || "") + "Coop Assistant";
+        document.title = (to.meta.title + " — " || "") + "Coop Assistant";
     });
 });
 

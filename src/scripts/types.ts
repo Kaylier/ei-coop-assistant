@@ -117,6 +117,22 @@ export type UserData = null | {
 };
 
 
+export type ToggleSetting<T> = {
+    parser: (arg0: string) => T,
+    formatter?: (arg0: T) => string, // default to JSON.stringify if not specified
+    localStorageId?: string,
+    value: T,
+}
+
+export type TextInputSetting = {
+    parser: (arg0: string) => number,
+    localStorageId?: string,
+    text: string,
+    validText: boolean,
+    value: number,
+};
+
+
 export enum DeflectorMode {
     NONE = "none",
     CONTRIBUTION = "contribution",

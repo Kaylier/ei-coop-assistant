@@ -1,6 +1,7 @@
 /*
  * This file contains various generic functions
  */
+import * as T from '@/scripts/types.ts';
 
 const units: string[] = [
     '',
@@ -43,14 +44,14 @@ export function parseNumber(s: string): number {
 /**
  * Format a number to a game format string
  */
-export function formatNumber(x: number, locale?: string): string {
+export function formatNumber(x: number, ...args: Parameters<Number["toLocaleString"]>): string {
     x = Number(x);
     let unit;
     for (unit of units) {
         if (x < 1e3) break;
         x /= 1e3;
     }
-    return `${x.toLocaleString(locale, { maximumFractionDigits: 3 })}${unit}`;
+    return `${x.toLocaleString(...args)}${unit}`;
 }
 
 /**
@@ -116,6 +117,54 @@ export function formatRate(x: number, timeUnit: string = 'h'): string {
 }
 
 
+/*
+ * Load a text input setting
+ */
+export function loadTextInputSetting(setting: T.TextInputSetting, defaultValue: string = "") {
+    const stored = setting.localStorageId !== undefined ? localStorage.getItem(setting.localStorageId) : null;
+    setting.text = stored !== null ? stored : defaultValue;
+    return setting.text;
+}
+
+/*
+ * Parse a text input setting
+ * If the parser raises an exception, the old value is kept and isValid attribute is updated
+ */
+export function updateTextInputSetting(setting: T.TextInputSetting) {
+    try {
+        const parsedValue = setting.parser(setting.text);
+        setting.validText = true;
+        if (setting.localStorageId) localStorage.setItem(setting.localStorageId, setting.text);
+        setting.value = parsedValue;
+    } catch {
+        setting.validText = false;
+    }
+    return setting.value;
+}
+
+export function loadToggleSetting<T>(setting: T.ToggleSetting<T>, defaultValue: T) {
+    const stored = setting.localStorageId !== undefined ? localStorage.getItem(setting.localStorageId) : null;
+    try {
+        const parsed = stored !== null ? setting.parser(stored) : defaultValue;
+        setting.value = parsed;
+    } catch (e) {
+        console.warn(`Failed to parse setting from localStorage:`, e);
+    }
+    return setting.value;
+}
+
+export function updateToggleSetting<T>(setting: T.ToggleSetting<T>) {
+    try {
+        const formatter = setting.formatter !== undefined ? setting.formatter : JSON.stringify;
+        const formatted = formatter(setting.value);
+        if (setting.localStorageId) localStorage.setItem(setting.localStorageId, formatted);
+    } catch (e) {
+        console.warn(`Failed to save setting to localStorage:`, e);
+    }
+    return setting.value;
+}
+
+
 /**
  * Round float calculations in a controlled manner
  * If two sets have the same bonuses but compounded in a different order, it can result in a slightly different
@@ -125,6 +174,28 @@ export function formatRate(x: number, timeUnit: string = 'h'): string {
  */
 export function round(x: number, precision = 1e6): number {
     return Math.round(x*precision)/precision;
+}
+
+
+/**
+ * Lexicographical comparison function between arrays
+ * For backward compatibility, act like normal comparison if numbers are given
+ */
+export function arrayCompare(a: number | number[], b: number | number[]) {
+    if (typeof a === 'number' && typeof b === 'number') {
+        console.log(a, b);
+        return a - b;
+    }
+    const arrA = typeof a === 'number' ? [a] : a;
+    const arrB = typeof b === 'number' ? [b] : b;
+
+    const minLength = Math.min(arrA.length, arrB.length);
+    for (let i = 0; i < minLength; i++) {
+        if (arrA[i] !== arrB[i]) {
+            return arrA[i] - arrB[i];
+        }
+    }
+    return arrA.length - arrB.length;
 }
 
 

@@ -160,6 +160,7 @@ async function updateSandboxLink() {
 <style scoped>
 .frame {
     position: relative;
+    align-self: stretch;
     display: grid;
     height: auto;
     gap: min(0.5vw, 0.4em);

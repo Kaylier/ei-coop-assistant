@@ -549,7 +549,7 @@ function countQuantity(items: T.Item[]): number {
  * Builds a list of stones sorted by tier in descending order (e.g., T4 first, then T3, etc.).
  * Only includes stones with tier >= 2 (ignoring fragments).
  */
-function getStoneQueue(items: T.Item[], family: T.StoneFamily, queueSize: number = 12): T.Stone[] {
+export function getStoneQueue(items: T.Item[], family: T.StoneFamily, queueSize: number = 12): T.Stone[] {
     // Store stone amount for [invalid, T1 (fragment), T2, T3, T4]
     const stoneCount: number[] = [0, 0, 0, 0, 0];
 

@@ -10,9 +10,13 @@
                 <img src="/img/icons/hoa.png" />
                 <span>Hall of Artifacts</span>
             </router-link>
+            <router-link to="/earning-set" class="router-link">
+                <img src="/img/icons/earning-set.png"></img>
+                <span>Earning Sets</span>
+            </router-link>
             <router-link to="/laying-set" class="router-link">
                 <img src="/img/icons/laying-set.png" />
-                <span>Coop Laying Sets</span>
+                <span>Laying Sets</span>
             </router-link>
         </nav>
     </header>

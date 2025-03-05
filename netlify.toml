@@ -15,6 +15,11 @@
   status = 200
 
 [[redirects]]
+  from = "/earning-set"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/laying-set"
   to = "/index.html"
   status = 200

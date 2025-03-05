@@ -99,9 +99,10 @@ header {
 .logo h1 {
     font-size: large;
     font-weight: bold;
+    margin: 0;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 30rem) {
     .logo h1 {
         display: none;
     }
@@ -130,7 +131,7 @@ header nav {
     height: 100%;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 55rem) {
     header nav .router-link span {
         display: none;
     }
@@ -401,12 +402,15 @@ button.invalid {
     padding: 0.75em 1.5em;
     box-shadow: .25em .5em 1em .03em #0004;
     pointer-events: none;
+    font-size: 0.75rem;
+    font-family: sans-serif;
+    font-weight: normal;
 }
 
 .tooltip-icon:hover .tooltip-text,
 .tooltip-icon:active .tooltip-text,
 .tooltip-icon:focus .tooltip-text {
     visibility: visible;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
