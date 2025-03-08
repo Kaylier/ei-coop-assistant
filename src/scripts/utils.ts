@@ -123,7 +123,7 @@ export function formatRate(x: number, timeUnit: string = 'h'): string {
  * equal bonuses
  * To mitigate that, I round to 9 digits
  */
-export function round(x: number, precision = 1e9): number {
+export function round(x: number, precision = 1e6): number {
     return Math.round(x*precision)/precision;
 }
 

@@ -125,8 +125,8 @@ export enum DeflectorMode {
 
 
 export enum AllowedGusset {
-    ANY = "any",
-    NONE = "none",
+    ANY = "artifact-gusset-*-*",
+    NONE= "artifact-gusset-0-0",
     T1C = "artifact-gusset-1-0",
     T2C = "artifact-gusset-2-0",
     T2E = "artifact-gusset-2-2",

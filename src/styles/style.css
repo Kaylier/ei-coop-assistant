@@ -251,6 +251,7 @@ section.settings .setting-entry {
     transition: background-color 0.15s;
     cursor: pointer;
     align-content: center;
+    text-decoration: none;
 }
 
 .switch-option:focus-within {

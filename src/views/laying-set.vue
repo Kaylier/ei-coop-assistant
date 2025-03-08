@@ -56,6 +56,36 @@
                 </label>
             </div>
         </span>
+        <span class="setting-entry">
+            <label>
+                <label tabindex="0" class="tooltip-icon">
+                    ⓘ
+                    <span class="tooltip-text">
+                        Force to use a specific gusset.<br/>
+                        Only your best gussets are shown.<br/>
+                        Disabled on "any".
+                    </span>
+                </label>
+                Gusset
+            </label>
+            <div class="switch">
+                <label v-for="gusset in allowedGussetChoices" class="switch-option" :for="gusset">
+                    <input type="radio" name="allowed-gusset" :id="gusset"
+                           :value="gusset" v-model="allowedGusset" />
+                    <span v-if="gusset === T.AllowedGusset.ANY">any</span>
+                    <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
+                    <img v-else :class="getGussetClass(gusset)"
+                         :src="getGussetImage(gusset)"
+                         :alt="getGussetName(gusset)"></img>
+                </label>
+                <a v-if="allowedGussetChoices.length < 10"
+                   href="#"
+                   class="switch-option"
+                   @click="allowedGussetChoices = Object.values(T.AllowedGusset)">
+                    …
+                </a>
+            </div>
+        </span>
         <span v-if="showExtraSettings || showExtraSettingVariant" class="setting-entry">
             <label>
                 <label tabindex="0" class="tooltip-icon">
@@ -78,33 +108,6 @@
                     <input type="radio" name="show-variants" id="show-variant-on"
                            :value="true" v-model="showVariants" />
                     <span>yes</span>
-                </label>
-            </div>
-        </span>
-        <span v-if="showExtraSettings || showExtraSettingGusset" class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Force to use a specific gusset.<br/>
-                        Only your best gussets are shown.<br/>
-                        Disabled on "any".
-                    </span>
-                </label>
-                Gusset
-            </label>
-            <div class="switch">
-                <label v-for="gusset in allowedGussetChoices" class="switch-option" :for="gusset">
-                    <input type="radio" name="allowed-gusset" :id="gusset"
-                           :value="gusset" v-model="allowedGusset" />
-                    <span v-if="gusset === T.AllowedGusset.ANY">any</span>
-                    <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
-                    <img v-else :class="getGussetClass(gusset)"
-                         :src="getGussetImage(gusset)"
-                         :alt="getGussetName(gusset)"></img>
-                </label>
-                <label v-if="allowedGussetChoices.length < 10" class="switch-option" @click="showAllGussets">
-                    …
                 </label>
             </div>
         </span>
@@ -164,7 +167,7 @@
                         <img src="/img/icons/deflector-bonus.png"></img>
                     </div>
                 </div>
-                <span v-if="entry.lowerRate" class="threshold-rate">
+                <span v-if="entry.effectiveLowerRate" class="threshold-rate">
                     <span class="threshold-rate-label">
                         laying rate
                     </span>
@@ -269,7 +272,6 @@ const baseShippingRateString = ref<string>("");
 
 // State variables
 const showExtraSettings = ref<boolean>(false);
-const showExtraSettingGusset = ref<boolean>(false);
 const showExtraSettingVariant = ref<boolean>(false);
 const showExtraSettingLaying = ref<boolean>(false);
 const showExtraSettingShipping = ref<boolean>(false);
@@ -311,7 +313,6 @@ onMounted(async () => {
 
     // Show extra settings if they have been modified
     showExtraSettingVariant.value = showVariants.value !== false;
-    showExtraSettingGusset.value = allowedGusset.value !== T.AllowedGusset.ANY;
     showExtraSettingLaying.value = !!baseLayingRateString.value;
     showExtraSettingShipping.value = !!baseShippingRateString.value;
 });
@@ -378,13 +379,12 @@ watch(baseShippingRate, updateThresholds);
  * Update default gussets shown to the user
  */
 function updateAllowedGussets() {
-    const choices = getOptimalGussets(userData.value?.items ?? []);
-    if (allowedGusset.value !== T.AllowedGusset.ANY
-     && allowedGusset.value !== T.AllowedGusset.NONE
-     && !choices.includes(allowedGusset.value)) {
+    const choices = [T.AllowedGusset.ANY, T.AllowedGusset.NONE,
+                     ...getOptimalGussets(userData.value?.items ?? [], !allowReslotting.value)];
+    if (!choices.includes(allowedGusset.value)) {
         choices.push(allowedGusset.value);
     }
-    allowedGussetChoices.value = [T.AllowedGusset.ANY, T.AllowedGusset.NONE, ...choices.sort()];
+    allowedGussetChoices.value = choices.sort();
 }
 
 
@@ -526,20 +526,6 @@ function updateThresholds() {
     console.log("Deflector bonuses:", X, "\nEffective rates  :", Y);
 }
 
-
-function showAllGussets() {
-    const choices = [
-    "artifact-gusset-1-0" as T.AllowedGusset,
-    "artifact-gusset-2-0" as T.AllowedGusset,
-    "artifact-gusset-2-2" as T.AllowedGusset,
-    "artifact-gusset-3-0" as T.AllowedGusset,
-    "artifact-gusset-3-1" as T.AllowedGusset,
-    "artifact-gusset-4-0" as T.AllowedGusset,
-    "artifact-gusset-4-2" as T.AllowedGusset,
-    "artifact-gusset-4-3" as T.AllowedGusset,
-    ];
-    allowedGussetChoices.value = [T.AllowedGusset.ANY, T.AllowedGusset.NONE, ...choices.sort()];
-}
 
 function getGussetName(gusset: string) {
     const [category,family,tier,rarity] = gusset.split('-');

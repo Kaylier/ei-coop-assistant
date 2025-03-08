@@ -35,7 +35,7 @@ export type ArtifactSet<T> = T[] & {
 };
 
 
-export function getOptimalGussets(items: T.Item[]): T.AllowedGusset[] {
+export function getOptimalGussets(items: T.Item[], includeStones: boolean = true): T.AllowedGusset[] {
     const gussets: [number, number, T.AllowedGusset][] = [];
 
     items.forEach((item: T.Item) => {
@@ -46,7 +46,7 @@ export function getOptimalGussets(items: T.Item[]): T.AllowedGusset[] {
             hab_capacity_bonus: habCapacityBonus = 1,
             laying_bonus      : layingBonus      = 1,
             shipping_bonus    : shippingBonus    = 1,
-        } = getEffects(item, true);
+        } = getEffects(item, includeStones);
 
         gussets.push([
             layingBonus*habCapacityBonus,
@@ -80,7 +80,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
     }
 
     // Remove forbidden gussets
-    if (allowedGusset !== 'any') {
+    if (allowedGusset !== T.AllowedGusset.ANY) {
         let gussets = artifactsByFamily.get(T.ArtifactFamily.GUSSET);
         gussets = gussets?.filter(gusset => allowedGusset === `artifact-gusset-${gusset.artifact.tier}-${gusset.artifact.rarity}`) ?? [];
         artifactsByFamily.set(T.ArtifactFamily.GUSSET, gussets);
@@ -132,8 +132,8 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
         families = families.filter(family => family !== T.ArtifactFamily.TACHYON_DEFLECTOR);
     }
     // Same for gusset
-    if (allowedGusset !== "any") {
-        if (allowedGusset !== "none") {
+    if (allowedGusset !== T.AllowedGusset.ANY) {
+        if (allowedGusset !== T.AllowedGusset.NONE) {
             familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.GUSSET]);
         }
         families = families.filter(family => family !== T.ArtifactFamily.GUSSET);
@@ -249,7 +249,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     }
 
     // Remove forbidden gussets
-    if (allowedGusset !== 'any') {
+    if (allowedGusset !== T.AllowedGusset.ANY) {
         let gussets = artifactsByFamily.get(T.ArtifactFamily.GUSSET);
         gussets = gussets?.filter(gusset => allowedGusset === `artifact-gusset-${gusset.artifact.tier}-${gusset.artifact.rarity}`) ?? [];
         artifactsByFamily.set(T.ArtifactFamily.GUSSET, gussets);
@@ -347,8 +347,8 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 
     }
     // Same for gusset
-    if (allowedGusset !== "any") {
-        if (allowedGusset !== "none") {
+    if (allowedGusset !== T.AllowedGusset.ANY) {
+        if (allowedGusset !== T.AllowedGusset.NONE) {
             familySets = familySets.map(familySet => [...familySet, T.ArtifactFamily.GUSSET]);
         }
         families = families.filter(family => family !== T.ArtifactFamily.GUSSET);
@@ -448,7 +448,8 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
             ];
             assignStones(set as ArtifactSet<T.Artifact>, stones);
         }
-        group.sort((a,b) => (a.reslotted ?? Infinity) - (b.reslotted ?? Infinity));
+        const minReslotted = Math.min(...group.map(x => x.reslotted ?? Infinity));
+        group.splice(0, group.length, ...group.filter(x => (x.reslotted ?? Infinity) === minReslotted));
     }
 
     // Sort sets by family and fill empty slots with null
