@@ -11,11 +11,10 @@
             :src="getImageSource(item)"
             :alt="getName(item)"></img>
 
-        <svg v-if="(item.quantity ?? 1) > 1 && !(item.category === T.ItemCategory.ARTIFACT && item.reslotted)"
-            class="item-quantity"
-            viewBox="0 0 100 20"
-            preserveAspectRatio="xMaxYMin meet"
-            ><text x="100%" y="100%" text-anchor="end"> {{ item.quantity?.toLocaleString() }} </text></svg>
+        <div v-if="(item.quantity ?? 1) > 1 && !(item.category === T.ItemCategory.ARTIFACT && item.reslotted)"
+             class="item-quantity">
+            {{ item.quantity?.toLocaleString() }}
+        </div>
 
         <div class="stones-frame">
             <img v-for="stone in itemStones(item)"
@@ -93,9 +92,8 @@ function onFocusLeave() {
     position: absolute;
     top: 0;
     right: 0;
-    height: 15%;
-    width: 100%;
-    font: 18pt always-together;
+    font: 0.80em always-together;
+    line-height: 1.6em;
     fill: #e0e0e0;
 }
 

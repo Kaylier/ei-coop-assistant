@@ -126,7 +126,7 @@ async function load(eid: string) {
 #eid input, #eid button {
     width: 10.2em;
     padding: 0.75em 1.5em;
-    font-size: 11pt;
+    font-size: 0.95em;
     box-sizing: content-box;
 }
 
@@ -155,7 +155,7 @@ async function load(eid: string) {
 
 .loading div {
     margin: auto;
-    font-size: 8pt;
+    font-size: 0.75em;
     font-style: italic;
     height: 3em;
     align-content: center;

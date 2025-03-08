@@ -81,13 +81,14 @@ main .invalid-text {
 }
 
 .threshold-label span, .optimal-label span {
-    font: 12pt always-together;
+    font-family: always-together;
     translate: 0 0.18em;
     padding: 0 0.3em;
+    white-space: nowrap;
 }
 
 .threshold-rate, .threshold-rate-label {
-    font: 12pt always-together;
+    font-family: always-together;
     font-kerning: none;
     translate: 0 0.18em;
 }

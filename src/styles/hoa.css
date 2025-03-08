@@ -1,21 +1,4 @@
 
-.settings {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 1em 3em;
-    font-size: 9pt;
-    align-items: center;
-}
-
-input[type=text] {
-    width: 7em;
-}
-
-input[type=checkbox] {
-}
-
-
 main .invalid-text {
     margin: auto;
 }

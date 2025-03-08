@@ -8,7 +8,7 @@
             <div class="description-container">
                 <span class="stamp" :class="getRarityClass(item)">{{ getStamp(item) }}</span>
                 <span class="name">{{ getName(item) }}</span>
-                <span v-for="descr in getDescriptions(item)">
+                <span class="description" v-for="descr in getDescriptions(item)">
                     <span class="bonus-value">{{ descr[0] }}</span>
                     {{ descr[1] }}
                 </span>
@@ -22,10 +22,9 @@
             <img :src="getImageSource(stone)" />
             <div class="description-container">
                 <span class="name">
-                    <span class="stamp">{{ getStamp(stone) }}</span>
                     {{ getName(stone) }}
                 </span>
-                <span v-for="descr in getDescriptions(stone)">
+                <span class="description" v-for="descr in getDescriptions(stone)">
                     <span class="bonus-value">{{ descr[0] }}</span>
                     {{ descr[1] }}
                 </span>
@@ -131,7 +130,7 @@ function getStamp(item: T.Item): string {
     transition: opacity 0.3s, visibility 0.3s;
     display: flex;
     flex-flow: column nowrap;
-    gap: 0.6em;
+    gap: 0.75em;
 }
 
 .item-tooltip-container.common {
@@ -164,25 +163,31 @@ function getStamp(item: T.Item): string {
     position: absolute;
     top: 0;
     right: 0;
-    margin: 0.75em;
-    font: 10pt always-together;
+    margin: 0.5em;
+    font: 0.9em always-together;
 }
 
 .artifact-line, .stone-line {
     display: flex;
     flex-flow: row nowrap;
-    gap: 0.25em;
+    gap: 0.5em;
     align-items: center;
 }
 
+.artifact-line {
+    height: 2.9em;
+}
+
+.stone-line {
+    height: 2.0em;
+}
+
 .artifact-line img {
-    height: 3em;
-    width: 3em;
+    height: 100%;
 }
 
 .stone-line img {
-    height: 1.8em;
-    width: 1.8em;
+    height: 100%;
     margin-left: 1.5em;
 }
 
@@ -206,14 +211,18 @@ function getStamp(item: T.Item): string {
     font-weight: bold;
 }
 
-.description-container > * {
-    margin-left: 1em;
+.description-container .stamp {
+    margin-left: 0.5em;
 }
 
-.artifact-line .description-container .name { font-size: 12pt; }
-.artifact-line .description-container       { font-size: 9pt; }
-.stone-line    .description-container .name { font-size: 10pt; }
-.stone-line    .description-container       { font-size: 9pt; }
+.description-container .description {
+    margin-left: 1.2em;
+}
+
+.stamp               { font-size: 0.75em; }
+.artifact-line .name { font-size: 1em; }
+.stone-line    .name { font-size: 0.85em; }
+.description         { font-size: 0.75em; }
 
 .bonus-value {
     color: color-mix(in srgb, var(--active-color) 75%, white);
@@ -221,6 +230,7 @@ function getStamp(item: T.Item): string {
 
 .reslot-line {
     height: 1em;
+    margin-left: 0.5em;
 }
 
 .reslot-line img {
@@ -229,7 +239,7 @@ function getStamp(item: T.Item): string {
 }
 
 .reslot-line span {
-    font-size: 10pt;
+    font-size: 0.75em;
     font-style: italic;
     color: var(--warning-text-color);
 }

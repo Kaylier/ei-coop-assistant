@@ -45,7 +45,7 @@ h1 {
 
 p {
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.2rem;
     color: #555;
 }
 </style>

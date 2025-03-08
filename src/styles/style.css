@@ -48,7 +48,7 @@
 html, body, #app {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Arial', sans-serif;
+    font-family: sans-serif;
 }
 
 body, #app {
@@ -212,7 +212,7 @@ section.settings {
     display: flex;
     flex-flow: row wrap;
     gap: 1em 3em;
-    font-size: 9pt;
+    font-size: 0.75rem;
     align-items: center;
 }
 
@@ -316,7 +316,7 @@ input {
     padding: 0.3em 0.7em;
     border-radius: 4px;
     border: none;
-    font-size: 10pt;
+    font-size: 1.1em;
     background-color: var(--bg-alt-color);
     flex-grow: 1;
 }
