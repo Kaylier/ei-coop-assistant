@@ -73,8 +73,10 @@ function onFocusLeave() {
     position: relative;
     aspect-ratio: 1;
     margin: auto;
-    height: min(4em, 12vw);
-    width: min(4em, 12vw);
+    min-height: 2.5rem;
+    min-width: 2.5rem;
+    height: 100%;
+    width: 100%;
     border-radius: 1em;
 }
 

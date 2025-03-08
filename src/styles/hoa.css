@@ -6,32 +6,26 @@ main .invalid-text {
 
 .main {
     display: flex;
-    flex-direction: row;
+    flex-flow: row wrap;
     align-content: center;
     align-items: flex-start;
     gap: 2em;
 }
 
-@media (max-width: 800px) {
-    .main {
-        flex-direction: column;
-        align-content: flex-start;
-        align-items: center;
-    }
-}
-
 .sets {
     display: flex;
     flex-flow: column nowrap;
-    gap: calc(2px + 0.2vw);
-    padding: calc(3px + 0.3vw);
+    gap: 0.4em;
+    padding: 0.4em;
     overflow: auto;
     background: #333333;
-    border-radius: 1em;
+    border-radius: 1.4em;
+    max-width: 50vw;
+    width: max(18em, 14vw);
 }
 
 .grid {
-    /*width: 50vw;*/
     max-width: 100vw;
+    width: max(50em, 50vw);
 }
 

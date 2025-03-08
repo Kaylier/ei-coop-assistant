@@ -115,6 +115,7 @@ async function load(eid: string) {
 .loading {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 #eid {

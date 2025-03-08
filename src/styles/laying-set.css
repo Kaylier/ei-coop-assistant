@@ -128,6 +128,9 @@ main .invalid-text {
     flex: 1 1 5em;
 }
 
+.entry .frame {
+    width: min(18em, 60vw);
+}
 
 .entry-sets {
     display: flex;
