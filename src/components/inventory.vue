@@ -162,8 +162,8 @@ async function updateSandboxLink() {
     position: relative;
     display: grid;
     height: auto;
-    gap: 0.4em;
-    padding: 0.4em;
+    gap: min(0.5vw, 0.4em);
+    padding: min(0.5vw, 0.4em);
     overflow: auto clip;
     background: var(--bg-hover-color);
     border-radius: 1em;

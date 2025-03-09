@@ -15,7 +15,7 @@ main .invalid-text {
 .sets {
     display: flex;
     flex-flow: column nowrap;
-    gap: 0.4em;
+    gap: min(0.5vw, 0.4em);
     padding: 0.4em;
     overflow: auto;
     background: #333333;
