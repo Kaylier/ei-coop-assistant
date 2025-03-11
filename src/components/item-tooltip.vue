@@ -183,10 +183,12 @@ function getStamp(item: T.Item): string {
 }
 
 .artifact-line img {
+    aspect-ratio: 1;
     height: 100%;
 }
 
 .stone-line img {
+    aspect-ratio: 1;
     height: 100%;
     margin-left: 1.5em;
 }
@@ -219,10 +221,10 @@ function getStamp(item: T.Item): string {
     margin-left: 1.2em;
 }
 
-.stamp               { font-size: 0.75em; }
-.artifact-line .name { font-size: 1em; }
-.stone-line    .name { font-size: 0.85em; }
-.description         { font-size: 0.75em; }
+.stamp               { white-space: nowrap; font-size: 0.75em; }
+.artifact-line .name { white-space: nowrap; font-size: 1em; }
+.stone-line    .name { white-space: nowrap; font-size: 0.85em; }
+.description         { white-space: nowrap; font-size: 0.75em; }
 
 .bonus-value {
     color: color-mix(in srgb, var(--active-color) 75%, white);
@@ -234,8 +236,8 @@ function getStamp(item: T.Item): string {
 }
 
 .reslot-line img {
+    aspect-ratio: 1;
     height: 100%;
-    width: auto;
 }
 
 .reslot-line span {

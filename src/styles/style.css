@@ -76,13 +76,14 @@ header {
 }
 
 .logo {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     height: inherit;
     text-decoration: none;
 }
 
 #logo-img {
+    aspect-ratio: 1;
     height: 140%;
     max-height: none;
     max-width: none;
@@ -109,7 +110,7 @@ header {
 header nav {
     display: flex;
     flex-direction: row;
-    height: inherit
+    height: 100%;
 }
 
 .router-link {
@@ -117,17 +118,16 @@ header nav {
     padding: 0 1em 0 0.3em;
     gap: 0.3em;
     transition: background-color 0.15s;
-    display: inline-flex;
-    flex-direction: row;
+    display: flex;
+    flex-flow: row nowrap;
     align-items: center;
     flex-basis: 0;
+    height: 100%;
 }
 
 .router-link img {
     aspect-ratio: 1;
-    max-height: 100%;
-    max-width: 100%;
-    min-width: 2.5em
+    height: 100%;
 }
 
 @media (max-width: 800px) {
@@ -218,12 +218,14 @@ section.settings {
 
 section.settings .setting-entry {
     display: flex;
+    flex-flow: row nowrap;
     align-items: center;
     gap: 0.2em;
 }
 
 .switch {
     display: flex;
+    flex-flow: row nowrap;
     background-color: var(--bg-alt-color);
     border-radius: 4px;
     padding: 0.2em;
@@ -252,6 +254,7 @@ section.settings .setting-entry {
     cursor: pointer;
     align-content: center;
     text-decoration: none;
+    height: 100%;
 }
 
 .switch-option:focus-within {
@@ -264,6 +267,7 @@ section.settings .setting-entry {
 
 .switch-option img {
     padding: 0 0.4em;
+    aspect-ratio: 1;
     height: 100%;
 }
 
@@ -387,6 +391,7 @@ button.invalid {
     left: 50%;
     transform: translate(-50%, -100%);
     width: max-content;
+    max-width: calc(100vw - 3em);
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.3s, visibility 0.3s;

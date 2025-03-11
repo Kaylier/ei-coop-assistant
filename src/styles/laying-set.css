@@ -28,7 +28,7 @@ main .invalid-text {
 
 
 .threshold {
-    display: inline-flex;
+    display: flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-content: center;
@@ -40,7 +40,7 @@ main .invalid-text {
 .threshold-label-frame, .optimal-label-frame {
     height: 1.5em;
     width: 6em;
-    display: inline-flex;
+    display: flex;
     justify-content: flex-end;
     flex: 0 0 auto;
     padding-right: 1em;
@@ -59,7 +59,7 @@ main .invalid-text {
     height: 1.5em;
     background: var(--bg-alt-color);
     border-radius: 1em;
-    display: inline-flex;
+    display: flex;
     flex-flow: row nowrap;
     align-items: center;
     align-content: flex-end;
@@ -72,8 +72,8 @@ main .invalid-text {
 }
 
 .threshold-label img, .optimal-label img {
+    aspect-ratio: 1;
     height: 100%;
-    width: auto;
     background: var(--bg-color);
     border-radius: 1em;
     padding: 0 0.3em;
@@ -118,7 +118,7 @@ main .invalid-text {
 
 
 .entry {
-    display: inline-flex;
+    display: flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-content: center;
