@@ -28,8 +28,7 @@ type ArtifactTier = {
     image: string;
     name: string;
     rarities: {
-      [rarity in T.Rarity]?: {
-      };
+      [rarity in T.Rarity]?: ArtifactRarity;
     };
 };
 

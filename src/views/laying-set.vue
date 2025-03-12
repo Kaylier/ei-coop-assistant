@@ -69,14 +69,15 @@
                 Gusset
             </label>
             <div class="switch">
-                <label v-for="gusset in allowedGussetChoices" class="switch-option" :for="gusset">
+                <label v-for="gusset in allowedGussetChoices" :key="gusset" class="switch-option" :for="gusset">
                     <input type="radio" name="allowed-gusset" :id="gusset"
                            :value="gusset" v-model="allowedGusset" />
                     <span v-if="gusset === T.AllowedGusset.ANY">any</span>
                     <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
                     <img v-else :class="getGussetClass(gusset)"
                          :src="getGussetImage(gusset)"
-                         :alt="getGussetName(gusset)"></img>
+                         :alt="getGussetName(gusset)"
+                         />
                 </label>
                 <a v-if="allowedGussetChoices.length < 10"
                    href="#"
@@ -127,8 +128,8 @@
             <input type="text" id="base-laying-rate"
                     :class="{ invalid: !baseLayingRateStringIsValid }"
                     v-model="baseLayingRateString"
-                    :placeholder="formatRate(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)">
-            </input>
+                    :placeholder="formatRate(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)"
+                    />
         </span>
         <span v-if="showExtraSettings || showExtraSettingShipping" class="setting-entry">
             <label>
@@ -146,8 +147,8 @@
             <input type="text" id="base-shipping-rate"
                     :class="{ invalid: !baseShippingRateStringIsValid }"
                     v-model="baseShippingRateString"
-                    :placeholder="formatRate(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)">
-            </input>
+                    :placeholder="formatRate(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)"
+                    />
         </span>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
@@ -164,7 +165,7 @@
                         <span v-if="entry.lowerThreshold !== undefined">
                             + {{ Math.max(0, entry.lowerThreshold).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, roundingMode: 'ceil'}) }}
                         </span>
-                        <img src="/img/icons/deflector-bonus.png"></img>
+                        <img src="/img/icons/deflector-bonus.png" />
                     </div>
                 </div>
                 <span v-if="entry.effectiveLowerRate" class="threshold-rate">
@@ -181,7 +182,7 @@
                         <span>
                             + {{ entry.optiThreshold.toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0, roundingMode: 'ceil'}) }}
                         </span>
-                        <img src="/img/icons/deflector-bonus-alt.png"></img>
+                        <img src="/img/icons/deflector-bonus-alt.png" />
                     </div>
                 </div>
                 <div class="entry-sets">
@@ -208,7 +209,7 @@
             <div class="threshold">
                 <div class="threshold-label-frame">
                     <div class="threshold-label">
-                        <img src="/img/icons/deflector-bonus.png"></img>
+                        <img src="/img/icons/deflector-bonus.png" />
                     </div>
                 </div>
                 <span v-if="entries.at(-1)!.higherRate" class="threshold-rate">
@@ -341,7 +342,7 @@ function updateBaseLayingRate(valueString: string, resetOnError = false) {
         baseLayingRateStringIsValid.value = true;
         localStorage.setItem('base-laying-rate', valueString);
         baseLayingRate.value = parsedValue ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE;;
-    } catch (e) {
+    } catch {
         baseLayingRateStringIsValid.value = false;
         if (resetOnError) {
             baseLayingRate.value = userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE;;
@@ -355,7 +356,7 @@ function updateBaseShippingRate(valueString: string, resetOnError = false) {
         baseShippingRateStringIsValid.value = true;
         localStorage.setItem('base-shipping-rate', valueString);
         baseShippingRate.value = parsedValue ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE;;
-    } catch (e) {
+    } catch {
         baseShippingRateStringIsValid.value = false;
         if (resetOnError) {
             baseShippingRate.value = userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE;;
@@ -494,7 +495,7 @@ function updateThresholds() {
         const layingRate = baseLayingRate.value * (entry.artifactSet.maxLayingBonus ??
         entry.artifactSet.layingBonus ?? 0);
 
-        let lowerThreshold = prevShippingRate/layingRate - 1;
+        const lowerThreshold = prevShippingRate/layingRate - 1;
         const optimalBonus = shippingRate/layingRate - 1;
 
         entry.lowerThreshold = lowerThreshold;
@@ -516,7 +517,7 @@ function updateThresholds() {
     }
 
     // Log the values in console for easier data extraction
-    let X = [], Y = [];
+    const X = [], Y = [];
     for (const idx in entries.value) {
         X.push(entries.value[idx].lowerThreshold);
         X.push(entries.value[idx].optiThreshold);

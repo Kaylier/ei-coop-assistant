@@ -89,7 +89,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
     // For each family, only keep non-dominated artifacts
     const artifactGroups: Map<T.ArtifactFamily, ArtifactGroup[]> = new Map();
-    for (let [family, artifacts] of artifactsByFamily) {
+    for (const [family, artifacts] of artifactsByFamily) {
         if (!artifacts?.length) continue;
         let paretoAnArtifacts: AnnotatedArtifact[][];
 
@@ -258,7 +258,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 
     // For each family, only keep non-dominated artifacts
     const artifactGroups: Map<T.ArtifactFamily, ArtifactGroup[]> = new Map();
-    for (let [family, artifacts] of artifactsByFamily) {
+    for (const [family, artifacts] of artifactsByFamily) {
         if (!artifacts?.length) continue;
 
         // Since only a single effect exist in each family, we can shortcut by using a compounded formula
@@ -373,14 +373,14 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 
 
     // Build candidate artifact sets (stone holders not included, but stone count fixed)
-    let sets: ArtifactSet<ArtifactGroup>[] = [];
+    const sets: ArtifactSet<ArtifactGroup>[] = [];
     for (const familySet of familySets) {
         for (const set of product(...familySet.map(family => artifactGroups.get(family) ?? []))) {
             const deflectorBonus   = set.reduce((tot, cur) => tot + cur.deflectorBonus  , 0);
             const layingBonus      = set.reduce((tot, cur) => tot * cur.layingBonus     , 1);
             const shippingBonus    = set.reduce((tot, cur) => tot * cur.shippingBonus   , 1);
             const habCapacityBonus = set.reduce((tot, cur) => tot * cur.habCapacityBonus, 1);
-            const stoneSlotAmount  = set.reduce((tot, cur) => tot + cur.stoneSlotAmount , 0);
+            const stoneSlotAmount  = set.reduce((tot, cur) => tot + (cur.stoneSlotAmount ?? 0), 0);
 
             for (let tachyonAmount = 0; tachyonAmount <= Math.min(stoneSlotAmount, tachyonQueue.length); tachyonAmount++) {
                 const quantumAmount = Math.min(stoneSlotAmount - tachyonAmount, quantumQueue.length);

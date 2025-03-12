@@ -5,11 +5,13 @@
        @touchstart="showItemTooltip(item, $event)"
        @touchend="hideItemTooltip()"
        @focus="onFocusEnter(item, $event)"
-       @blur="onFocusLeave()">
+       @blur="onFocusLeave()"
+       >
 
         <img class="item-image"
-            :src="getImageSource(item)"
-            :alt="getName(item)"></img>
+             :src="getImageSource(item)"
+             :alt="getName(item)"
+             />
 
         <div v-if="(item.quantity ?? 1) > 1 && !(item.category === T.ItemCategory.ARTIFACT && item.reslotted)"
              class="item-quantity">
@@ -20,11 +22,13 @@
             <img v-for="stone in itemStones(item)"
                 class="stone-frame"
                 :src="getImageSource(stone)"
-                :alt="getName(stone)"></img>
+                :alt="getName(stone)"
+                />
             <img v-if="item.category === T.ItemCategory.ARTIFACT && item.reslotted"
                 class="stone-frame"
                 src="/img/icons/shuffle.png"
-                alt="🔀"></img>
+                alt="🔀"
+                />
         </div>
 
     </div>
@@ -36,7 +40,7 @@ import type { Ref } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { getImageSource, getName } from '@/scripts/artifacts.ts';
 
-const showItemTooltip = inject("showItemTooltip") as (item: any, event: Event) => void;
+const showItemTooltip = inject("showItemTooltip") as (item: T.Item, event: Event) => void;
 const hideItemTooltip = inject("hideItemTooltip") as () => void;
 const highlightedItemId = inject<Ref<number | null>>("highlightedItemId", ref(null));
 

@@ -4,7 +4,8 @@
             <input type="text"
                 placeholder="EIxxxxxxxxxxxxxxxx"
                 :class="{ invalid: !checkEID(eid) }"
-                v-model="eid" ></input>
+                v-model="eid"
+                />
             <button
                 :disabled="!checkEID(eid) || isLoadingEID"
                 :class="{ invalid: !checkEID(eid), 'tooltip-icon': !checkEID(eid) }"
@@ -17,7 +18,7 @@
             </button>
         </form>
         <div v-if="isLoadingEID" class="active-text">
-            <img src="/img/icons/loading.svg">
+            <img src="/img/icons/loading.svg" />
         </div>
         <pre v-else-if="errorMsg" class="invalid-text" style="white-space:preserve">{{ errorMsg || "Error" }}</pre>
         <div v-else-if="!userData || !userData.items" class="invalid-text">

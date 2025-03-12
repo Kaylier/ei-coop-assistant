@@ -151,7 +151,7 @@ async function updateSandboxLink() {
     if (!props.isSet) return;
     try {
         sandboxLink.value = await getSandboxLink(props.artifacts as T.Artifact[], props.userData, props.deflectorBonus);
-    } catch (e) {
+    } catch {
         sandboxLink.value = null;
     }
 }

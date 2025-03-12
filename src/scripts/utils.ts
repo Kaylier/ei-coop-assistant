@@ -222,8 +222,8 @@ export function* combinations<T>(array: T[], size: number, partials: boolean = f
  * @param arrays Arrays to generate the Cartesian product from.
  * @yields Arrays of combinations from the Cartesian product.
  */
-export function* product(...arrays: any[][]): Generator<any[], void, void> {
-    function* aux(index: number, current: any[]): Generator<any[], void, void> {
+export function* product<T>(...arrays: T[][]): Generator<T[], void, void> {
+    function* aux(index: number, current: T[]): Generator<T[], void, void> {
         if (index === arrays.length) {
             yield current;
             return;

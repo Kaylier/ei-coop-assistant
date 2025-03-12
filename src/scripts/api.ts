@@ -249,7 +249,7 @@ async function queryBackup(eid: string, proto: any) {
         //platform: Platform.values.DROID,
     }
 
-    let error = EggIncFirstContactRequest.verify(payload);
+    const error = EggIncFirstContactRequest.verify(payload);
     if (error)
         throw Error(error);
 
@@ -319,7 +319,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
 
     const epicResearches: Map<string, number> = new Map(backup.game?.epicResearch?.map((er: any) => [er.id, er.level]));
 
-    const protoBuffDimention = proto.lookupEnum('GameModifier.GameDimension');
+    const protoBuffDimension = proto.lookupEnum('GameModifier.GameDimension');
     const colleggtibleBuffs = getColleggtibleBuffs(proto, backup);
 
     const soulEggs = backup.game?.soulEggsD ?? 0;
@@ -337,8 +337,8 @@ export async function getUserData(eid: string): Promise<T.UserData> {
      */
     let baseLayingRate = 523908000000; // in egg/second
     baseLayingRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
-    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimention.values.EGG_LAYING_RATE) ?? 1;
-    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimention.values.HAB_CAPACITY) ?? 1;
+    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimension.values.EGG_LAYING_RATE) ?? 1;
+    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimension.values.HAB_CAPACITY) ?? 1;
 
     /*
      * Base egg shipping rate is calculated from:
@@ -350,7 +350,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     let baseShippingRate = 79422912597.65625; // in egg/second
     baseShippingRate *= backup.game?.hyperloopStation ? 10 : 1;
     baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
-    baseShippingRate *= colleggtibleBuffs.get(protoBuffDimention.values.SHIPPING_CAPACITY) ?? 1;
+    baseShippingRate *= colleggtibleBuffs.get(protoBuffDimension.values.SHIPPING_CAPACITY) ?? 1;
 
     /*
      * Base earning rate is calculated from:
@@ -369,14 +369,14 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     let baseEarningRate = 2/60; // in bocks/eggvalue/chicken/second
     baseEarningRate *= (proPermit ? 1 : 0.5);
     baseEarningRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
-    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimention.values.EGG_LAYING_RATE) ?? 1;
-    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimention.values.EARNINGS) ?? 1;
+    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimension.values.EGG_LAYING_RATE) ?? 1;
+    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimension.values.EARNINGS) ?? 1;
     baseEarningRate *= 1 + soulEggs*soulEggBonus*Math.pow(prophecyEggBonus, prophecyEggs);
     baseEarningRate /= 1 - 0.05*(epicResearches.get("cheaper_research") ?? 0);
-    baseEarningRate /= colleggtibleBuffs.get(protoBuffDimention.values.RESEARCH_COST) ?? 1;
+    baseEarningRate /= colleggtibleBuffs.get(protoBuffDimension.values.RESEARCH_COST) ?? 1;
 
-    let awayEarningBonus = colleggtibleBuffs.get(protoBuffDimention.values.AWAY_EARNINGS) ?? 1;
-    let mrcbEarningBonus = 340 + 2*(epicResearches.get('epic_multiplier') ?? 0);
+    const awayEarningBonus = colleggtibleBuffs.get(protoBuffDimension.values.AWAY_EARNINGS) ?? 1;
+    const mrcbEarningBonus = 340 + 2*(epicResearches.get('epic_multiplier') ?? 0);
 
     /*
      * Base Internal Hatchery Rate is calculated from:
@@ -389,7 +389,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
      */
     let baseIHRate = 14880;
     baseIHRate *= 1 + 0.05*(epicResearches.get("epic_internal_incubators") ?? 0);
-    baseIHRate *= colleggtibleBuffs.get(protoBuffDimention.values.INTERNAL_HATCHERY_RATE) ?? 1;
+    baseIHRate *= colleggtibleBuffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1;
 
     let awayIHBonus = 1 + 0.1*(epicResearches.get("int_hatch_calm") ?? 0);
 
@@ -406,18 +406,18 @@ export async function getUserData(eid: string): Promise<T.UserData> {
 }
 
 function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[][]] {
-    let itemIdMap: Map<number, T.Item> = new Map();
-    let items: Map<string, T.Item> = new Map();
+    const itemIdMap: Map<number, T.Item> = new Map();
+    const items: Map<string, T.Item> = new Map();
 
     for (const eiItem of backup.artifactsDb.inventoryItems) {
 
-        let item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
+        const item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
         let key: string;
         item.quantity = eiItem.quantity as number;
         item.id = eiItem.itemId as number;
 
         if (item.category === T.ItemCategory.ARTIFACT) {
-            let stones: (T.Stone | null)[] = []
+            const stones: (T.Stone | null)[] = []
             for (const eiStone of eiItem.artifact.stones) {
                 const { category, family, tier } = getItemFromSpec(eiStone, proto);
 
@@ -453,9 +453,9 @@ function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[]
         itemIdMap.set(eiItem.itemId, items.get(key)!);
     }
 
-    let sets: (T.Artifact | null)[][] = [];
+    const sets: (T.Artifact | null)[][] = [];
     for (const eiSet of backup.artifactsDb.savedArtifactSets) {
-        let set: (T.Artifact | null)[] = [];
+        const set: (T.Artifact | null)[] = [];
         for (const eiSlot of eiSet.slots) {
             if (eiSlot.occupied) {
                 const artifact = itemIdMap.get(eiSlot.itemId) ?? null;
@@ -481,7 +481,6 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<unknown, number> {
      * For ongoing contracts, assumes the population is maxed
      */
     const protoEgg = proto.lookupEnum('Egg');
-    const protoBuffDimention = proto.lookupEnum('GameModifier.GameDimension');
     const farmSizeThresholds = [10000000, 100000000, 1000000000, 10000000000];
     const maxFarmSizeReached = new Map<string, number>();
 
@@ -507,7 +506,7 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<unknown, number> {
     if (backup.contracts?.customEggInfo) {
         for (const customEgg of backup.contracts?.customEggInfo) {
             // Handle colleggtible with multiple dimensions, just in case. Maybe overkill, let's call it future-proof.
-            let finalBuffs = new Map();
+            const finalBuffs = new Map();
             for (let i = 0; i < customEgg.buffs.length; i++) {
                 if (farmSizeThresholds[i] <= (maxFarmSizeReached.get(customEgg.identifier) ?? 0)) {
                     const buff = customEgg.buffs[i];
@@ -569,7 +568,7 @@ export async function getSandboxLink(artifacts: T.Artifact[],
         [T.ArtifactFamily.PUZZLE_CUBE]: protoArtifactName.values.PUZZLE_CUBE,
     };
 
-    let payload = {
+    const payload = {
         builds: [{ artifacts: [] as any[] }],
         config: {
             prophecyEggs: userData?.prophecyEggs ?? 1,
@@ -588,11 +587,11 @@ export async function getSandboxLink(artifacts: T.Artifact[],
         }
     }
 
-    for (let artifact of artifacts) {
+    for (const artifact of artifacts) {
         if (artifact) {
-            let stones = [];
+            const stones = [];
 
-            for (let stone of artifact.stones) {
+            for (const stone of artifact.stones) {
                 if (stone) {
                     stones.unshift({
                         isEmpty: false,
@@ -620,7 +619,7 @@ export async function getSandboxLink(artifacts: T.Artifact[],
         }
     }
 
-    let error = protoBuilds.verify(payload);
+    const error = protoBuilds.verify(payload);
     if (error)
         throw Error(error);
     const message = protoBuilds.create(payload);

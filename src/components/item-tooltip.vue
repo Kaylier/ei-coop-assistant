@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, nextTick } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { getName, getDescriptions, getImageSource } from '@/scripts/artifacts.ts';
 
@@ -58,7 +58,7 @@ function show(newItem: T.Item, event: Event) {
     visible.value = true;
 
     nextTick(() => {
-        if (!tooltip) return;
+        if (!tooltip.value) return;
         // @ts-ignore
         const rect = event.target?.getBoundingClientRect?.() ?? { left: 0, top: 0 };
         const tooltipWidth = tooltip.value.offsetWidth;

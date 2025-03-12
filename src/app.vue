@@ -3,15 +3,15 @@
     <header>
         <nav>
             <router-link to="/" class="router-link logo">
-                <img src="/favicon.png" id="logo-img"></img>
+                <img src="/favicon.png" id="logo-img" />
                 <h1>Coop Assistant</h1>
             </router-link>
             <router-link to="/hoa" class="router-link">
-                <img src="/img/icons/hoa.png"></img>
+                <img src="/img/icons/hoa.png" />
                 <span>Hall of Artifacts</span>
             </router-link>
             <router-link to="/laying-set" class="router-link">
-                <img src="/img/icons/laying-set.png"></img>
+                <img src="/img/icons/laying-set.png" />
                 <span>Coop Laying Sets</span>
             </router-link>
         </nav>

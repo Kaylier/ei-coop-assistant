@@ -52,7 +52,7 @@ function isArtifact(item: T.Item): item is T.Artifact {
  */
 function countRarity(items: T.Item[], rarity: T.Rarity | null): number {
     let c = 0;
-    for (let item of items) {
+    for (const item of items) {
         if (rarity !== null && item.category !== T.ItemCategory.ARTIFACT) continue;
         if (rarity !== null && (item as T.Artifact).rarity !== rarity) continue;
         c += item.quantity ?? 1;
@@ -84,8 +84,8 @@ function updateView() {
         || countStones(b) - countStones(a)
         || (a.id ?? 0) - (b.id ?? 0));
 
-    let groups = new Map<string, T.Item[]>();
-    for (let item of items) {
+    const groups = new Map<string, T.Item[]>();
+    for (const item of items) {
         if (item.category != T.ItemCategory.ARTIFACT) continue;
         const key = `${item.category}-${item.family}`;
         if (!groups.has(key))
