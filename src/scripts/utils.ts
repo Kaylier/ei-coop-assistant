@@ -207,7 +207,7 @@ export function arrayCompare(a: number | number[], b: number | number[]) {
  * Complexity in O(n*log(n)) where n is list.length
  */
 
-export function extractParetoFrontier<T>(list: [number, number, T][]): T[][] {
+export function extractParetoFrontier2<T>(list: [number, number, T][]): T[][] {
     // Sort by x (descending) and then by y (descending)
     const sortedList = list.slice().sort(([ax, ay], [bx, by]) => bx - ax || by - ay);
 
@@ -248,6 +248,30 @@ export function extractParetoFrontier3<T>(list: [number, number, number, T][]): 
     return elements.filter(([x,y,z]) =>
         !elements.some(([u,v,w]) => x <= u && y <= v && z <= w && (x < u || y < v || z < w)))
         .map(([, , , elements]) => elements);
+}
+
+export function extractParetoFrontier<T>(list: [number[], T][]): T[][] {
+    const groups = new Map<string, [number[], T[]]>();
+
+    // Group elements by identical coordinates
+    for (const [coords, element] of list) {
+        const key = coords.join(':');
+        if (!groups.has(key)) {
+            groups.set(key, [coords, []]);
+        }
+        groups.get(key)![1].push(element);
+    }
+
+    const elements = Array.from(groups.values());
+
+    // Filter out dominated elements
+    return elements.filter(([coords]) =>
+            !elements.some(([otherCoords]) =>
+                otherCoords.every((v, i) => v >= coords[i]) &&
+                otherCoords.some((v, i) => v > coords[i])
+            )
+        )
+        .map(([, elements]) => elements);
 }
 
 

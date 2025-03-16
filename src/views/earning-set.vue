@@ -116,10 +116,11 @@
 
     <section v-if="!errorMessage" class="main-sets">
 
-        <artifact-set-card v-if="optimalEBSet.ebMultiplier === optimalEarningSet.ebMultiplier"
+        <template v-if="optimalEBSet?.ebMultiplier === optimalEarningSet?.ebMultiplier">
+        <artifact-set-card v-if="optimalEBSet"
             title="EB/Earning set"
             description="Maximize your earnings<br/>and increase your EB<br/>to help teammates<br/>mirroring you"
-            :set="optimalEBSet"
+            :set="optimalEBSet.set"
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEBSet.ebMultiplier"
@@ -129,12 +130,12 @@
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEB" />
         </artifact-set-card>
-
+        </template>
         <template v-else>
-        <artifact-set-card
+        <artifact-set-card v-if="optimalEBSet"
             title="EB set"
             description="Increase your EB<br/>to help teammates<br/>mirroring you"
-            :set="optimalEBSet"
+            :set="optimalEBSet.set"
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEBSet.ebMultiplier"
@@ -145,10 +146,10 @@
             <research-chart size="80%" :data="chartDataEB" />
         </artifact-set-card>
 
-        <artifact-set-card
+        <artifact-set-card v-if="optimalEarningSet"
             title="Earning set"
             description="Maximize your earnings<br/>when not mirroring"
-            :set="optimalEarningSet"
+            :set="optimalEarningSet.set"
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEarningSet.ebMultiplier"
@@ -160,10 +161,10 @@
         </artifact-set-card>
         </template>
 
-        <artifact-set-card
+        <artifact-set-card v-if="optimalMirrorSet"
             title="Mirror set"
             description="Maximize your earnings<br/>when mirroring"
-            :set="optimalMirrorSet"
+            :set="optimalMirrorSet.set"
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="mirrorMult"
@@ -182,8 +183,8 @@
 import { ref, computed, reactive, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseNumber, formatNumber, loadTextInputSetting, updateTextInputSetting } from '@/scripts/utils.ts';
-import { computeOptimalSetsWithoutReslotting, computeOptimalSetsWithReslotting } from '@/scripts/earning-set.ts';
-import type { ArtifactSet, AnnotatedArtifact } from '@/scripts/earning-set.ts';
+import { searchEBSet, searchEarningSet, searchMirrorSet, searchCubeBonus } from '@/scripts/earning-set.ts';
+import type { ArtifactSet } from '@/scripts/earning-set.ts';
 
 
 const MIN_EGG_VALUE = 1e-7; // TODO: change to 0.05
@@ -232,11 +233,10 @@ const miscBonus = computed(() => Math.max(1, updateTextInputSetting(miscBonusSet
 
 // Data variables
 const userData = ref<T.UserData>(null); // loaded via load-eid component
-const optimalEBSet = ref<ArtifactSet<T.Artifact | null>>([null, null, null, null]);
-const optimalEarningSet = ref<ArtifactSet<T.Artifact | null>>([null, null, null, null]);
-const optimalMirrorSet = ref<ArtifactSet<T.Artifact | null>>([null, null, null, null]);
-const optimalCube = ref<AnnotatedArtifact | null>(null);
-const optimalCubeBonus = computed<number>(() => optimalCube.value?.bonuses.researchCostBonus ?? 1);
+const optimalEBSet = ref<ArtifactSet>();
+const optimalEarningSet = ref<ArtifactSet>();
+const optimalMirrorSet = ref<ArtifactSet>();
+const optimalCubeBonus = ref<number>(1);
 const chartDataEB = computed(() => generateChartData(optimalEBSet.value?.totalOnlineMultiplier ?? 540,
                                                      optimalEBSet.value?.researchCostBonus ?? 0.4));
 const chartDataEarning = computed(() => generateChartData(optimalEarningSet.value?.totalOnlineMultiplier ?? 0.4,
@@ -307,32 +307,35 @@ function updateSet() {
 
     try {
         errorMessage.value = "";
-        const ret = allowReslotting.value ?
-                    computeOptimalSetsWithReslotting(userData.value?.items ?? [],
-                                                     maxSlot,
-                                                     baseBonuses,
-                                                     !swapCube.value,
-                                                     false, // doesn't count monocle
-                                                     true, // true: online, false: offline
-                                                     ) :
-                    computeOptimalSetsWithoutReslotting(userData.value?.items ?? [],
-                                                        maxSlot,
-                                                        baseBonuses,
-                                                        !swapCube.value,
-                                                        false, // doesn't count monocle
-                                                        true, // true: online, false: offline
-                                                       );
-        optimalEBSet.value = ret.ebSet;
-        optimalEarningSet.value = ret.earningSet;
-        optimalMirrorSet.value = ret.mirrorSet;
-        optimalCube.value = ret.cube ?? null;
+        optimalEBSet.value = searchEBSet(userData.value?.items ?? [],
+                                         maxSlot,
+                                         baseBonuses,
+                                         !swapCube.value,
+                                         false, // countMonocle
+                                         true, // online
+                                         allowReslotting.value);
+        optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
+                                                   maxSlot,
+                                                   baseBonuses,
+                                                   !swapCube.value,
+                                                   false, // countMonocle
+                                                   true, // online
+                                                   allowReslotting.value);
+        optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
+                                                 maxSlot,
+                                                 baseBonuses,
+                                                 !swapCube.value,
+                                                 false, // countMonocle
+                                                 true, // online
+                                                 allowReslotting.value);
+        optimalCubeBonus.value = swapCube.value ? searchCubeBonus(userData.value?.items ?? []) : 1;
 
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
-        optimalEBSet.value = [null, null, null, null];
-        optimalEarningSet.value = [null, null, null, null];
-        optimalMirrorSet.value = [null, null, null, null];
-        optimalCube.value = null;
+        optimalEBSet.value = undefined;
+        optimalEarningSet.value = undefined;
+        optimalMirrorSet.value = undefined;
+        optimalCubeBonus.value = 1;
         return;
     }
 }

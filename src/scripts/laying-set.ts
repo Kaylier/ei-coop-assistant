@@ -1,4 +1,4 @@
-import { round, extractParetoFrontier, extractParetoFrontier3, combinations, product } from '@/scripts/utils.ts';
+import { round, extractParetoFrontier2, extractParetoFrontier3, combinations, product } from '@/scripts/utils.ts';
 import * as T from '@/scripts/types.ts';
 import { getEffects, copyItem } from '@/scripts/artifacts.ts';
 
@@ -54,7 +54,7 @@ export function getOptimalGussets(items: T.Item[], includeStones: boolean = true
             `artifact-gusset-${item.tier}-${item.rarity}` as T.AllowedGusset]);
     });
 
-    const paretoGussets = extractParetoFrontier(gussets);
+    const paretoGussets = extractParetoFrontier2(gussets);
 
     const gussetsSet: T.AllowedGusset[] = [];
     for (const group of paretoGussets) {
@@ -100,7 +100,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
                 x.deflectorBonus ?? 0,
                 x]));
         } else {
-            paretoAnArtifacts = extractParetoFrontier(artifacts.map(x => [
+            paretoAnArtifacts = extractParetoFrontier2(artifacts.map(x => [
                 (x.layingBonus ?? 1)*(x.habCapacityBonus ?? 1),
                 x.shippingBonus ?? 1,
                 x]));
@@ -168,7 +168,7 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
 
     // Extract non-dominated sets
     console.log(familySets.length, "family sets expanded to", sets.length, "candidate sets");
-    const paretoSets: ArtifactSet<ArtifactGroup>[][] = extractParetoFrontier(sets.map(x => [
+    const paretoSets: ArtifactSet<ArtifactGroup>[][] = extractParetoFrontier2(sets.map(x => [
         x.maxLayingBonus ?? 1,
         x.shippingBonus ?? 1,
         x
@@ -264,7 +264,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
         // Since only a single effect exist in each family, we can shortcut by using a compounded formula
         // For metronome, it will be equivalent to layingBonus for example
         // For non contract families, it is just 1 and we end up with artifacts with the maximum amount of slot
-        const paretoAnArtifacts: AnnotatedArtifact[][] = extractParetoFrontier(artifacts.map(x => [
+        const paretoAnArtifacts: AnnotatedArtifact[][] = extractParetoFrontier2(artifacts.map(x => [
             (1 + (x.deflectorBonus ?? 0))*(x.layingBonus ?? 1)*(x.shippingBonus ?? 1)*(x.habCapacityBonus ?? 1),
             x.stoneSlotAmount ?? 0,
             x]));
@@ -403,7 +403,7 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
 
     // Extract non-dominated sets
     console.log(familySets.length, "family sets expanded to", sets.length, "candidate sets");
-    const paretoSets: ArtifactSet<ArtifactGroup>[][] = extractParetoFrontier(sets.map(x => [
+    const paretoSets: ArtifactSet<ArtifactGroup>[][] = extractParetoFrontier2(sets.map(x => [
         x.maxLayingBonus ?? 1,
         x.shippingBonus ?? 1,
         x

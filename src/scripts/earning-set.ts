@@ -1,19 +1,28 @@
 import * as T from '@/scripts/types.ts';
-import { round, arrayCompare } from '@/scripts/utils.ts';
+import { round, arrayCompare, extractParetoFrontier, product } from '@/scripts/utils.ts';
 import { getEffects, copyItem } from '@/scripts/artifacts.ts';
-import { getStoneQueue } from '@/scripts/laying-set.ts';
 
-type Bonuses = {
-    prophecyEggBonus      : number,
-    soulEggBonus          : number,
-    eggValueBonus         : number, // laying rate bonus and boost effectiveness are treated as eggValueBonus
-    maxRunningChickenBonus: number,
-    awayEarningBonus      : number,
-    researchCostBonus     : number,
+
+
+type BaseBonuses = {
+    PECount: number,
+    SECount: number,
+    basePEBonus: number,
+    baseSEBonus: number,
+    baseRCBonus: number,
 };
 
-export type AnnotatedArtifact = {
-    artifact: T.Artifact,
+type Bonuses = {
+    PEBonus: number,
+    SEBonus: number,
+    RCBonus: number,
+    EVBonus: number, // laying rate bonus and boost effectiveness are treated as eggValueBonus
+    AEBonus: number,
+    CRBonus: number,
+};
+
+type AnnotatedArtifact = {
+    artifacts: T.Artifact[],
     bonuses: Bonuses,
     stoneSlotAmount: number,
 };
@@ -23,37 +32,260 @@ type AnnotatedStone = {
     bonuses: Bonuses,
 };
 
-type SearchResult = {
-    set?: ArtifactSet<AnnotatedArtifact>,
-    stones?: AnnotatedStone[],
-    bonuses?: Bonuses,
-    score: number[],
+export type ArtifactSet = {
+    set: (T.Artifact | null)[],
+    bonuses: Bonuses,
+    userEB: number,
+    ebMultiplier: number,
+    onlineMultiplier: number,
+    offlineMultiplier: number,
+    totalOnlineMultiplier: number,
+    totalOfflineMultiplier: number,
+    researchCostBonus: number,
 };
 
-export type ArtifactSet<T> = T[] & {
-    bonuses?: Bonuses,
-    userEB?: number,
-    ebMultiplier?: number,
-    onlineMultiplier?: number,
-    offlineMultiplier?: number,
-    totalOnlineMultiplier?: number,
-    totalOfflineMultiplier?: number,
-    researchCostBonus?: number,
-};
 
-const defaultBonus = {
-    prophecyEggBonus      : 0,
-    soulEggBonus          : 0,
-    eggValueBonus         : 1,
-    maxRunningChickenBonus: 0,
-    awayEarningBonus      : 1,
-    researchCostBonus     : 1,
-};
+export function searchEBSet(items: T.Item[],
+                            maxSlot: number,
+                            baseBonuses: BaseBonuses,
+                            countCube: boolean,
+                            countMonocle: boolean,
+                            online: boolean,
+                            reslotting: boolean): ArtifactSet {
+    return search1(items, maxSlot, baseBonuses, countCube, countMonocle, online, reslotting,
+                   getEBStoneQueue,
+                   (eb, bonus, cr) => [round(eb), round((1 + eb)*bonus), 1/cr]);
+}
 
+
+export function searchEarningSet(items: T.Item[],
+                                 maxSlot: number,
+                                 baseBonuses: BaseBonuses,
+                                 countCube: boolean,
+                                 countMonocle: boolean,
+                                 online: boolean,
+                                 reslotting: boolean): ArtifactSet {
+    return search1(items, maxSlot, baseBonuses, countCube, countMonocle, online, reslotting,
+                   getEarningStoneQueue,
+                   (eb, bonus, cr) => [round((1 + eb)*bonus), 1/cr]);
+}
+
+
+export function searchMirrorSet(items: T.Item[],
+                                maxSlot: number,
+                                baseBonuses: BaseBonuses,
+                                countCube: boolean,
+                                countMonocle: boolean,
+                                online: boolean,
+                                reslotting: boolean): ArtifactSet {
+    return search1(items, maxSlot, baseBonuses, countCube, countMonocle, online, reslotting,
+                   getMirrorStoneQueue,
+                   (eb, bonus, cr) => [round(bonus), round((1 + eb)*bonus), 1/cr]);
+}
+
+
+export function searchCubeBonus(items: T.Item[]): number {
+    return items.filter(item => item.category === T.ItemCategory.ARTIFACT)
+                .map(item => getEffects(item, false)['research_cost_bonus'] ?? 1)
+                .reduce((best, eff) => Math.min(best, eff), 1);
+}
+
+
+/*
+ * First layer of recursive search
+ * set up variables and handle Book and Vial iteration.
+ * These artifact are separated because they potentially interfere with stone effects.
+ */
+function search1(items: T.Item[],
+                 maxSlot: number,
+                 baseBonuses: BaseBonuses,
+                 countCube: boolean,
+                 countMonocle: boolean,
+                 online: boolean,
+                 reslotting: boolean,
+                 stoneQueueFn: (stones: Map<T.StoneFamily, AnnotatedStone[]>,
+                                baseBonuses: BaseBonuses,
+                                online: boolean) => AnnotatedStone[],
+                 evalBonusFn: (eb: number, bonus: number, cr: number) => number[],
+                       ): ArtifactSet {
+    const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
+
+    const artifactsByFamily: Map<T.ArtifactFamily, AnnotatedArtifact[]> =
+                            getArtifacts(items, !reslotting, countMonocle);
+    artifactsByFamily.forEach((artifacts, key) => {
+        const filtered = artifacts.filter(x => (reslotting && x.stoneSlotAmount > 0)
+                                            || x.bonuses.PEBonus > 0
+                                            || x.bonuses.SEBonus > 0
+                                            || x.bonuses.RCBonus > 0
+                                            || x.bonuses.EVBonus > 1
+                                            || x.bonuses.AEBonus > 1
+                                            || x.bonuses.CRBonus < 1);
+        filtered.sort((a,b) => b.stoneSlotAmount - a.stoneSlotAmount
+                            || b.bonuses.PEBonus - a.bonuses.PEBonus
+                            || b.bonuses.SEBonus - a.bonuses.SEBonus
+                            || b.bonuses.EVBonus - a.bonuses.EVBonus
+                            || a.bonuses.CRBonus - b.bonuses.CRBonus
+                            || b.bonuses.RCBonus - a.bonuses.RCBonus
+                            || b.bonuses.AEBonus - a.bonuses.AEBonus);
+
+        artifactsByFamily.set(key, filtered);
+    });
+    const artifactBooks: AnnotatedArtifact[] = artifactsByFamily.get(T.ArtifactFamily.BOOK_OF_BASAN) ?? [];
+    const artifactVials: AnnotatedArtifact[] = artifactsByFamily.get(T.ArtifactFamily.VIAL_OF_MARTIAN_DUST) ?? [];
+    const artifactOthers: AnnotatedArtifact[][] = Array.from(artifactsByFamily.entries())
+                                                   .filter(([key]) => key !== T.ArtifactFamily.BOOK_OF_BASAN
+                                                                   && key !== T.ArtifactFamily.VIAL_OF_MARTIAN_DUST)
+                                                   .map(([, value]) => value);
+
+
+    const stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]> = getStones(items);
+
+
+    const best: AnnotatedArtifact[] = [];
+    const bestScore: number[] = [];
+
+    for (const artifactBook of [...artifactBooks, null]) {
+        const bookBonus = artifactBook?.bonuses.PEBonus ?? 0;
+
+        for (const artifactVial of [...artifactVials, null]) {
+            const vialBonus = artifactBook?.bonuses.RCBonus ?? 0;
+
+            const newBaseBonuses: BaseBonuses = {
+                ...baseBonuses,
+                basePEBonus: baseBonuses.basePEBonus + bookBonus,
+                baseSEBonus: baseBonuses.baseSEBonus + vialBonus,
+            };
+            const stoneQueue = reslotting ? stoneQueueFn(stonesByFamily, newBaseBonuses, online) : [];
+
+            function evalFn(set: AnnotatedArtifact[]): number[] {
+                const stoneSlotAmount = set.reduce((tot, x) => tot + x.stoneSlotAmount, 0);
+
+                const { PEBonus, SEBonus, RCBonus, EVBonus, AEBonus, CRBonus }: Bonuses =
+                    getBonus(set, stoneQueue.slice(0, stoneSlotAmount));
+
+                const eb = SECount
+                         * (baseSEBonus + SEBonus)
+                         * Math.pow(basePEBonus + PEBonus, PECount);
+
+                const bonus = EVBonus
+                            * (online ? baseRCBonus + RCBonus : AEBonus)
+                            / (countCube ? CRBonus : 1);
+
+                return evalBonusFn(eb, bonus, CRBonus);
+            }
+
+            function evalUpperBoundFn(set: AnnotatedArtifact[]): number[] {
+                const extraStoneAmount = (maxSlot - set.length)*3;
+                const stoneAmount = set.reduce((tot, x) => tot + x.stoneSlotAmount, 0) + extraStoneAmount;
+
+                let { PEBonus, SEBonus, RCBonus, EVBonus, AEBonus, CRBonus }: Bonuses =
+                    getBonus(set, stoneQueue.slice(0, stoneAmount));
+
+                if (!reslotting) {
+                    PEBonus += extraStoneAmount*0.0015;
+                    SEBonus += extraStoneAmount*0.25;
+                    RCBonus += extraStoneAmount*100;
+                    EVBonus *= 1.1**extraStoneAmount;
+                    AEBonus *= 1.4**extraStoneAmount;
+                }
+                if (!hasFamily(set, T.ArtifactFamily.DEMETERS_NECKLACE)) EVBonus *= 3;
+                if (!hasFamily(set, T.ArtifactFamily.TUNGSTEN_ANKH    )) EVBonus *= 2.5;
+                if (!hasFamily(set, T.ArtifactFamily.QUANTUM_METRONOME)) EVBonus *= 1.35;
+                if (!hasFamily(set, T.ArtifactFamily.DILITHIUM_MONOCLE)) EVBonus *= 1.3;
+                if (!hasFamily(set, T.ArtifactFamily.LUNAR_TOTEM      )) AEBonus *= 200;
+                if (!hasFamily(set, T.ArtifactFamily.PUZZLE_CUBE      )) CRBonus *= 0.4;
+
+                const eb = SECount
+                         * (baseSEBonus + SEBonus)
+                         * Math.pow(basePEBonus + PEBonus, PECount);
+
+                const bonus = EVBonus
+                            * (online ? baseRCBonus + RCBonus : AEBonus)
+                            / (countCube ? CRBonus : 1);
+
+                return evalBonusFn(eb, bonus, CRBonus);
+            }
+
+            const current: AnnotatedArtifact[] = [artifactBook, artifactVial].filter(x => x !== null);
+            search2(artifactOthers, 0, maxSlot, evalFn, evalUpperBoundFn, current, best, bestScore);
+        }
+    }
+
+    const newBaseBonuses: BaseBonuses = {
+        ...baseBonuses,
+        basePEBonus: baseBonuses.basePEBonus + best.reduce((tot, cur) => tot + cur.bonuses.PEBonus, 0),
+        baseSEBonus: baseBonuses.baseSEBonus + best.reduce((tot, cur) => tot + cur.bonuses.RCBonus, 0),
+    };
+    const stones = reslotting ? stoneQueueFn(stonesByFamily, newBaseBonuses, online) : [];
+    stones.splice(best.reduce((tot, cur) => tot + (cur.stoneSlotAmount ?? 0), 0));
+    const result: Partial<ArtifactSet> = {
+        set: reslotting ? searchBestStoneAssignment(best, stones) : best.map(x => x.artifacts[0]),
+        bonuses: getBonus(best, stones),
+    };
+    while (result.set!.length < maxSlot) result.set!.push(null);
+    attachMultipliers(result, baseBonuses);
+    return result as ArtifactSet;
+}
+
+
+/*
+ * Second layer of recursive search
+ * handle all remaining families
+ */
+function search2(artifacts: AnnotatedArtifact[][], artifactsIdx: number = 0,
+                 maxSlot: number,
+                 evalFn: (arg0: AnnotatedArtifact[]) => number[],
+                 evalUpperBoundFn: (arg0: AnnotatedArtifact[]) => number[],
+                 current: AnnotatedArtifact[] = [],
+                 best   : AnnotatedArtifact[] = [], bestScore: number[] = [],
+                ): AnnotatedArtifact[] {
+    const currentScore = evalFn(current);
+    if (arrayCompare(bestScore, currentScore) < 0) {
+        Object.assign(best, current);
+        Object.assign(bestScore, currentScore);
+    }
+
+    if (current.length >= maxSlot || artifactsIdx >= artifacts.length) {
+        // We filled out set, or we don't have more artifacts to add
+        return best;
+    }
+
+    const scoreUpperBound = evalUpperBoundFn(current);
+    if (arrayCompare(scoreUpperBound, bestScore) < 0) {
+        // We can't do better than our best, no need to search further
+        return best;
+    }
+
+    // Try every artifact of current family
+    for (let i = 0; i < artifacts[artifactsIdx].length; i++) {
+        const newCurrent = [...current, artifacts[artifactsIdx][i]];
+        search2(artifacts, artifactsIdx+1, maxSlot, evalFn, evalUpperBoundFn, newCurrent, best, bestScore);
+    }
+
+    // Try without this family
+    search2(artifacts, artifactsIdx+1, maxSlot, evalFn, evalUpperBoundFn, current, best, bestScore);
+
+    return best;
+}
+
+
+/*
+ * Helper for testing if a family is already present in a set
+ */
+function hasFamily(set: AnnotatedArtifact[], family: T.ArtifactFamily): boolean {
+    return set.some(x => x.artifacts[0].family === family);
+    //return set.some(x => x.artifacts.some(y => y.family === family));
+}
+
+
+/*
+ * Group artifacts by families, and annotate them with bonus properties
+ */
 function getArtifacts(items: T.Item[],
-                      includeStones: boolean = true,
-                      countMonocle: boolean = false): AnnotatedArtifact[] {
-    const result: AnnotatedArtifact[] = [];
+                      includeStones: boolean,
+                      countMonocle: boolean
+                     ): Map<T.ArtifactFamily, AnnotatedArtifact[]> {
+    const result = new Map<T.ArtifactFamily, AnnotatedArtifact[]>();
 
     items.forEach((item: T.Item) => {
         if (item.category !== T.ItemCategory.ARTIFACT) return;
@@ -71,28 +303,56 @@ function getArtifacts(items: T.Item[],
         } = getEffects(artifact, includeStones);
 
         const annotatedArtifact: AnnotatedArtifact = {
-            artifact,
+            artifacts: [artifact],
             bonuses: {
-                prophecyEggBonus      : round(prophecyEggBonus),
-                soulEggBonus          : round(soulEggBonus),
-                eggValueBonus         : round(eggValueBonus*layingBonus*(countMonocle ? boostBonus : 1)),
-                maxRunningChickenBonus: round(runningChickenBonus),
-                awayEarningBonus      : round(awayEarningBonus),
-                researchCostBonus     : round(researchCostBonus),
+                PEBonus: round(prophecyEggBonus),
+                SEBonus: round(soulEggBonus),
+                EVBonus: round(eggValueBonus*layingBonus*(countMonocle ? boostBonus : 1)),
+                RCBonus: round(runningChickenBonus),
+                AEBonus: round(awayEarningBonus),
+                CRBonus: round(researchCostBonus),
             },
-            stoneSlotAmount       : artifact.stones?.length ?? 0,
+            stoneSlotAmount: artifact.stones?.length ?? 0,
         };
 
-        result.push(annotatedArtifact);
+        if (!result.has(artifact.family)) {
+            result.set(artifact.family, []);
+        }
+        result.get(artifact.family)!.push(annotatedArtifact);
+    });
+
+    // Filter out dominated artifacts, and group equivalent ones
+    result.forEach((artifacts, key) => {
+        const paretoFrontier = extractParetoFrontier(artifacts.map(x => [[
+            x.stoneSlotAmount,
+            x.bonuses.PEBonus,
+            x.bonuses.SEBonus,
+            x.bonuses.RCBonus,
+            x.bonuses.EVBonus,
+            x.bonuses.AEBonus,
+            x.bonuses.CRBonus],
+            x]));
+        result.set(key, paretoFrontier.map(g => ({
+            artifacts: g.map(x => x.artifacts[0]),
+            bonuses: g[0].bonuses,
+            stoneSlotAmount: g[0].stoneSlotAmount,
+        })));
     });
 
     return result;
 }
 
-function getStones(items: T.Item[], countMonocle: boolean = false): AnnotatedStone[] {
-    const result: AnnotatedStone[] = [];
 
-    items.forEach((item: T.Item) => {
+/*
+ * Group stones by families, annotate them with bonus properties and sort them by priority
+ */
+function getStones(items: T.Item[],
+                   activeBirdFeed: boolean = false,
+                   maxAmount: number = 12,
+                  ): Map<T.StoneFamily, AnnotatedStone[]> {
+    const result = new Map<T.StoneFamily, AnnotatedStone[]>();
+
+    function addItem(item: T.Item) {
         if (item.category !== T.ItemCategory.STONE) return;
         const stone = copyItem(item) as T.Stone;
 
@@ -107,392 +367,201 @@ function getStones(items: T.Item[], countMonocle: boolean = false): AnnotatedSto
             research_cost_bonus   : researchCostBonus   = 1,
         } = getEffects(stone);
 
-        const annotatedStone: AnnotatedArtifact = {
+        const annotatedStone: AnnotatedStone = {
             stone,
             bonuses: {
-                prophecyEggBonus      : round(prophecyEggBonus),
-                soulEggBonus          : round(soulEggBonus),
-                eggValueBonus         : round(eggValueBonus*layingBonus*(countMonocle ? boostBonus : 1)),
-                maxRunningChickenBonus: round(runningChickenBonus),
-                awayEarningBonus      : round(awayEarningBonus),
-                researchCostBonus     : round(researchCostBonus),
+                PEBonus: round(prophecyEggBonus),
+                SEBonus: round(soulEggBonus),
+                EVBonus: round(eggValueBonus*layingBonus*(activeBirdFeed ? boostBonus : 1)),
+                RCBonus: round(runningChickenBonus),
+                AEBonus: round(awayEarningBonus),
+                CRBonus: round(researchCostBonus),
             },
         };
 
-        result.push(annotatedStone);
+        if (!result.has(stone.family)) {
+            result.set(stone.family, []);
+        }
+        result.get(stone.family)!.push(...Array(Math.min(item.quantity ?? 1, maxAmount)).fill(annotatedStone));
+    }
+
+    items.forEach((item: T.Item) => {
+        addItem(item);
+        if (item.category === T.ItemCategory.ARTIFACT) {
+            (item as T.Artifact).stones?.forEach(stone => stone && addItem(stone));
+        }
     });
+
+    // Sort in priority order (higher tiers first) and keep only maxAmount of them
+    result.forEach((stones, key) => stones.sort((a,b) => b.stone.tier - a.stone.tier).splice(maxAmount));
 
     return result;
 }
 
 
-export function computeOptimalSetsWithoutReslotting(items: T.Item[],
-                                                    maxSlot: number,
-                                                    baseBonuses: Record<string, number>,
-                                                    countCube: boolean = true,
-                                                    countMonocle: boolean = false,
-                                                    online: boolean = true) {
+function getEBStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]>,
+                         baseBonuses: BaseBonuses,
+                         online: boolean): AnnotatedStone[] {
     const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
-
-    const artifacts: AnnotatedArtifact[] = getArtifacts(items, true, countMonocle)
-        .filter(x => x.bonuses.prophecyEggBonus > 0
-                  || x.bonuses.soulEggBonus > 0
-                  || x.bonuses.eggValueBonus > 1
-                  || x.bonuses.maxRunningChickenBonus > 0
-                  || x.bonuses.awayEarningBonus > 1
-                  || x.bonuses.researchCostBonus < 1)
-        .sort((a,b) => b.bonuses.prophecyEggBonus - a.bonuses.prophecyEggBonus
-                    || b.bonuses.soulEggBonus - a.bonuses.soulEggBonus
-                    || b.bonuses.eggValueBonus - a.bonuses.eggValueBonus
-                    || a.bonuses.researchCostBonus - b.bonuses.researchCostBonus
-                    || b.bonuses.maxRunningChickenBonus - a.bonuses.maxRunningChickenBonus
-                    || b.bonuses.awayEarningBonus - a.bonuses.awayEarningBonus);
-
-
-    let bestFound: SearchResult;
-
-
-    // search EB set
-    bestFound = search(artifacts, maxSlot, (b: Bonuses) => {
-        const eb = (baseSEBonus + b.soulEggBonus)*SECount*Math.pow(basePEBonus + b.prophecyEggBonus, PECount);
-        let bonus = b.eggValueBonus;
-        bonus *= online ? baseRCBonus + b.maxRunningChickenBonus : b.awayEarningBonus;
-        bonus /= countCube ? b.researchCostBonus : 1;
-        return [round(eb), round(eb*bonus), 1/b.researchCostBonus];
-    });
-    const ebSet: ArtifactSet<T.Artifact | null> = Object.assign(
-        bestFound.set?.map(x => x.artifact).sort((a,b) => a!.family - b!.family) ?? [],
-        { bonuses: bestFound.bonuses ?? defaultBonus }
-    );
-    while (ebSet.length < maxSlot) ebSet.push(null);
-    calculateMultipliers(ebSet, PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus);
-
-
-    // search Earning set
-    bestFound = search(artifacts, maxSlot, (b: Bonuses) => {
-        const eb = (baseSEBonus + b.soulEggBonus)*SECount*Math.pow(basePEBonus + b.prophecyEggBonus, PECount);
-        let bonus = b.eggValueBonus;
-        bonus *= online ? baseRCBonus + b.maxRunningChickenBonus : b.awayEarningBonus;
-        bonus /= countCube ? b.researchCostBonus : 1;
-        return [round(eb*bonus)];
-    });
-    const earningSet: ArtifactSet<T.Artifact | null> = Object.assign(
-        bestFound.set?.map(x => x.artifact).sort((a,b) => a!.family - b!.family) ?? [],
-        { bonuses: bestFound.bonuses ?? defaultBonus }
-    );
-    while (earningSet.length < maxSlot) earningSet.push(null);
-    calculateMultipliers(earningSet, PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus);
-
-
-    // search Mirror set
-    bestFound = search(artifacts, maxSlot, (b: Bonuses) => {
-        const eb = (baseSEBonus + b.soulEggBonus)*SECount*Math.pow(basePEBonus + b.prophecyEggBonus, PECount);
-        let bonus = b.eggValueBonus;
-        bonus *= online ? baseRCBonus + b.maxRunningChickenBonus : b.awayEarningBonus;
-        bonus /= countCube ? b.researchCostBonus : 1;
-        return [round(bonus), round(eb*bonus), 1/b.researchCostBonus];
-    });
-    const mirrorSet: ArtifactSet<T.Artifact | null> = Object.assign(
-        bestFound.set?.map(x => x.artifact).sort((a,b) => a!.family - b!.family) ?? [],
-        { bonuses: bestFound.bonuses ?? defaultBonus }
-    );
-    while (mirrorSet.length < maxSlot) mirrorSet.push(null);
-    calculateMultipliers(mirrorSet, PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus);
-
-
-    // search cube
-    const cube = artifacts.sort((a, b) => a.bonuses.researchCostBonus - b.bonuses.researchCostBonus)[0] ?? null;
-
-
-    return { ebSet, earningSet, mirrorSet, cube };
-}
-
-export function computeOptimalSetsWithReslotting(items: T.Item[],
-                                                 maxSlot: number,
-                                                 baseBonuses: Record<string, number>,
-                                                 countCube: boolean = true,
-                                                 countMonocle: boolean = false,
-                                                 online: boolean = true) {
-    const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
-
     // Create priority queues for relevant stone families
     // and a list of marginal gains. …Marginals[i] is the marginal gain of the stone at index i
-    const prophecyStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.PROPHECY_STONE);
+    const prophecyStoneQueue = stonesByFamily.get(T.StoneFamily.PROPHECY_STONE) ?? [];
     const prophecyStoneMarginals: number[] = [];
     {
         let cumul = basePEBonus;
         for (const stone of prophecyStoneQueue) {
-            const eff = getEffects(stone)['prophecy_egg_bonus'];
+            const eff = getEffects(stone.stone)['prophecy_egg_bonus'];
             prophecyStoneMarginals.push(Math.pow(1 + eff/cumul, PECount));
             cumul += eff;
         }
     }
 
-    const soulStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.SOUL_STONE);
+    const soulStoneQueue = stonesByFamily.get(T.StoneFamily.SOUL_STONE) ?? [];
     const soulStoneMarginals: number[] = [];
     {
         let cumul = baseSEBonus;
         for (const stone of soulStoneQueue) {
-            const eff = getEffects(stone)['soul_egg_bonus'];
+            const eff = getEffects(stone.stone)['soul_egg_bonus'];
             soulStoneMarginals.push(1 + eff/cumul);
             cumul += eff;
         }
     }
 
-    const terraStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.TERRA_STONE);
+    // Merge different families to single queues
+    return mergeStoneQueues([
+        { queue: prophecyStoneQueue, marginals: prophecyStoneMarginals },
+        { queue: soulStoneQueue    , marginals: soulStoneMarginals     },
+    ]);
+}
+
+
+function getEarningStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]>,
+                              baseBonuses: BaseBonuses,
+                              online: boolean
+                             ): AnnotatedStone[] {
+    const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
+    // Create priority queues for relevant stone families
+    // and a list of marginal gains. …Marginals[i] is the marginal gain of the stone at index i
+    const prophecyStoneQueue = stonesByFamily.get(T.StoneFamily.PROPHECY_STONE) ?? [];
+    const prophecyStoneMarginals: number[] = [];
+    {
+        let cumul = basePEBonus;
+        for (const stone of prophecyStoneQueue) {
+            const eff = getEffects(stone.stone)['prophecy_egg_bonus'];
+            prophecyStoneMarginals.push(Math.pow(1 + eff/cumul, PECount));
+            cumul += eff;
+        }
+    }
+
+    const soulStoneQueue = stonesByFamily.get(T.StoneFamily.SOUL_STONE) ?? [];
+    const soulStoneMarginals: number[] = [];
+    {
+        let cumul = baseSEBonus;
+        for (const stone of soulStoneQueue) {
+            const eff = getEffects(stone.stone)['soul_egg_bonus'];
+            soulStoneMarginals.push(1 + eff/cumul);
+            cumul += eff;
+        }
+    }
+
+    const terraStoneQueue = stonesByFamily.get(T.StoneFamily.TERRA_STONE) ?? [];
     const terraStoneMarginals: number[] = [];
     {
         let cumul = baseRCBonus;
         for (const stone of terraStoneQueue) {
-            const eff = getEffects(stone)['running_chicken_bonus'];
+            const eff = getEffects(stone.stone)['running_chicken_bonus'];
             terraStoneMarginals.push(1 + eff/cumul);
             cumul += eff;
         }
     }
 
-    const tachyonStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.TACHYON_STONE);
+    const tachyonStoneQueue = stonesByFamily.get(T.StoneFamily.TACHYON_STONE) ?? [];
     const tachyonStoneMarginals: number[] = [];
     for (const stone of tachyonStoneQueue) {
-        const eff = getEffects(stone)['laying_bonus'];
+        const eff = getEffects(stone.stone)['laying_bonus'];
         tachyonStoneMarginals.push(eff);
     }
 
-    const shellStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.SHELL_STONE);
+    const shellStoneQueue = stonesByFamily.get(T.StoneFamily.SHELL_STONE) ?? [];
     const shellStoneMarginals: number[] = [];
     for (const stone of shellStoneQueue) {
-        const eff = getEffects(stone)['egg_value_bonus'];
+        const eff = getEffects(stone.stone)['egg_value_bonus'];
         shellStoneMarginals.push(eff);
     }
 
-    const lunarStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.LUNAR_STONE);
+    const lunarStoneQueue = stonesByFamily.get(T.StoneFamily.LUNAR_STONE) ?? [];
     const lunarStoneMarginals: number[] = [];
     for (const stone of lunarStoneQueue) {
-        const eff = getEffects(stone)['away_earning_bonus'];
+        const eff = getEffects(stone.stone)['away_earning_bonus'];
+        lunarStoneMarginals.push(eff);
+    }
+
+
+
+    // Merge different families to single queues
+    return mergeStoneQueues([
+        { queue: prophecyStoneQueue, marginals: prophecyStoneMarginals },
+        { queue: soulStoneQueue    , marginals: soulStoneMarginals     },
+        { queue: tachyonStoneQueue , marginals: tachyonStoneMarginals  },
+        { queue: shellStoneQueue   , marginals: shellStoneMarginals    },
+        (online ? { queue: terraStoneQueue   , marginals: terraStoneMarginals }
+                : { queue: lunarStoneQueue   , marginals: lunarStoneMarginals })
+    ]);
+}
+
+
+function getMirrorStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]>,
+                              baseBonuses: BaseBonuses,
+                              online: boolean
+                             ): AnnotatedStone[] {
+    const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
+    // Create priority queues for relevant stone families
+    // and a list of marginal gains. …Marginals[i] is the marginal gain of the stone at index i
+    const terraStoneQueue = stonesByFamily.get(T.StoneFamily.TERRA_STONE) ?? [];
+    const terraStoneMarginals: number[] = [];
+    {
+        let cumul = baseRCBonus;
+        for (const stone of terraStoneQueue) {
+            const eff = getEffects(stone.stone)['running_chicken_bonus'];
+            terraStoneMarginals.push(1 + eff/cumul);
+            cumul += eff;
+        }
+    }
+
+    const tachyonStoneQueue = stonesByFamily.get(T.StoneFamily.TACHYON_STONE) ?? [];
+    const tachyonStoneMarginals: number[] = [];
+    for (const stone of tachyonStoneQueue) {
+        const eff = getEffects(stone.stone)['laying_bonus'];
+        tachyonStoneMarginals.push(eff);
+    }
+
+    const shellStoneQueue = stonesByFamily.get(T.StoneFamily.SHELL_STONE) ?? [];
+    const shellStoneMarginals: number[] = [];
+    for (const stone of shellStoneQueue) {
+        const eff = getEffects(stone.stone)['egg_value_bonus'];
+        shellStoneMarginals.push(eff);
+    }
+
+    const lunarStoneQueue = stonesByFamily.get(T.StoneFamily.LUNAR_STONE) ?? [];
+    const lunarStoneMarginals: number[] = [];
+    for (const stone of lunarStoneQueue) {
+        const eff = getEffects(stone.stone)['away_earning_bonus'];
         lunarStoneMarginals.push(eff);
     }
 
 
     // Merge different families to single queues
-    const { stoneQueue: ebStoneQueue, stoneMarginals: ebStoneMarginals } = mergeStoneQueues([
-        { queue: prophecyStoneQueue, marginals: prophecyStoneMarginals },
-        { queue: soulStoneQueue    , marginals: soulStoneMarginals     },
-    ]);
-    // If the queue has less than 12 stones, I could complete with shell/terra/lunar/tachyon stones
-    // It's not worth doing it in my opinion, since it only concerns very early players
-
-    const { stoneQueue: earningStoneQueue, stoneMarginals: earningStoneMarginals } = mergeStoneQueues([
-        { queue: prophecyStoneQueue, marginals: prophecyStoneMarginals },
-        { queue: soulStoneQueue    , marginals: soulStoneMarginals     },
+    return mergeStoneQueues([
         { queue: tachyonStoneQueue , marginals: tachyonStoneMarginals  },
         { queue: shellStoneQueue   , marginals: shellStoneMarginals    },
         (online ? { queue: terraStoneQueue   , marginals: terraStoneMarginals }
                 : { queue: lunarStoneQueue   , marginals: lunarStoneMarginals })
     ]);
-
-    const { stoneQueue: mirrorStoneQueue, stoneMarginals: mirrorStoneMarginals } = mergeStoneQueues([
-        { queue: tachyonStoneQueue , marginals: tachyonStoneMarginals  },
-        { queue: shellStoneQueue   , marginals: shellStoneMarginals    },
-        (online ? { queue: terraStoneQueue   , marginals: terraStoneMarginals }
-                : { queue: lunarStoneQueue   , marginals: lunarStoneMarginals })
-    ]);
-
-
-    // Calculate cumulative bonuses. If we use i stones from the queue, we get …Cumulatives[i] bonus
-    const ebStoneCumulatives = ebStoneMarginals.slice().reduce((acc, current) => {
-            acc.push(acc[acc.length-1]*current);
-            return acc;
-        }, [1]);
-    const earningStoneCumulatives = earningStoneMarginals.slice().reduce((acc, current) => {
-            acc.push(acc[acc.length-1]*current);
-            return acc;
-        }, [1]);
-    const mirrorStoneCumulatives = mirrorStoneMarginals.slice().reduce((acc, current) => {
-            acc.push(acc[acc.length-1]*current);
-            return acc;
-        }, [1]);
-
-
-
-    // Relevant artifacts with interactions with stones: BoB, Vial
-    // TODO: for pareto BoBs, for pareto Vial, compute proph/terra queues and search
-    // Relevant artifacts without: Monocle, Metronome, Ankh, Necklace, Totem, Cube
-    //
-    // TODO: extract pareto artifacts?
-    // TODO: find best artifacts (taking into account stoneSlotCount giving cumulative bonuses)
-
-    const ebSet: ArtifactSet<T.Artifact | null> = [null, null, null, null];
-    const earningSet: ArtifactSet<T.Artifact | null> = [null, null, null, null];
-    const mirrorSet: ArtifactSet<T.Artifact | null> = [null, null, null, null];
-    const cube: AnnotatedArtifact | null = null;
-    throw new Error("Not implemented");
-    return { ebSet, earningSet, mirrorSet, cube };
 }
 
 
-function computeEBSetWithReslotting(items: T.Item[],
-                                    maxSlot: number,
-                                    baseBonuses: Record<string, number>,
-                                    countCube: boolean = true,
-                                    countMonocle: boolean = false,
-                                    online: boolean = true) {
-    const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
-
-    /*
-    const stoneHolders: T.AnnotatedArtifact[][] = ...
-    for (const book of books) {
-        const stoneQueue = ...
-        const stoneCumulatives = ...
-    }
-    */
-
-    const prophecyStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.PROPHECY_STONE);
-    const prophecyStoneMarginals: number[] = [];
-    {
-        let cumul = basePEBonus;
-        for (const stone of prophecyStoneQueue) {
-            const eff = getEffects(stone)['prophecy_egg_bonus'];
-            prophecyStoneMarginals.push(Math.pow(1 + eff/cumul, PECount));
-            cumul += eff;
-        }
-    }
-
-    const soulStoneQueue: T.Stone[] = getStoneQueue(items, T.StoneFamily.SOUL_STONE);
-    const soulStoneMarginals: number[] = [];
-    {
-        let cumul = baseSEBonus;
-        for (const stone of soulStoneQueue) {
-            const eff = getEffects(stone)['soul_egg_bonus'];
-            soulStoneMarginals.push(1 + eff/cumul);
-            cumul += eff;
-        }
-    }
-
-    // Merge different families to single queues
-    const { stoneQueue: ebStoneQueue, stoneMarginals: ebStoneMarginals } = mergeStoneQueues([
-        { queue: prophecyStoneQueue, marginals: prophecyStoneMarginals },
-        { queue: soulStoneQueue    , marginals: soulStoneMarginals     },
-    ]);
-    // If the queue has less than 12 stones, I could complete with shell/terra/lunar/tachyon stones
-    // It's not worth doing it in my opinion, since it only concerns very early players
-
-
-    // Calculate cumulative bonuses. If we use i stones from the queue, we get …Cumulatives[i] bonus
-    const ebStoneCumulatives = ebStoneMarginals.slice().reduce((acc, current) => {
-            acc.push(acc[acc.length-1]*current);
-            return acc;
-        }, [1]);
-
-    // Relevant artifacts with interactions with stones: BoB, Vial
-    // TODO: for pareto BoBs, for pareto Vial, compute proph/terra queues and search
-    // Relevant artifacts without: Monocle, Metronome, Ankh, Necklace, Totem, Cube
-    //
-    // TODO: extract pareto artifacts?
-    // TODO: find best artifacts (taking into account stoneSlotCount giving cumulative bonuses)
-
-    const ebSet: ArtifactSet<T.Artifact | null> = [null, null, null, null];
-}
-
-
-
-/*
- * Helper for testing if a family is already present in a set
- */
-function hasFamily(set: AnnotatedArtifact[], family: T.ArtifactFamily): boolean {
-    return set.some(x => x.artifact.family === family);
-}
-
-
-/*
- * Recursively search for the best set, for a given evaluation function
- */
-function search(artifacts: AnnotatedArtifact[],
-                maxSlot: number,
-                evalFn: (arg0: Bonuses) => number[],
-                startIdx: number = 0,
-                currentSet: AnnotatedArtifact[] = [],
-                currentBonuses: Bonuses = defaultBonus,
-                bestFound: SearchResult = { score: [-Infinity] }
-                ): SearchResult {
-    const score = evalFn(currentBonuses);
-    if (arrayCompare(bestFound.score, score) < 0) {
-        bestFound.score = score;
-        bestFound.set = [...currentSet];
-        bestFound.stones = [];
-        bestFound.bonuses = {...currentBonuses};
-    }
-    if (currentSet.length >= maxSlot) {
-        return bestFound;
-    }
-    const extraStoneSlot = (maxSlot - currentSet.length)*3;
-    const bonusUpperBound = {
-        prophecyEggBonus      : currentBonuses.prophecyEggBonus +
-                                (hasFamily(currentSet, T.ArtifactFamily.BOOK_OF_BASAN) ? 0 : 0.012) +
-                                extraStoneSlot*0.0015,
-        soulEggBonus          : currentBonuses.soulEggBonus +
-                                extraStoneSlot*0.25,
-        eggValueBonus         : currentBonuses.eggValueBonus *
-                                (hasFamily(currentSet, T.ArtifactFamily.DEMETERS_NECKLACE) ? 1 : 3) *
-                                (hasFamily(currentSet, T.ArtifactFamily.TUNGSTEN_ANKH) ? 1 : 2.5) *
-                                (hasFamily(currentSet, T.ArtifactFamily.QUANTUM_METRONOME) ? 1 : 1.35) *
-                                (hasFamily(currentSet, T.ArtifactFamily.DILITHIUM_MONOCLE) ? 1 : 1.3) *
-                                extraStoneSlot*1.1,
-        maxRunningChickenBonus: currentBonuses.maxRunningChickenBonus +
-                                (hasFamily(currentSet, T.ArtifactFamily.VIAL_OF_MARTIAN_DUST) ? 0 : 500) +
-                                extraStoneSlot*100,
-        awayEarningBonus      : currentBonuses.awayEarningBonus *
-                                (hasFamily(currentSet, T.ArtifactFamily.LUNAR_TOTEM) ? 1 : 200) *
-                                extraStoneSlot*1.4,
-        researchCostBonus     : currentBonuses.researchCostBonus *
-                                (hasFamily(currentSet, T.ArtifactFamily.PUZZLE_CUBE) ? 1 : 0.4),
-    };
-    const scoreUpperBound = evalFn(bonusUpperBound);
-    if (arrayCompare(scoreUpperBound, bestFound.score) < 0) {
-        return bestFound;
-    }
-
-    for (let i = startIdx; i < artifacts.length; i++) {
-        const artifact = artifacts[i];
-        if (currentSet.some(x => x.artifact.family === artifact.artifact.family)) continue;
-        currentSet.push(artifact);
-        const newBonuses = {
-            prophecyEggBonus      : currentBonuses.prophecyEggBonus + artifact.bonuses.prophecyEggBonus,
-            soulEggBonus          : currentBonuses.soulEggBonus + artifact.bonuses.soulEggBonus,
-            eggValueBonus         : currentBonuses.eggValueBonus * artifact.bonuses.eggValueBonus,
-            maxRunningChickenBonus: currentBonuses.maxRunningChickenBonus + artifact.bonuses.maxRunningChickenBonus,
-            awayEarningBonus      : currentBonuses.awayEarningBonus * artifact.bonuses.awayEarningBonus,
-            researchCostBonus     : currentBonuses.researchCostBonus * artifact.bonuses.researchCostBonus,
-        };
-        search(artifacts, maxSlot, evalFn, i+1, currentSet, newBonuses, bestFound);
-        currentSet.pop();
-    }
-    return bestFound;
-}
-
-function calculateMultipliers(set: ArtifactSet<T.Artifact | null>,
-                              PE: number, SE: number,
-                              basePEBonus: number, baseSEBonus: number, baseRCBonus: number) {
-    set.userEB  = SE;
-    set.userEB *= Math.pow(basePEBonus + set.bonuses!.prophecyEggBonus, PE);
-    set.userEB *= (baseSEBonus + set.bonuses!.soulEggBonus);
-
-    set.ebMultiplier  = Math.pow(1 + set.bonuses!.prophecyEggBonus/basePEBonus, PE);
-    set.ebMultiplier *= (1 + set.bonuses!.soulEggBonus/baseSEBonus);
-
-    set.onlineMultiplier  = set.bonuses!.eggValueBonus;
-    set.onlineMultiplier *= (set.bonuses!.maxRunningChickenBonus + baseRCBonus);
-
-    set.offlineMultiplier  = set.bonuses!.eggValueBonus;
-    set.offlineMultiplier *= set.bonuses!.awayEarningBonus;
-
-    set.totalOnlineMultiplier = set.ebMultiplier * set.onlineMultiplier;
-    set.totalOfflineMultiplier = set.ebMultiplier * set.offlineMultiplier;
-
-    set.researchCostBonus = set.bonuses!.researchCostBonus;
-}
-
-
-function mergeStoneQueues(inputs: {queue: T.Stone[], marginals: number[]}[], queueSize: number = 12) {
-    const stoneQueue: T.Stone[] = [];
+function mergeStoneQueues(inputs: {queue: AnnotatedStone[], marginals: number[]}[], queueSize: number = 12) {
+    const stoneQueue: AnnotatedStone[] = [];
     const stoneMarginals: number[] = [];
 
     const indices = inputs.map(() => 0);
@@ -521,5 +590,106 @@ function mergeStoneQueues(inputs: {queue: T.Stone[], marginals: number[]}[], que
         indices[candidateIndex]++;
     }
 
-    return { stoneQueue, stoneMarginals };
+    return stoneQueue;
 }
+
+
+function getBonus(artifacts: AnnotatedArtifact[], stones: AnnotatedStone[] = []): Bonuses {
+    const result = { PEBonus: 0, SEBonus: 0, RCBonus: 0, EVBonus: 1, AEBonus: 1, CRBonus: 1 };
+
+    [...artifacts, ...stones].forEach(item => {
+        const b = item.bonuses;
+        result.PEBonus += b.PEBonus;
+        result.SEBonus += b.SEBonus;
+        result.RCBonus += b.RCBonus;
+        result.EVBonus *= b.EVBonus;
+        result.AEBonus *= b.AEBonus;
+        result.CRBonus *= b.CRBonus;
+    });
+
+    return result;
+}
+
+
+function searchBestStoneAssignment(artifacts: AnnotatedArtifact[], stones: AnnotatedStone[]): T.Artifact[] {
+    let best: T.Artifact[] | null = null;
+    let bestScore: number = Infinity;
+    for (const candidateSet of product(...artifacts.map(x => x.artifacts))) {
+        const reslottedSet: T.Artifact[] = candidateSet.map(x => copyItem(x) as T.Artifact);
+        const score = assignStones(reslottedSet, stones.map(x => x.stone));
+        if (score < bestScore) {
+            best = reslottedSet;
+            bestScore = score;
+        }
+    }
+    return best !== null ? best : [];
+}
+
+
+function assignStones(set: T.Artifact[], stones: T.Stone[]): number {
+    const stoneKey = (s: T.Stone | null) => s ? `${s.category}-${s.family}-${s.tier}` : "null";
+
+    const stoneCount = new Map<string, number>();
+    for (const stone of stones) {
+        const key = stoneKey(stone);
+        stoneCount.set(key, (stoneCount.get(key) || 0) + 1);
+    }
+
+    const slotsToFill: Array<{ artifact: T.Artifact; index: number }> = [];
+
+    for (const artifact of set) {
+        for (let i = 0; i < (artifact.stones?.length ?? 0); i++) {
+            const key = stoneKey(artifact.stones[i]);
+            if ((stoneCount.get(key) || 0) > 0) {
+                // Stone to keep
+                stoneCount.set(key, stoneCount.get(key)! - 1);
+            } else {
+                // Stone to change
+                slotsToFill.push({ artifact, index: i });
+            }
+        }
+    }
+
+    const reslottedCount = slotsToFill.length;
+
+    const remainingStones: T.Stone[] = [];
+    for (const stone of stones) {
+        const key = stoneKey(stone);
+        if ((stoneCount.get(key) || 0) > 0) {
+            remainingStones.push(stone);
+            stoneCount.set(key, stoneCount.get(key)! - 1);
+        }
+    }
+
+    for (let i = 0; i < slotsToFill.length; i++) {
+        const { artifact, index } = slotsToFill[i];
+        artifact.stones[index] = remainingStones[i];
+        artifact.reslotted = (artifact.reslotted ?? 0) + 1;
+    }
+
+    return reslottedCount;
+}
+
+
+function attachMultipliers(obj: Partial<ArtifactSet>, baseBonuses: BaseBonuses) {
+    const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
+
+    const b: Bonuses = obj.bonuses!;
+
+    obj.userEB = SECount
+               * (baseSEBonus + b.SEBonus)
+               * Math.pow(basePEBonus + b.PEBonus, PECount);
+
+    obj.ebMultiplier = Math.pow(1 + b.PEBonus/basePEBonus, PECount)
+                     * (1 + b.SEBonus/baseSEBonus);
+
+    obj.researchCostBonus = b.CRBonus;
+
+    obj.onlineMultiplier = b.EVBonus * (baseRCBonus + b.RCBonus);
+    obj.offlineMultiplier = b.EVBonus * b.AEBonus;
+
+    obj.totalOnlineMultiplier = obj.ebMultiplier * obj.onlineMultiplier;
+    obj.totalOfflineMultiplier = obj.ebMultiplier * obj.offlineMultiplier;
+}
+
+
