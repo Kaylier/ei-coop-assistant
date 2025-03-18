@@ -148,13 +148,14 @@ function search1(items: T.Item[],
         const bookBonus = artifactBook?.bonuses.PEBonus ?? 0;
 
         for (const artifactVial of [...artifactVials, null]) {
-            const vialBonus = artifactBook?.bonuses.RCBonus ?? 0;
+            const vialBonus = artifactVial?.bonuses.RCBonus ?? 0;
 
             const newBaseBonuses: BaseBonuses = {
                 ...baseBonuses,
                 basePEBonus: baseBonuses.basePEBonus + bookBonus,
-                baseSEBonus: baseBonuses.baseSEBonus + vialBonus,
+                baseRCBonus: baseBonuses.baseRCBonus + vialBonus,
             };
+            console.log(artifactVials, artifactVial, vialBonus, newBaseBonuses);
             const stoneQueue = reslotting ? stoneQueueFn(stonesByFamily, newBaseBonuses, online) : [];
 
             function evalFn(set: AnnotatedArtifact[]): number[] {
@@ -214,7 +215,7 @@ function search1(items: T.Item[],
     const newBaseBonuses: BaseBonuses = {
         ...baseBonuses,
         basePEBonus: baseBonuses.basePEBonus + best.reduce((tot, cur) => tot + cur.bonuses.PEBonus, 0),
-        baseSEBonus: baseBonuses.baseSEBonus + best.reduce((tot, cur) => tot + cur.bonuses.RCBonus, 0),
+        baseRCBonus: baseBonuses.baseRCBonus + best.reduce((tot, cur) => tot + cur.bonuses.RCBonus, 0),
     };
     const stones = reslotting ? stoneQueueFn(stonesByFamily, newBaseBonuses, online) : [];
     stones.splice(best.reduce((tot, cur) => tot + (cur.stoneSlotAmount ?? 0), 0));
