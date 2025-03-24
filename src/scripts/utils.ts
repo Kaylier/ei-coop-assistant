@@ -166,6 +166,13 @@ export function updateToggleSetting<T>(setting: T.ToggleSetting<T>) {
 
 
 /**
+ */
+export function clamp(x: number, min: number, max: number): number {
+    return Math.max(Math.min(x, max), min);
+}
+
+
+/**
  * Round float calculations in a controlled manner
  * If two sets have the same bonuses but compounded in a different order, it can result in a slightly different
  * final bonus. One set will then be prioritary over the other, ignoring a preference order that should apply for

@@ -84,10 +84,12 @@ export function searchMirrorSet(items: T.Item[],
 }
 
 
-export function searchCubeBonus(items: T.Item[]): number {
-    return items.filter(item => item.category === T.ItemCategory.ARTIFACT)
-                .map(item => getEffects(item, false)['research_cost_bonus'] ?? 1)
-                .reduce((best, eff) => Math.min(best, eff), 1);
+export function searchCube(items: T.Item[]): [T.Artifact | null, number] {
+    return items.reduce<[T.Artifact | null, number]>((best, item) => {
+        if (item.category !== T.ItemCategory.ARTIFACT) return best;
+        const bonus = getEffects(item, false)?.['research_cost_bonus'] ?? 1;
+        return bonus < best[1] ? [item, bonus] : best;
+    }, [null, 1]);
 }
 
 
@@ -155,7 +157,6 @@ function search1(items: T.Item[],
                 basePEBonus: baseBonuses.basePEBonus + bookBonus,
                 baseRCBonus: baseBonuses.baseRCBonus + vialBonus,
             };
-            console.log(artifactVials, artifactVial, vialBonus, newBaseBonuses);
             const stoneQueue = reslotting ? stoneQueueFn(stonesByFamily, newBaseBonuses, online) : [];
 
             function evalFn(set: AnnotatedArtifact[]): number[] {

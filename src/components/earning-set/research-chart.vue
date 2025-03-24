@@ -26,35 +26,36 @@
               :fill="arc.color"
               />
 
-        <circle r="80" :fill="`url(#${data.complete ? data.boosts.value < 0.2 ? 'centralGradientGreen' :
-        'centralGradientOrange' : 'centralGradientRed'})`"/> <!-- Central status disc -->
 
-        <template v-if="data.complete && data.boosts.value < 0.2">
+        <template v-if="!data.hasMissing && !data.hasBoosts">
+            <circle r="80" fill="url(#centralGradientGreen)"/>
             <text text-anchor="middle" dominant-baseline="middle" dy="-25">
                 YES
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="0"  >
-                in {{ data.time.valueLabel ?? formatNumber(data.time.value) }}
+                in {{ data.time }}
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="25" >
-                at {{ data.population.valueLabel ?? formatNumber(data.population.value) }} chicken{{ data.population.value > 1 ? 's' : ''}}
+                at {{ data.population }} chickens
             </text>
         </template>
-        <template v-else-if="data.complete">
+        <template v-else-if="!data.hasMissing && data.hasBoosts">
+            <circle r="80" fill="url(#centralGradientOrange)"/>
             <text text-anchor="middle" dominant-baseline="middle" dy="-25">
                 YES
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="0"  >
-                with {{ data.boosts.valueLabel }} from boosts
+                with {{ data.boosts }} from boosts
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="25" >
-                in {{ data.time.valueLabel ?? formatNumber(data.time.value) }}
+                in {{ data.time }}
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="50" >
-                at {{ data.population.valueLabel ?? formatNumber(data.population.value) }} chicken{{ data.population.value > 1 ? 's' : ''}}
+                at {{ data.population }} chickens
             </text>
         </template>
         <template v-else>
+            <circle r="80" fill="url(#centralGradientRed)"/>
             <text text-anchor="middle" dominant-baseline="middle" dy="-25">
                 NO
             </text>
@@ -62,7 +63,7 @@
                 missing a
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="25" style="font-kerning:none;" >
-                ×{{ formatNumber(Math.ceil(Math.exp(data.time.value+data.boosts.value)/10) ) }}
+                {{ data.missing }}
             </text>
             <text text-anchor="middle" dominant-baseline="middle" dy="50" >
                 earning factor
@@ -116,13 +117,13 @@ type Arc = {
 const props = defineProps<{
     size: string,
     data: {
-        min: number,
-        max: number,
         multipliers: MultiplierData[],
-        population: MultiplierData,
-        boosts: MultiplierData,
-        time: MultiplierData,
-        complete: boolean,
+        population: string,
+        boosts: string,
+        time: string,
+        missing: string,
+        hasBoosts: boolean,
+        hasMissing: boolean,
     }
 }>();
 
@@ -132,10 +133,10 @@ const focused = ref<Arc|null>(null);
 const arcs = computed(() => {
     const ret: Arc[] = [];
 
-    const max = Math.max(props.data.max - props.data.min, 0);
+    const max = props.data.multipliers.reduce((tot, cur) => tot + cur.value, 0);
 
     let start: number = 0;
-    for (let x of [...props.data.multipliers, props.data.population, props.data.boosts, props.data.time]) {
+    for (let x of props.data.multipliers) {
         const end = Math.min(start + x.value/max, 1);
         if (start < end) {
             ret.push({

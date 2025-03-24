@@ -9,6 +9,7 @@
         </h3>
         <inventory :artifacts="set" :isSet="true" :userData="userData" :column="4" :row="1" />
         <div v-if="multiplierEB">
+            <img v-if="activeMirror" src="/img/icons/mirror.png" alt="🔀"/>
             <span class="highlighted">
                 ×{{ formatNumber(multiplierEB) }}
             </span>
@@ -38,6 +39,7 @@
             away earnings
         </div>
         <div v-if="researchCostMultiplier && researchCostMultiplier !== 1">
+            <img v-if="swappedCube" :src="getImageSource(swappedCube)" alt="🔀"/>
             <span class="highlighted">
                 -{{ formatNumber((1 - researchCostMultiplier)*100) }}%
             </span>
@@ -51,6 +53,7 @@
 <script setup lang="ts">
 import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
+import { getImageSource } from '@/scripts/artifacts.ts';
 
 const props = defineProps<{
     title: string,
@@ -58,9 +61,11 @@ const props = defineProps<{
     set: T.Item[],
     userData: T.UserData,
     baseEB?: number,
+    activeMirror?: boolean,
     multiplierEB?: number,
     multiplierOnline?: number,
     multiplierOffline?: number,
+    swappedCube?: T.Artifact,
     researchCostMultiplier?: number,
 }>();
 
@@ -90,6 +95,9 @@ const props = defineProps<{
     font-kerning: none;
 }
 
+img {
+    height: 0.75em;
+}
 
 </style>
 

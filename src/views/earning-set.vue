@@ -126,6 +126,7 @@
             :multiplierEB="optimalEBSet.ebMultiplier"
             :multiplierOnline="optimalEBSet.onlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEBSet.researchCostBonus"
+            :swappedCube="swapCube && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEB" />
@@ -141,6 +142,7 @@
             :multiplierEB="optimalEBSet.ebMultiplier"
             :multiplierOnline="optimalEBSet.onlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEBSet.researchCostBonus"
+            :swappedCube="swapCube && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEB" />
@@ -155,6 +157,7 @@
             :multiplierEB="optimalEarningSet.ebMultiplier"
             :multiplierOnline="optimalEarningSet.onlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEarningSet.researchCostBonus"
+            :swappedCube="swapCube && optimalCubeBonus < optimalEarningSet.researchCostBonus ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEarning" />
@@ -170,6 +173,8 @@
             :multiplierEB="mirrorMult"
             :multiplierOnline="optimalMirrorSet.onlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalMirrorSet.researchCostBonus"
+            :swappedCube="swapCube && optimalCubeBonus < optimalMirrorSet.researchCostBonus ? optimalCube : null"
+            :activeMirror="true"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataMirror" />
@@ -182,12 +187,13 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { parseNumber, formatNumber, loadTextInputSetting, updateTextInputSetting } from '@/scripts/utils.ts';
-import { searchEBSet, searchEarningSet, searchMirrorSet, searchCubeBonus } from '@/scripts/earning-set.ts';
+import { clamp, parseNumber, formatNumber, loadTextInputSetting, updateTextInputSetting } from '@/scripts/utils.ts';
+import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 import type { ArtifactSet } from '@/scripts/earning-set.ts';
 
 
-const MIN_EGG_VALUE = 1e-7; // TODO: change to 0.05
+const MIN_EGG_VALUE = 0.01; // default base for showing egg value bonus in progress circle
+const MIN_MISC_BONUS = 1; // default base for showing misc bonuses in progress circle
 const CR_TARGET_CNST = 3.340e45; // precomputed time constant for max shipping research
 
 
@@ -225,9 +231,9 @@ const miscBonusSetting  = reactive<T.TextInputSetting>({ parser: parseNumber, lo
 const errorMessage = ref<string>("");
 const userEB = computed(() => (userData.value?.soulEggBonus ?? 0.1)*(userData.value?.soulEggs ?? 0)*
                               Math.pow(userData.value?.prophecyEggBonus ?? 1.05, userData.value?.prophecyEggs ?? 0));
-const eggValue = computed(() => Math.max(MIN_EGG_VALUE, updateTextInputSetting(eggValueSetting)));
+const eggValue = computed(() => updateTextInputSetting(eggValueSetting));
 const mirrorMult = computed(() => Math.max(1, updateTextInputSetting(mirrorMultSetting)));
-const miscBonus = computed(() => Math.max(1, updateTextInputSetting(miscBonusSetting)));
+const miscBonus = computed(() => updateTextInputSetting(miscBonusSetting));
 
 
 
@@ -236,13 +242,14 @@ const userData = ref<T.UserData>(null); // loaded via load-eid component
 const optimalEBSet = ref<ArtifactSet>();
 const optimalEarningSet = ref<ArtifactSet>();
 const optimalMirrorSet = ref<ArtifactSet>();
+const optimalCube = ref<T.Artifact | null>();
 const optimalCubeBonus = ref<number>(1);
 const chartDataEB = computed(() => generateChartData(optimalEBSet.value?.totalOnlineMultiplier ?? 540,
-                                                     optimalEBSet.value?.researchCostBonus ?? 0.4));
-const chartDataEarning = computed(() => generateChartData(optimalEarningSet.value?.totalOnlineMultiplier ?? 0.4,
-                                                          optimalEarningSet.value?.researchCostBonus ?? 540));
-const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value?.onlineMultiplier ?? 540,
-                                                         optimalMirrorSet.value?.researchCostBonus ?? 0.4,
+                                                     optimalEBSet.value?.researchCostBonus ?? 1));
+const chartDataEarning = computed(() => generateChartData(optimalEarningSet.value?.totalOnlineMultiplier ?? 540,
+                                                          optimalEarningSet.value?.researchCostBonus ?? 1));
+const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value?.totalOnlineMultiplier ?? 540,
+                                                         optimalMirrorSet.value?.researchCostBonus ?? 1,
                                                          mirrorMult.value));
 
 
@@ -328,13 +335,16 @@ function updateSet() {
                                                  false, // countMonocle
                                                  true, // online
                                                  allowReslotting.value);
-        optimalCubeBonus.value = swapCube.value ? searchCubeBonus(userData.value?.items ?? []) : 1;
+        const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
+        optimalCube.value = cube;
+        optimalCubeBonus.value = cubeBonus;
 
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
         optimalEBSet.value = undefined;
         optimalEarningSet.value = undefined;
         optimalMirrorSet.value = undefined;
+        optimalCube.value = undefined;
         optimalCubeBonus.value = 1;
         return;
     }
@@ -349,29 +359,39 @@ function generateChartData(artifactBonus: number, researchCostBonus: number, mir
     const min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate /s to /min
     const max = CR_TARGET_CNST;
 
-    const missing = max/(min * eggValue.value * miscBonus.value * artifactBonus * mirrorMult);
-    let time = Math.min(Math.max(Math.round(Math.log(missing/643544)), 1), 10);
-    const population = Math.min(missing/time, 10e9);
+    let missing = max/(min * eggValue.value * miscBonus.value * artifactBonus * mirrorMult);
+
+    // Evaluate time and population required (heuristic formula, we need time*population ~= missing)
+    let time = clamp(Math.round(Math.log(missing/4539993)), 1, 10);
+    const population = clamp(missing/time, 1, 10e9);
+    missing /= (time*population);
+
     // Complete with boost multipliers, capped at (50+50+50)×(50+50) for pro permit and 50×50 for free permit
-    const boostBonus = Math.min(missing/(time*population), userData.value?.proPermit ? 15000 : 2500);
-    time = missing/population/boostBonus;
-    const complete = time <= 11;
-    time = Math.min(time, 10);
+    let boostBonus = clamp(missing, 1, userData.value?.proPermit ? 15000 : 2500);
+    if (boostBonus < missing) {
+        // If not enough, show numbers without boosts
+        boostBonus = 1;
+    }
+    missing /= boostBonus;
+
+
+    const populationLabel = formatNumber(population, undefined, {maximumFractionDigits: 0});
+    const boostLabel = "×"+formatNumber(boostBonus, undefined, {maximumFractionDigits: 0});
+    const timeLabel = formatNumber(time, undefined, {maximumFractionDigits: 0})+" minute"+(time > 1 ? "s" : "");
+    const missingLabel = "×"+formatNumber(missing, undefined, {maximumFractionDigits: 0});
 
     return {
-        min: Math.log(min),
-        max: Math.log(max/MIN_EGG_VALUE),
         multipliers: [
             {
                 label: "Egg value",
                 valueLabel: formatNumber(eggValue.value),
                 color: "#228866",
-                value: Math.log(eggValue.value / MIN_EGG_VALUE),
+                value: Math.log(Math.max(eggValue.value/MIN_EGG_VALUE, 1)),
             }, {
                 label: "Misc. bonuses",
                 valueLabel: "×"+formatNumber(miscBonus.value),
                 color: "#699b17",
-                value: Math.log(miscBonus.value),
+                value: Math.log(Math.max(miscBonus.value/MIN_MISC_BONUS, 1)),
             }, {
                 label: "Artifacts",
                 valueLabel: "×"+formatNumber(artifactBonus),
@@ -383,26 +403,37 @@ function generateChartData(artifactBonus: number, researchCostBonus: number, mir
                 color: "#492e8c",
                 value: Math.log(mirrorMult),
             },
+            {
+                label: "Population",
+                valueLabel: populationLabel,
+                color: "#279a40",
+                value: Math.log(population),
+            },
+            {
+                label: "Time",
+                valueLabel: timeLabel,
+                color: "#aaa",
+                value: Math.log(time),
+            },
+            {
+                label: "Boosts",
+                valueLabel: boostLabel,
+                color: "#cc7e33",
+                value: Math.log(boostBonus),
+            },
+            {
+                label: "Missing",
+                valueLabel: missingLabel,
+                color: "#832",
+                value: Math.log(missing),
+            },
         ],
-        population: {
-            label: "Population",
-            valueLabel: formatNumber(population, undefined, {maximumFractionDigits: 0}),
-            color: "#279a40",
-            value: Math.log(population),
-        },
-        boosts: {
-            label: "Boosts",
-            valueLabel: "×"+formatNumber(boostBonus, undefined, {maximumFractionDigits: 0}),
-            color: "#cc7e33",
-            value: Math.log(boostBonus),
-        },
-        time: {
-            label: "Time",
-            valueLabel: formatNumber(time, undefined, {maximumFractionDigits: 0})+" minute"+(time > 1 ? "s" : ""),
-            color: "#aaa",
-            value: Math.log(time),
-        },
-        complete,
+        population: populationLabel,
+        boosts: boostLabel,
+        time: timeLabel,
+        missing: missingLabel,
+        hasMissing: missing > 1.5,
+        hasBoosts: boostBonus > 1.5,
     };
 }
 
