@@ -21,7 +21,7 @@
         <g transform="translate(100, 100)">
         <!-- <circle r="95" stroke="#832" stroke-width="2" fill="none"/> -->
 
-        <path v-for="(arc, i) in arcs"
+        <path v-for="arc in arcs"
               :d="arc.path"
               :fill="arc.color"
               />
@@ -82,7 +82,7 @@
             </text>
         </template>
 
-        <path v-for="(arc, i) in arcs"
+        <path v-for="arc in arcs"
               :d="arc.extendedPath"
               fill="#0000"
               @mouseenter="focused = arc"
@@ -136,7 +136,7 @@ const arcs = computed(() => {
     const max = props.data.multipliers.reduce((tot, cur) => tot + cur.value, 0);
 
     let start: number = 0;
-    for (let x of props.data.multipliers) {
+    for (const x of props.data.multipliers) {
         const end = Math.min(start + x.value/max, 1);
         if (start < end) {
             ret.push({

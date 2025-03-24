@@ -44,7 +44,7 @@ export function parseNumber(s: string): number {
 /**
  * Format a number to a game format string
  */
-export function formatNumber(x: number, ...args: Parameters<Number["toLocaleString"]>): string {
+export function formatNumber(x: number, ...args: Parameters<number["toLocaleString"]>): string {
     x = Number(x);
     let unit;
     for (unit of units) {

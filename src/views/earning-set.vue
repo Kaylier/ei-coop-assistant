@@ -50,6 +50,20 @@
                 </label>
             </div>
         </span>
+        <span class="setting-entry">
+            <div class="switch">
+                <label class="switch-option" for="online">
+                    <input type="radio" name="online" id="online"
+                           :value="true" v-model="online" />
+                    <span>online</span>
+                </label>
+                <label class="switch-option" for="offline">
+                    <input type="radio" name="online" id="offline"
+                           :value="false" v-model="online" />
+                    <span>offline</span>
+                </label>
+            </div>
+        </span>
     </section>
     <section class="inputs">
         <span class="setting-entry">
@@ -80,13 +94,13 @@
                     </span>
                 </label>
                 <label for="mirror-eb">
-                    Mirror mult.
+                    Mirror EB%
                 </label>
             </label>
             <input type="text" id="mirror-eb"
-                   :class="{ invalid: !mirrorMultSetting.validText }"
-                   v-model="mirrorMultSetting.text"
-                   :placeholder="formatNumber(mirrorMultSetting.value ?? 1)">
+                   :class="{ invalid: !mirrorSetting.validText }"
+                   v-model="mirrorSetting.text"
+                   :placeholder="formatNumber(mirrorSetting.value ?? 1)">
             </input>
         </span>
         <span class="setting-entry">
@@ -97,7 +111,9 @@
                         Miscellaneous bonuses.<br/>
                         Includes video doubler,<br/>
                         earning event, sale event,<br/>
-                        coop earning and laying bonuses.
+                        coop earning and laying bonuses<br/>
+                        and contract modifiers.<br/>
+                        Default to 4
                     </span>
                 </label>
                 <label for="misc-bonus">
@@ -124,7 +140,8 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEBSet.ebMultiplier"
-            :multiplierOnline="optimalEBSet.onlineMultiplier"
+            :multiplierOnline="online ? optimalEBSet.onlineMultiplier : 0"
+            :multiplierOffline="online ? 0 : optimalEBSet.offlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEBSet.researchCostBonus"
             :swappedCube="swapCube && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
             >
@@ -140,7 +157,8 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEBSet.ebMultiplier"
-            :multiplierOnline="optimalEBSet.onlineMultiplier"
+            :multiplierOnline="online ? optimalEBSet.onlineMultiplier : 0"
+            :multiplierOffline="online ? 0 : optimalEBSet.offlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEBSet.researchCostBonus"
             :swappedCube="swapCube && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
             >
@@ -155,7 +173,8 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEarningSet.ebMultiplier"
-            :multiplierOnline="optimalEarningSet.onlineMultiplier"
+            :multiplierOnline="online ? optimalEarningSet.onlineMultiplier : 0"
+            :multiplierOffline="online ? 0 : optimalEarningSet.offlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEarningSet.researchCostBonus"
             :swappedCube="swapCube && optimalCubeBonus < optimalEarningSet.researchCostBonus ? optimalCube : null"
             >
@@ -171,10 +190,11 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="mirrorMult"
-            :multiplierOnline="optimalMirrorSet.onlineMultiplier"
+            :multiplierOnline="online ? optimalMirrorSet.onlineMultiplier : 0"
+            :multiplierOffline="online ? 0 : optimalMirrorSet.offlineMultiplier"
             :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalMirrorSet.researchCostBonus"
             :swappedCube="swapCube && optimalCubeBonus < optimalMirrorSet.researchCostBonus ? optimalCube : null"
-            :activeMirror="true"
+            :activeMirror="mirrorMult > 1"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataMirror" />
@@ -202,28 +222,29 @@ Can you
 <span tabindex="0" class="tooltip-icon">
     max CR? <sup>ⓘ</sup>
     <span class="tooltip-text">
-        Researches tiers 1 to 12 all maxed<br/>
         Matter Reconfiguration level 403<br/>
         Timeline Splicing level 0<br/>
-        Hyper Portalling maxed<br/>
-        Relativity Optimization maxed
+        Every other researches maxed.<br/>
+        <br/>
+        It takes ~5 times longer to max everything
     </span>
 </span>
 `;
 
 
 // Settings variables
-const allowReslotting = ref<boolean>(false);
 const swapCube = ref<boolean>(false);
+const allowReslotting = ref<boolean>(false);
+const online = ref<boolean>(true);
 const eggValueSetting   = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "egg-value",
                                                          text: "", validText: false,
                                                          value: 0.05 });
-const mirrorMultSetting = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "mirror-mult",
-                                                         text: "", validText: false,
-                                                         value: 1    });
+const mirrorSetting = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "mirror",
+                                                     text: "", validText: false,
+                                                     value: 1   });
 const miscBonusSetting  = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "misc-bonus" ,
                                                          text: "", validText: false,
-                                                         value: 2    });
+                                                         value: 4    });
 
 
 
@@ -232,7 +253,7 @@ const errorMessage = ref<string>("");
 const userEB = computed(() => (userData.value?.soulEggBonus ?? 0.1)*(userData.value?.soulEggs ?? 0)*
                               Math.pow(userData.value?.prophecyEggBonus ?? 1.05, userData.value?.prophecyEggs ?? 0));
 const eggValue = computed(() => updateTextInputSetting(eggValueSetting));
-const mirrorMult = computed(() => Math.max(1, updateTextInputSetting(mirrorMultSetting)));
+const mirrorMult = computed(() => Math.max(1, updateTextInputSetting(mirrorSetting)/100/userEB.value));
 const miscBonus = computed(() => updateTextInputSetting(miscBonusSetting));
 
 
@@ -244,12 +265,9 @@ const optimalEarningSet = ref<ArtifactSet>();
 const optimalMirrorSet = ref<ArtifactSet>();
 const optimalCube = ref<T.Artifact | null>();
 const optimalCubeBonus = ref<number>(1);
-const chartDataEB = computed(() => generateChartData(optimalEBSet.value?.totalOnlineMultiplier ?? 540,
-                                                     optimalEBSet.value?.researchCostBonus ?? 1));
-const chartDataEarning = computed(() => generateChartData(optimalEarningSet.value?.totalOnlineMultiplier ?? 540,
-                                                          optimalEarningSet.value?.researchCostBonus ?? 1));
-const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value?.totalOnlineMultiplier ?? 540,
-                                                         optimalMirrorSet.value?.researchCostBonus ?? 1,
+const chartDataEB = computed(() => generateChartData(optimalEBSet.value));
+const chartDataEarning = computed(() => generateChartData(optimalEarningSet.value));
+const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value,
                                                          mirrorMult.value));
 
 
@@ -257,8 +275,9 @@ const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value?
 // Load settings from local storage at start
 onMounted(async () => {
     const localStorageSettings = [
-        { key: 'allow-reslotting', ref: allowReslotting, parser: JSON.parse },
         { key: 'swap-cube'       , ref: swapCube       , parser: JSON.parse },
+        { key: 'allow-reslotting', ref: allowReslotting, parser: JSON.parse },
+        { key: 'online'          , ref: online         , parser: JSON.parse },
     ];
 
     localStorageSettings.forEach(({ key, ref, parser }) => {
@@ -274,15 +293,16 @@ onMounted(async () => {
     });
 
     loadTextInputSetting(eggValueSetting);
-    loadTextInputSetting(mirrorMultSetting);
+    loadTextInputSetting(mirrorSetting);
     loadTextInputSetting(miscBonusSetting);
 
 });
 
 
 // Watchers for synchronisation between setting variables, local storage and state variables
-watch(allowReslotting , () => localStorage.setItem('allow-reslotting', JSON.stringify(allowReslotting.value)));
 watch(swapCube        , () => localStorage.setItem('swap-cube'       , JSON.stringify(swapCube.value)));
+watch(allowReslotting , () => localStorage.setItem('allow-reslotting', JSON.stringify(allowReslotting.value)));
+watch(online          , () => localStorage.setItem('online'          , JSON.stringify(online.value)));
 
 watch(userData, () => {
     if (!userData.value) return;
@@ -292,8 +312,9 @@ watch(userData, () => {
 
 // Watchers for triggering recomputations
 watch(userData, updateSet);
-watch(allowReslotting, updateSet);
 watch(swapCube, updateSet);
+watch(allowReslotting, updateSet);
+watch(online, updateSet);
 
 
 /**
@@ -319,21 +340,21 @@ function updateSet() {
                                          baseBonuses,
                                          !swapCube.value,
                                          false, // countMonocle
-                                         true, // online
+                                         online.value,
                                          allowReslotting.value);
         optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
                                                    maxSlot,
                                                    baseBonuses,
                                                    !swapCube.value,
                                                    false, // countMonocle
-                                                   true, // online
+                                                   online.value,
                                                    allowReslotting.value);
         optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
                                                  maxSlot,
                                                  baseBonuses,
                                                  !swapCube.value,
                                                  false, // countMonocle
-                                                 true, // online
+                                                 online.value,
                                                  allowReslotting.value);
         const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
         optimalCube.value = cube;
@@ -350,19 +371,19 @@ function updateSet() {
     }
 }
 
-function generateChartData(artifactBonus: number, researchCostBonus: number, mirrorMult: number = 1) {
-    if (swapCube.value) {
-        artifactBonus /= optimalCubeBonus.value;
-    } else {
-        artifactBonus /= researchCostBonus;
-    }
-    const min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate /s to /min
+function generateChartData(artifactSet?: ArtifactSet, mirrorMult: number = 1) {
+    let artifactBonus = online.value ? (artifactSet?.totalOnlineMultiplier ?? 540)
+                                     : (artifactSet?.totalOfflineMultiplier ?? 1);
+    artifactBonus /= swapCube.value ? optimalCubeBonus.value : (artifactSet?.researchCostBonus ?? 1);
+
+    let min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate /s to /min
+    if (!online.value) min *= userData.value?.awayEarningBonus ?? 1;
     const max = CR_TARGET_CNST;
 
     let missing = max/(min * eggValue.value * miscBonus.value * artifactBonus * mirrorMult);
 
     // Evaluate time and population required (heuristic formula, we need time*population ~= missing)
-    let time = clamp(Math.round(Math.log(missing/4539993)), 1, 10);
+    const time = clamp(Math.round(Math.log(missing/(online.value ? 4539993 : 453999))), 1, 10);
     const population = clamp(missing/time, 1, 10e9);
     missing /= (time*population);
 
