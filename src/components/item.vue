@@ -105,6 +105,7 @@ function onFocusLeave() {
 
 .item-image, .sparkle-image {
     max-width: 100%;
+    transform: scaleX(-1);
 }
 
 .stones-frame {
