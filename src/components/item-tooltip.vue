@@ -185,7 +185,6 @@ function getStamp(item: T.Item): string {
 .artifact-line img {
     aspect-ratio: 1;
     height: 100%;
-    transform: scaleX(-1);
 }
 
 .stone-line img {
