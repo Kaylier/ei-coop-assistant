@@ -127,6 +127,7 @@ export type ToggleSetting<T> = {
 export type TextInputSetting = {
     parser: (arg0: string) => number,
     localStorageId?: string,
+    queryParam?: string,
     text: string,
     validText: boolean,
     value: number,

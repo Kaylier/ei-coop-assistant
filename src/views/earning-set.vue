@@ -236,15 +236,21 @@ Can you
 const swapCube = ref<boolean>(false);
 const allowReslotting = ref<boolean>(false);
 const online = ref<boolean>(true);
-const eggValueSetting   = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "egg-value",
+const eggValueSetting   = reactive<T.TextInputSetting>({ parser: parseNumber,
+                                                         localStorageId: "egg-value",
+                                                         queryParam: "egg_value",
                                                          text: "", validText: false,
                                                          value: 0.05 });
-const mirrorSetting = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "mirror",
+const mirrorSetting = reactive<T.TextInputSetting>({ parser: parseNumber,
+                                                     localStorageId: "mirror",
+                                                     queryParam: "mirror",
                                                      text: "", validText: false,
-                                                     value: 1   });
-const miscBonusSetting  = reactive<T.TextInputSetting>({ parser: parseNumber, localStorageId: "misc-bonus" ,
+                                                     value: 1 });
+const miscBonusSetting  = reactive<T.TextInputSetting>({ parser: parseNumber,
+                                                         localStorageId: "misc-bonus" ,
+                                                         queryParam: "misc_bonus",
                                                          text: "", validText: false,
-                                                         value: 4    });
+                                                         value: 4 });
 
 
 

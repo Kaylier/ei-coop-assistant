@@ -121,8 +121,11 @@ export function formatRate(x: number, timeUnit: string = 'h'): string {
  * Load a text input setting
  */
 export function loadTextInputSetting(setting: T.TextInputSetting, defaultValue: string = "") {
+    const param = setting.queryParam !== undefined ? (new URLSearchParams(window.location.search)).get(setting.queryParam) : null;
     const stored = setting.localStorageId !== undefined ? localStorage.getItem(setting.localStorageId) : null;
-    setting.text = stored !== null ? stored : defaultValue;
+    setting.text = param !== null ? param :
+                   stored !== null ? stored :
+                   defaultValue;
     return setting.text;
 }
 
