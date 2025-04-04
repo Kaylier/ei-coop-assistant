@@ -26,7 +26,7 @@
         </div>
         <div v-else-if="userData.items.length" class="valid-text">
             {{ itemCount.toLocaleString() }} items loaded - {{ userData.date.toLocaleString() }}
-            <span v-if="Date.now() - userData.date.getTime() > 3600000*24*7" class="tooltip-icon warning-text">
+            <span v-if="Date.now() - userData.date.getTime() > 3600000*24*7" tabindex="0" class="tooltip-icon warning-text">
                 ⚠
                 <span class="tooltip-text">
                     This inventory has not been updated for over a week.<br/>

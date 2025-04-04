@@ -235,28 +235,13 @@ export function extractParetoFrontier2<T>(list: [number, number, T][]): T[][] {
 }
 
 /*
- * Extracts the Pareto frontier from a list of (x, y, z, element) tuples.
+ * Extracts the Pareto frontier from a list of (coordinate, element) tuples.
  * The frontier consists of non-dominated points.
- * Returns an array of groups, where each group contains elements with the same (x, y, z) values.
+ * Returns an array of groups, where each group contains elements with the same coordinate values.
  *
  * Complexity in O(n^2) where n is list.length
- * /!\ This function is significantly slower than extractParetoFrontier
+ * /!\ This function is significantly slower than extractParetoFrontier2 for 2-coordinate inputs
  */
-export function extractParetoFrontier3<T>(list: [number, number, number, T][]): T[][] {
-    const groups = new Map<string, [number, number, number, T[]]>();
-    for (const [a, b, c, element] of list) {
-        const key = `${a},${b},${c}`;
-        if (!groups.has(key)) {
-            groups.set(key, [a, b, c, []]);
-        }
-        groups.get(key)![3].push(element);
-    }
-    const elements = Array.from(groups.values())
-    return elements.filter(([x,y,z]) =>
-        !elements.some(([u,v,w]) => x <= u && y <= v && z <= w && (x < u || y < v || z < w)))
-        .map(([, , , elements]) => elements);
-}
-
 export function extractParetoFrontier<T>(list: [number[], T][]): T[][] {
     const groups = new Map<string, [number[], T[]]>();
 

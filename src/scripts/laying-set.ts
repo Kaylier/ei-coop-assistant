@@ -1,4 +1,4 @@
-import { round, extractParetoFrontier2, extractParetoFrontier3, combinations, product } from '@/scripts/utils.ts';
+import { round, extractParetoFrontier2, extractParetoFrontier, combinations, product } from '@/scripts/utils.ts';
 import * as T from '@/scripts/types.ts';
 import { getEffects, copyItem } from '@/scripts/artifacts.ts';
 
@@ -94,10 +94,10 @@ export function computeOptimalSetsWithoutReslotting(items: T.Item[],
         let paretoAnArtifacts: AnnotatedArtifact[][];
 
         if (family === T.ArtifactFamily.TACHYON_DEFLECTOR) {
-            paretoAnArtifacts = extractParetoFrontier3(artifacts.map(x => [
+            paretoAnArtifacts = extractParetoFrontier(artifacts.map(x => [[
                 (x.layingBonus ?? 1)*(x.habCapacityBonus ?? 1),
                 x.shippingBonus ?? 1,
-                x.deflectorBonus ?? 0,
+                x.deflectorBonus ?? 0],
                 x]));
         } else {
             paretoAnArtifacts = extractParetoFrontier2(artifacts.map(x => [

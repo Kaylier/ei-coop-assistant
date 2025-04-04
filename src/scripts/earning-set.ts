@@ -224,7 +224,7 @@ function search1(items: T.Item[],
         set: reslotting ? searchBestStoneAssignment(best, stones) : best.map(x => x.artifacts[0]),
         bonuses: getBonus(best, stones),
     };
-    result.set.sort((a,b) => a!.family - b!.family);
+    result.set!.sort((a,b) => a!.family - b!.family);
     while (result.set!.length < maxSlot) result.set!.push(null);
     attachMultipliers(result, baseBonuses);
     return result as ArtifactSet;
