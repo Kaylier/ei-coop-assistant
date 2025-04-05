@@ -79,9 +79,9 @@
                 </label>
             </label>
             <input type="text" id="egg-value"
-                   :class="{ invalid: !eggValueSetting.validText }"
+                   :class="{ invalid: !eggValueSetting.isValid }"
                    v-model="eggValueSetting.text"
-                   :placeholder="formatNumber(eggValueSetting.value ?? 0.05)">
+                   :placeholder="eggValueSetting.placeholder">
             </input>
         </span>
         <span class="setting-entry">
@@ -98,9 +98,9 @@
                 </label>
             </label>
             <input type="text" id="mirror-eb"
-                   :class="{ invalid: !mirrorSetting.validText }"
+                   :class="{ invalid: !mirrorSetting.isValid }"
                    v-model="mirrorSetting.text"
-                   :placeholder="formatNumber(mirrorSetting.value ?? 1)">
+                   :placeholder="mirrorSetting.placeholder">
             </input>
         </span>
         <span class="setting-entry">
@@ -121,9 +121,9 @@
                 </label>
             </label>
             <input type="text" id="misc-bonus"
-                   :class="{ invalid: !miscBonusSetting.validText }"
+                   :class="{ invalid: !miscBonusSetting.isValid }"
                    v-model="miscBonusSetting.text"
-                   :placeholder="formatNumber(miscBonusSetting.value ?? 1)">
+                   :placeholder="miscBonusSetting.placeholder">
             </input>
         </span>
     </section>
@@ -207,7 +207,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { clamp, parseNumber, formatNumber, loadTextInputSetting, updateTextInputSetting } from '@/scripts/utils.ts';
+import { clamp, parseNumber, formatNumber, createTextInputSetting } from '@/scripts/utils.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 import type { ArtifactSet } from '@/scripts/earning-set.ts';
 
@@ -236,21 +236,24 @@ Can you
 const swapCube = ref<boolean>(false);
 const allowReslotting = ref<boolean>(false);
 const online = ref<boolean>(true);
-const eggValueSetting   = reactive<T.TextInputSetting>({ parser: parseNumber,
-                                                         localStorageId: "egg-value",
-                                                         queryParam: "egg_value",
-                                                         text: "", validText: false,
-                                                         value: 0.05 });
-const mirrorSetting = reactive<T.TextInputSetting>({ parser: parseNumber,
-                                                     localStorageId: "mirror",
-                                                     queryParam: "mirror",
-                                                     text: "", validText: false,
-                                                     value: 1 });
-const miscBonusSetting  = reactive<T.TextInputSetting>({ parser: parseNumber,
-                                                         localStorageId: "misc-bonus" ,
-                                                         queryParam: "misc_bonus",
-                                                         text: "", validText: false,
-                                                         value: 4 });
+const eggValueSetting = createTextInputSetting<number>({
+    localStorageKey: 'egg-value',
+    queryParamKey: 'egg_value',
+    defaultValue: 0.05,
+    parser: parseNumber, formatter: formatNumber,
+});
+const mirrorSetting = createTextInputSetting<number>({
+    localStorageKey: 'mirror',
+    queryParamKey: 'mirror',
+    defaultValue: 1,
+    parser: parseNumber, formatter: formatNumber,
+});
+const miscBonusSetting = createTextInputSetting<number>({
+    localStorageKey: 'misc-bonus',
+    queryParamKey: 'misc_bonus',
+    defaultValue: 4,
+    parser: parseNumber, formatter: formatNumber,
+});
 
 
 
@@ -258,9 +261,7 @@ const miscBonusSetting  = reactive<T.TextInputSetting>({ parser: parseNumber,
 const errorMessage = ref<string>("");
 const userEB = computed(() => (userData.value?.soulEggBonus ?? 0.1)*(userData.value?.soulEggs ?? 0)*
                               Math.pow(userData.value?.prophecyEggBonus ?? 1.05, userData.value?.prophecyEggs ?? 0));
-const eggValue = computed(() => updateTextInputSetting(eggValueSetting));
-const mirrorMult = computed(() => Math.max(1, updateTextInputSetting(mirrorSetting)/100/userEB.value));
-const miscBonus = computed(() => updateTextInputSetting(miscBonusSetting));
+const mirrorMult = computed(() => Math.max(1, mirrorSetting.value/100/userEB.value));
 
 
 
@@ -297,10 +298,6 @@ onMounted(async () => {
             }
         }
     });
-
-    loadTextInputSetting(eggValueSetting);
-    loadTextInputSetting(mirrorSetting);
-    loadTextInputSetting(miscBonusSetting);
 
 });
 
@@ -386,7 +383,7 @@ function generateChartData(artifactSet?: ArtifactSet, mirrorMult: number = 1) {
     if (!online.value) min *= userData.value?.awayEarningBonus ?? 1;
     const max = CR_TARGET_CNST;
 
-    let missing = max/(min * eggValue.value * miscBonus.value * artifactBonus * mirrorMult);
+    let missing = max/(min * eggValueSetting.value * miscBonusSetting.value * artifactBonus * mirrorMult);
 
     // Evaluate time and population required (heuristic formula, we need time*population ~= missing)
     const time = clamp(Math.round(Math.log(missing/(online.value ? 4539993 : 453999))), 1, 10);
@@ -411,14 +408,14 @@ function generateChartData(artifactSet?: ArtifactSet, mirrorMult: number = 1) {
         multipliers: [
             {
                 label: "Egg value",
-                valueLabel: formatNumber(eggValue.value),
+                valueLabel: formatNumber(eggValueSetting.value),
                 color: "#228866",
-                value: Math.log(Math.max(eggValue.value/MIN_EGG_VALUE, 1)),
+                value: Math.log(Math.max(eggValueSetting.value/MIN_EGG_VALUE, 1)),
             }, {
                 label: "Misc. bonuses",
-                valueLabel: "×"+formatNumber(miscBonus.value),
+                valueLabel: "×"+formatNumber(miscBonusSetting.value),
                 color: "#699b17",
-                value: Math.log(Math.max(miscBonus.value/MIN_MISC_BONUS, 1)),
+                value: Math.log(Math.max(miscBonusSetting.value/MIN_MISC_BONUS, 1)),
             }, {
                 label: "Artifacts",
                 valueLabel: "×"+formatNumber(artifactBonus),

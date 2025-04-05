@@ -1,6 +1,7 @@
 /*
  * This file defines types and enums used in items, artifacts, stones and ingredients
  */
+import type { Ref } from 'vue';
 
 export enum ItemCategory {
     ARTIFACT,
@@ -120,17 +121,15 @@ export type UserData = null | {
 export type ToggleSetting<T> = {
     parser: (arg0: string) => T,
     formatter?: (arg0: T) => string, // default to JSON.stringify if not specified
-    localStorageId?: string,
+    localStorageKey?: string,
     value: T,
 }
 
-export type TextInputSetting = {
-    parser: (arg0: string) => number,
-    localStorageId?: string,
-    queryParam?: string,
-    text: string,
-    validText: boolean,
-    value: number,
+export type TextInputSetting<T> = {
+    text: Ref<string>,
+    isValid: Ref<boolean>,
+    value: Ref<T>,
+    placeholder: Ref<string>,
 };
 
 

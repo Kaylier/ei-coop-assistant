@@ -2,6 +2,9 @@
  * This file contains various generic functions
  */
 import * as T from '@/scripts/types.ts';
+import { shallowRef, reactive, computed, watch } from 'vue';
+import type { Reactive } from 'vue';
+
 
 const units: string[] = [
     '',
@@ -48,7 +51,8 @@ export function formatNumber(x: number, ...args: Parameters<number["toLocaleStri
     x = Number(x);
     let unit;
     for (unit of units) {
-        if (x < 1e3) break;
+        // 999.999… to avoid rounding errors
+        if (x < 999.999999) break;
         x /= 1e3;
     }
     return `${x.toLocaleString(...args)}${unit}`;
@@ -59,10 +63,7 @@ export function formatNumber(x: number, ...args: Parameters<number["toLocaleStri
  * Returns a rate per seconds
  * If an empty string is given, returns undefined
  */
-export function parseRate(s: string): number | undefined {
-    if (s === "")
-        return undefined;
-
+export function parseRate(s: string): number {
     s = s.replace(/[\s,]+/g, '');
 
     const match = s.match(/^(\d*\.?\d+(?:e-?[0-9]+)?)([a-zA-Z]+)?\/(h|hour|m|min|s)$/);
@@ -118,53 +119,74 @@ export function formatRate(x: number, timeUnit: string = 'h'): string {
 
 
 /*
- * Load a text input setting
+ * Create a TextInputSetting, a structure used for text input settings (woaahhh)
+ * text is populated by query parameter (if provided), or previously stored localStorage entry (if provided),
+ * or default value.
+ * If user modifies it to a valid text, it is automatically saved to localStorage, and the value reacts to the change.
+ * If the text is invalid, last valid state is kept.
+ *
+ * Example usage:
+ *  <input type="text" id="…"
+ *          v-model="setting.text"
+ *          :class="{ invalid: !setting.isValid }"
+ *          :placeholder="setting.placeholder">
+ *
+ *  const setting = createTextInputSetting<number>({
+ *      localStorageKey: 'key',
+ *      queryParamKey: 'key',
+ *      defaultValue: 1,
+ *      parser: parseNumber, formatter: formatNumber,
+ *  });
+ *
+ *  … = setting.value;
  */
-export function loadTextInputSetting(setting: T.TextInputSetting, defaultValue: string = "") {
-    const param = setting.queryParam !== undefined ? (new URLSearchParams(window.location.search)).get(setting.queryParam) : null;
-    const stored = setting.localStorageId !== undefined ? localStorage.getItem(setting.localStorageId) : null;
-    setting.text = param !== null ? param :
-                   stored !== null ? stored :
-                   defaultValue;
-    return setting.text;
-}
+export function createTextInputSetting<T>(options: {
+    localStorageKey?: string,
+    queryParamKey?: string,
+    defaultValue: T,
+    parser?: (arg0: string) => T,
+    formatter?: (arg0: T) => string,
+}): Reactive<T.TextInputSetting<T>> {
+    const { localStorageKey, queryParamKey, defaultValue, parser, formatter } = options;
+    const parseValue = parser || ((s: string) => s as unknown as T);
+    const formatValue = formatter || ((s: T) => s as unknown as string);
 
-/*
- * Parse a text input setting
- * If the parser raises an exception, the old value is kept and isValid attribute is updated
- */
-export function updateTextInputSetting(setting: T.TextInputSetting) {
-    try {
-        const parsedValue = setting.parser(setting.text);
-        setting.validText = true;
-        if (setting.localStorageId) localStorage.setItem(setting.localStorageId, setting.text);
-        setting.value = parsedValue;
-    } catch {
-        setting.validText = false;
-    }
-    return setting.value;
-}
+    const stored = localStorageKey ? localStorage.getItem(localStorageKey) : null;
 
-export function loadToggleSetting<T>(setting: T.ToggleSetting<T>, defaultValue: T) {
-    const stored = setting.localStorageId !== undefined ? localStorage.getItem(setting.localStorageId) : null;
-    try {
-        const parsed = stored !== null ? setting.parser(stored) : defaultValue;
-        setting.value = parsed;
-    } catch (e) {
-        console.warn(`Failed to parse setting from localStorage:`, e);
-    }
-    return setting.value;
-}
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryText = queryParamKey ? urlParams.get(queryParamKey) : null;
 
-export function updateToggleSetting<T>(setting: T.ToggleSetting<T>) {
-    try {
-        const formatter = setting.formatter !== undefined ? setting.formatter : JSON.stringify;
-        const formatted = formatter(setting.value);
-        if (setting.localStorageId) localStorage.setItem(setting.localStorageId, formatted);
-    } catch (e) {
-        console.warn(`Failed to save setting to localStorage:`, e);
+    const text = shallowRef<string>(queryText ?? stored ?? formatValue(defaultValue) ?? "");
+    const isValid = shallowRef<boolean>(false);
+    const value = shallowRef<T>(defaultValue);
+    const placeholder = computed(() => formatValue(value.value));
+
+    // Parse the text and update current state (value and isValid)
+    function updateValue(save: boolean = true) {
+        try {
+            const parsed = parseValue(text.value);
+            value.value = parsed;
+            isValid.value = true;
+        } catch {
+            isValid.value = false;
+        }
+        if (localStorageKey && isValid.value && save) {
+            localStorage.setItem(localStorageKey, text.value);
+        }
     }
-    return setting.value;
+
+    updateValue(false);
+
+    watch(text, (newVal, oldVal) => {
+        updateValue();
+    });
+
+    return reactive<T.TextInputSetting<T>>({
+        text,
+        isValid,
+        value,
+        placeholder,
+  });
 }
 
 

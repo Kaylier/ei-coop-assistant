@@ -126,9 +126,9 @@
                 </label>
             </label>
             <input type="text" id="base-laying-rate"
-                    :class="{ invalid: !baseLayingRateStringIsValid }"
-                    v-model="baseLayingRateString"
-                    :placeholder="formatRate(userData?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE)"
+                    :class="{ invalid: !baseLayingRateSetting.isValid }"
+                    v-model="baseLayingRateSetting.text"
+                    :placeholder="baseLayingRateSetting.placeholder"
                     />
         </span>
         <span v-if="showExtraSettings || showExtraSettingShipping" class="setting-entry">
@@ -145,9 +145,9 @@
                 </label>
             </label>
             <input type="text" id="base-shipping-rate"
-                    :class="{ invalid: !baseShippingRateStringIsValid }"
-                    v-model="baseShippingRateString"
-                    :placeholder="formatRate(userData?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE)"
+                    :class="{ invalid: !baseShippingRateSetting.isValid }"
+                    v-model="baseShippingRateSetting.text"
+                    :placeholder="baseShippingRateSetting.placeholder"
                     />
         </span>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
@@ -237,9 +237,9 @@
 <style scoped src="@/styles/laying-set.css"></style>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { parseRate, formatRate } from '@/scripts/utils.ts';
+import { parseRate, formatRate, createTextInputSetting } from '@/scripts/utils.ts';
 import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
@@ -267,8 +267,18 @@ const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
 const allowReslotting = ref<boolean>(false);
 const showVariants = ref<boolean>(false);
 const allowedGusset = ref<T.AllowedGusset>(T.AllowedGusset.ANY);
-const baseLayingRateString = ref<string>("");
-const baseShippingRateString = ref<string>("");
+const baseLayingRateSetting = createTextInputSetting<number|null>({
+    localStorageKey: 'base-laying-rate',
+    defaultValue: DEFAULT_BASE_LAYING_RATE,
+    parser: (s: string) => s ? parseRate(s) : null,
+    formatter: (x: number|null): string => formatRate(x ?? baseLayingRate.value),
+});
+const baseShippingRateSetting = createTextInputSetting<number|null>({
+    localStorageKey: 'base-shipping-rate',
+    defaultValue: DEFAULT_BASE_SHIPPING_RATE,
+    parser: (s: string) => s ? parseRate(s) : null,
+    formatter: (x: number|null): string => formatRate(x ?? baseShippingRate.value),
+});
 
 
 // State variables
@@ -278,10 +288,10 @@ const showExtraSettingLaying = ref<boolean>(false);
 const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
-const baseLayingRateStringIsValid = ref<boolean>(true);
-const baseShippingRateStringIsValid = ref<boolean>(true);
-const baseLayingRate = ref<number>(DEFAULT_BASE_LAYING_RATE);
-const baseShippingRate = ref<number>(DEFAULT_BASE_SHIPPING_RATE);
+const baseLayingRate = computed<number>(() =>
+    baseLayingRateSetting.value ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE);
+const baseShippingRate = computed<number>(() =>
+    baseShippingRateSetting.value ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_LAYING_RATE);
 
 
 // Data variables
@@ -296,8 +306,6 @@ onMounted(async () => {
         { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
         { key: 'show-variants'     , ref: showVariants    , parser: JSON.parse },
         { key: 'allowed-gusset'    , ref: allowedGusset   , parser: JSON.parse },
-        { key: 'base-laying-rate'  , ref: baseLayingRateString   },
-        { key: 'base-shipping-rate', ref: baseShippingRateString },
     ];
 
     localStorageSettings.forEach(({ key, ref, parser }) => {
@@ -314,8 +322,8 @@ onMounted(async () => {
 
     // Show extra settings if they have been modified
     showExtraSettingVariant.value = showVariants.value !== false;
-    showExtraSettingLaying.value = !!baseLayingRateString.value;
-    showExtraSettingShipping.value = !!baseShippingRateString.value;
+    showExtraSettingLaying.value = !!baseLayingRateSetting.text;
+    showExtraSettingShipping.value = !!baseShippingRateSetting.text;
 });
 
 
@@ -324,45 +332,11 @@ watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.str
 watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
 watch(showVariants    , () => localStorage.setItem('show-variants'    , JSON.stringify(showVariants.value)));
 watch(allowedGusset   , () => localStorage.setItem('allowed-gusset'   , JSON.stringify(allowedGusset.value)));
-watch(baseLayingRateString, () => updateBaseLayingRate(baseLayingRateString.value));
-watch(baseShippingRateString, () => updateBaseShippingRate(baseShippingRateString.value));
 
 watch(userData, () => {
     if (!userData.value) return;
     localStorage.setItem('user-data', JSON.stringify(userData.value));
-
-    // Update rates in case a new default value must be taken into account
-    updateBaseLayingRate(baseLayingRateString.value, true);
-    updateBaseShippingRate(baseShippingRateString.value, true);
 });
-
-function updateBaseLayingRate(valueString: string, resetOnError = false) {
-    try {
-        const parsedValue = parseRate(valueString);
-        baseLayingRateStringIsValid.value = true;
-        localStorage.setItem('base-laying-rate', valueString);
-        baseLayingRate.value = parsedValue ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE;;
-    } catch {
-        baseLayingRateStringIsValid.value = false;
-        if (resetOnError) {
-            baseLayingRate.value = userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE;;
-        }
-    }
-}
-
-function updateBaseShippingRate(valueString: string, resetOnError = false) {
-    try {
-        const parsedValue = parseRate(valueString);
-        baseShippingRateStringIsValid.value = true;
-        localStorage.setItem('base-shipping-rate', valueString);
-        baseShippingRate.value = parsedValue ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE;;
-    } catch {
-        baseShippingRateStringIsValid.value = false;
-        if (resetOnError) {
-            baseShippingRate.value = userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE;;
-        }
-    }
-}
 
 
 // Watchers for triggering recomputations
