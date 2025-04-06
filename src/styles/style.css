@@ -240,6 +240,10 @@ a, input, button {
     color: var(--warning-text-color);
 }
 
+.common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
+.rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }
+.epic      { background: radial-gradient(55% 55% at center, var(--epic-color     ), transparent); }
+.legendary { background: radial-gradient(55% 55% at center, var(--legendary-color), transparent); }
 
 input {
     padding: 0.3em 0.7em;

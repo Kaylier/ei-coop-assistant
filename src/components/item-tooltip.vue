@@ -1,12 +1,12 @@
 <template>
     <div id="item-tooltip" ref="tooltip"
-         class="item-tooltip-container" :class="getRarityClass(item)"
+         class="item-tooltip-container" :class="`container-${getRarityClass(item)}`"
          :style="{ top: position.top + 'px', left: position.left + 'px', visibility: visible ? 'visible' : 'hidden', opacity: visible ? 0.95 : 0 }">
         <span v-if="(item?.quantity ?? 1) > 1" class="quantity">{{ item ? (item.quantity ?? 1) : 0 }}</span>
         <span v-if="item" class="artifact-line">
-            <img :src="getImageSource(item)" />
+            <img :src="getImageSource(item)" :class="getRarityClass(item)"/>
             <div class="description-container">
-                <span class="stamp" :class="getRarityClass(item)">{{ getStamp(item) }}</span>
+                <span class="stamp" :class="`stamp-${getRarityClass(item)}`">{{ getStamp(item) }}</span>
                 <span class="name">{{ getName(item) }}</span>
                 <span class="description" v-for="descr in getDescriptions(item)">
                     <span class="bonus-value">{{ descr[0] }}</span>
@@ -133,30 +133,17 @@ function getStamp(item: T.Item): string {
     gap: 0.75em;
 }
 
-.item-tooltip-container.common {
+.container-common {
     box-shadow: .25em .5em 1em .03em color-mix(in srgb, var(--common-color   ) 25%, #0005);
 }
-.item-tooltip-container.rare {
+.container-rare {
     box-shadow: .25em .5em 1em .03em color-mix(in srgb, var(--rare-color     ) 25%, #0005);
 }
-.item-tooltip-container.epic {
+.container-epic {
     box-shadow: .25em .5em 1em .03em color-mix(in srgb, var(--epic-color     ) 25%, #0005);
 }
-.item-tooltip-container.legendary {
+.container-legendary {
     box-shadow: .25em .5em 1em .03em color-mix(in srgb, var(--legendary-color) 25%, #0005);
-}
-
-.item-tooltip-container.common    .artifact-line img {
-    background: radial-gradient(55% 55% at center, var(--common-color   ), transparent);
-}
-.item-tooltip-container.rare      .artifact-line img {
-    background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent);
-}
-.item-tooltip-container.epic      .artifact-line img {
-    background: radial-gradient(55% 55% at center, var(--epic-color     ), transparent);
-}
-.item-tooltip-container.legendary .artifact-line img {
-    background: radial-gradient(55% 55% at center, var(--legendary-color), transparent);
 }
 
 .quantity {
@@ -203,10 +190,10 @@ function getStamp(item: T.Item): string {
     margin-left: 0;
 }
 
-.description-container .stamp.common    { color: color-mix(in srgb, var(--common-color   ) 50%, white); }
-.description-container .stamp.rare      { color: color-mix(in srgb, var(--rare-color     ) 75%, white); }
-.description-container .stamp.epic      { color: var(--epic-color     ); }
-.description-container .stamp.legendary { color: var(--legendary-color); }
+.stamp.stamp-common    { color: color-mix(in srgb, var(--common-color   ) 50%, white); }
+.stamp.stamp-rare      { color: color-mix(in srgb, var(--rare-color     ) 75%, white); }
+.stamp.stamp-epic      { color: var(--epic-color     ); }
+.stamp.stamp-legendary { color: var(--legendary-color); }
 
 .description-container .name {
     margin-left: 0;

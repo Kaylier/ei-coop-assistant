@@ -89,11 +89,6 @@ function onFocusLeave() {
 .highlighted.item-frame.epic      { background: var(--epic-color     ); }
 .highlighted.item-frame.legendary { background: var(--legendary-color); }
 
-.item-frame.common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
-.item-frame.rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }
-.item-frame.epic      { background: radial-gradient(55% 55% at center, var(--epic-color     ), transparent); }
-.item-frame.legendary { background: radial-gradient(55% 55% at center, var(--legendary-color), transparent); }
-
 .item-quantity {
     position: absolute;
     top: 0;

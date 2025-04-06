@@ -12,10 +12,6 @@ main .invalid-text {
     text-align: center;
 }
 
-.common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
-.rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }
-.epic      { background: radial-gradient(55% 55% at center, var(--epic-color     ), transparent); }
-.legendary { background: radial-gradient(55% 55% at center, var(--legendary-color), transparent); }
 
 
 .threshold {
