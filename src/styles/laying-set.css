@@ -1,12 +1,4 @@
 
-input[type=text] {
-    width: 7em;
-}
-
-input[type=checkbox] {
-}
-
-
 main .invalid-text {
     margin: auto;
 }
@@ -19,7 +11,6 @@ main .invalid-text {
     align-items: flex-start;
     text-align: center;
 }
-
 
 .common    { background: radial-gradient(55% 55% at center, var(--common-color   ), transparent); }
 .rare      { background: radial-gradient(55% 55% at center, var(--rare-color     ), transparent); }

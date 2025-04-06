@@ -28,15 +28,16 @@ const props = defineProps<{
 
 </script>
 
-<style scoped>
+<style>
 
 .setting-entry {
     display: flex;
+    flex-flow: row nowrap;
     align-items: center;
     gap: 0.2em;
 }
 
-input {
+.setting-entry input {
     width: 7em;
 }
 

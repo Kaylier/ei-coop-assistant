@@ -1,117 +1,52 @@
 <template>
     <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
     <section class="settings">
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        none: do not force a deflector<br/>
-                        contribution: deflector that maximizes user contribution<br/>
-                        teamwork: deflector that maximizes teamwork
-                    </span>
-                </label>
-                Deflector
-            </label>
-            <div class="switch">
-                <label class="switch-option" for="deflector-mode-none">
-                    <input type="radio" name="deflector-mode" id="deflector-mode-none"
-                           :value="T.DeflectorMode.NONE" v-model="deflectorMode" />
-                    <span>none</span>
-                </label>
-                <label class="switch-option" for="deflector-mode-contribution">
-                    <input type="radio" name="deflector-mode" id="deflector-mode-contribution"
-                           :value="T.DeflectorMode.CONTRIBUTION" v-model="deflectorMode" />
-                    <span>contribution</span>
-                </label>
-                <label class="switch-option" for="deflector-mode-teamwork">
-                    <input type="radio" name="deflector-mode" id="deflector-mode-teamwork"
-                           :value="T.DeflectorMode.TEAMWORK" v-model="deflectorMode" />
-                    <span>teamwork</span>
-                </label>
-            </div>
-        </span>
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Allow reslotting stones in artifacts.<br/>
-                        Stone-holder artifacts are interchangeable and<br/>
-                        stones may be arbitrarily rearranged.
-                    </span>
-                </label>
-                Reslotting
-            </label>
-            <div class="switch">
-                <label class="switch-option" for="reslotting-off">
-                    <input type="radio" name="reslotting" id="reslotting-off"
-                           :value="false" v-model="allowReslotting" />
-                    <span>no</span>
-                </label>
-                <label class="switch-option" for="reslotting-on">
-                    <input type="radio" name="reslotting" id="reslotting-on"
-                           :value="true" v-model="allowReslotting" />
-                    <span>yes</span>
-                </label>
-            </div>
-        </span>
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Force to use a specific gusset.<br/>
-                        Only your best gussets are shown.<br/>
-                        Disabled on "any".
-                    </span>
-                </label>
-                Gusset
-            </label>
-            <div class="switch">
-                <label v-for="gusset in allowedGussetChoices" :key="gusset" class="switch-option" :for="gusset">
-                    <input type="radio" name="allowed-gusset" :id="gusset"
-                           :value="gusset" v-model="allowedGusset" />
-                    <span v-if="gusset === T.AllowedGusset.ANY">any</span>
-                    <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
-                    <img v-else :class="getGussetClass(gusset)"
-                         :src="getGussetImage(gusset)"
-                         :alt="getGussetName(gusset)"
-                         />
-                </label>
+        <setting-switch id="deflector-mode"
+                        v-model="deflectorModeSetting"
+                        label="Deflector"
+                        tooltip="none: do not force a deflector<br/>
+                                 contribution: deflector that maximizes user contribution<br/>
+                                 teamwork: deflector that maximizes teamwork"
+                        :options="[
+                                  { value: T.DeflectorMode.NONE, label: 'none' },
+                                  { value: T.DeflectorMode.CONTRIBUTION, label: 'contribution' },
+                                  { value: T.DeflectorMode.TEAMWORK, label: 'teamwork' },
+                                  ]"/>
+        <setting-switch id="reslotting"
+                        v-model="reslottingSetting"
+                        label="Reslotting"
+                        tooltip="Allow reslotting stones in artifacts.<br/>
+                                 Stone-holder artifacts are interchangeable and<br/>
+                                 stones may be arbitrarily rearranged."
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
+        <setting-switch id="gusset"
+                        v-model="allowedGussetSetting"
+                        label="Gusset"
+                        tooltip="Force to use a specific gusset.<br/>
+                                 Only your best gussets are shown.<br/>
+                                 Disabled on 'any'."
+                        :options="allowedGussetOptions">
                 <a v-if="allowedGussetChoices.length < 10"
                    href="#"
                    class="switch-option"
                    @click="allowedGussetChoices = Object.values(T.AllowedGusset)">
                     …
                 </a>
-            </div>
-        </span>
-        <span v-if="showExtraSettings || showExtraSettingVariant" class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Show variant sets,<br/>
-                        stone-holder artifacts are interchangeable.<br/>
-                        The view is limited to 6 sets
-                    </span>
-                </label>
-                Show variants
-            </label>
-            <div class="switch">
-                <label class="switch-option" for="show-variant-off">
-                    <input type="radio" name="show-variants" id="show-variant-off"
-                           :value="false" v-model="showVariants" />
-                    <span>no</span>
-                </label>
-                <label class="switch-option" for="show-variant-on">
-                    <input type="radio" name="show-variants" id="show-variant-on"
-                           :value="true" v-model="showVariants" />
-                    <span>yes</span>
-                </label>
-            </div>
-        </span>
+        </setting-switch>
+        <setting-switch v-if="showExtraSettings || showExtraSettingVariant"
+                        id="show-variants"
+                        v-model="showVariantsSetting"
+                        label="Show variants"
+                        tooltip="Show variant sets,<br/>
+                                 stone-holder artifacts are interchangeable.<br/>
+                                 The view is limited to 6 sets"
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
         <setting-text v-if="showExtraSettings || showExtraSettingLaying"
                       id="base-laying-rate"
                       v-model="baseLayingRateSetting"
@@ -166,15 +101,15 @@
                                :deflectorBonus="entry.optiThreshold"
                                :userData="userData"
                                :column="4" :row="1"
-                               :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blu   242 e, green, yellow, orange, red);' : ''"
+                               :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
                                />
-                    <inventory v-if="showVariants" v-for="subentry in entry.variants"
+                    <inventory v-if="showVariantsSetting.value" v-for="subentry in entry.variants"
                                :artifacts="subentry"
                                :isSet="true"
                                :deflectorBonus="entry.optiThreshold"
                                :userData="userData"
                                :column="4" :row="1"
-                               :style="subentry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green,   250  yellow, orange, red);' : ''"
+                               :style="subentry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
                                />
                 </div>
             </div>
@@ -198,7 +133,7 @@
             </div>
         </template>
         <img v-else-if="!userData" src="/img/laying-set-demo.png" class="demo-img" />
-        <span v-else-if="!errorMessage && allowedGusset !== T.AllowedGusset.ANY" class="invalid-text">
+        <span v-else-if="!errorMessage && allowedGussetSetting.value !== T.AllowedGusset.ANY" class="invalid-text">
             You don't have enough artifacts to build a laying set<br />
             with the selected gusset filter.
         </span>
@@ -214,7 +149,7 @@
 import { onMounted, ref, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
-import { createTextInputSetting } from '@/scripts/settings.ts';
+import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';
 import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
@@ -238,10 +173,22 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 
 // Settings variables
-const deflectorMode = ref<T.DeflectorMode>(T.DeflectorMode.CONTRIBUTION);
-const allowReslotting = ref<boolean>(false);
-const showVariants = ref<boolean>(false);
-const allowedGusset = ref<T.AllowedGusset>(T.AllowedGusset.ANY);
+const deflectorModeSetting = createSwitchSetting<T.DeflectorMode>({
+    localStorageKey: 'deflector-mode',
+    defaultValue: T.DeflectorMode.TEAMWORK,
+});
+const reslottingSetting = createSwitchSetting<boolean>({
+    localStorageKey: 'allow-reslotting',
+    defaultValue: false,
+});
+const showVariantsSetting = createSwitchSetting<boolean>({
+    localStorageKey: 'allow-variants',
+    defaultValue: false,
+});
+const allowedGussetSetting = createSwitchSetting<T.AllowedGusset>({
+    localStorageKey: 'allowed-gusset',
+    defaultValue: T.AllowedGusset.ANY,
+});
 const baseLayingRateSetting = createTextInputSetting<number|null>({
     localStorageKey: 'base-laying-rate',
     defaultValue: DEFAULT_BASE_LAYING_RATE,
@@ -263,6 +210,20 @@ const showExtraSettingLaying = ref<boolean>(false);
 const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
+const allowedGussetOptions = computed(() => allowedGussetChoices.value.map(gusset => {
+    if (gusset === T.AllowedGusset.ANY) {
+        return { value: gusset, label: 'any' };
+    } else if (gusset === T.AllowedGusset.NONE) {
+        return { value: gusset, label: 'Ø' };
+    } else {
+        return {
+            value: gusset,
+            label: getGussetName(gusset),
+            image: getGussetImage(gusset),
+            class: getGussetClass(gusset),
+        };
+    }
+}));
 const baseLayingRate = computed<number>(() =>
     baseLayingRateSetting.value ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE);
 const baseShippingRate = computed<number>(() =>
@@ -274,40 +235,15 @@ const userData = ref<T.UserData>(null); // loaded via load-eid component
 const entries = ref<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
 
 
-// Load settings from local storage at start
 onMounted(async () => {
-    const localStorageSettings = [
-        { key: 'deflector-mode'    , ref: deflectorMode   , parser: JSON.parse },
-        { key: 'allow-reslotting'  , ref: allowReslotting , parser: JSON.parse },
-        { key: 'show-variants'     , ref: showVariants    , parser: JSON.parse },
-        { key: 'allowed-gusset'    , ref: allowedGusset   , parser: JSON.parse },
-    ];
-
-    localStorageSettings.forEach(({ key, ref, parser }) => {
-        const storedValue = localStorage.getItem(key);
-        if (storedValue !== null) {
-            try {
-                ref.value = parser ? parser(storedValue) : storedValue;
-            } catch (e) {
-                console.warn(`Failed to parse ${key} from localStorage:`, e);
-                console.warn(`Stored value: ${storedValue}`);
-            }
-        }
-    });
-
-    // Show extra settings if they have been modified
-    showExtraSettingVariant.value = showVariants.value !== false;
+    // On startup, show extra settings that have been modified
+    showExtraSettingVariant.value = showVariantsSetting.value !== false;
     showExtraSettingLaying.value = !!baseLayingRateSetting.text;
     showExtraSettingShipping.value = !!baseShippingRateSetting.text;
 });
 
 
 // Watchers for synchronisation between setting variables, local storage and state variables
-watch(deflectorMode   , () => localStorage.setItem('deflector-mode'   , JSON.stringify(deflectorMode.value)));
-watch(allowReslotting , () => localStorage.setItem('allow-reslotting' , JSON.stringify(allowReslotting.value)));
-watch(showVariants    , () => localStorage.setItem('show-variants'    , JSON.stringify(showVariants.value)));
-watch(allowedGusset   , () => localStorage.setItem('allowed-gusset'   , JSON.stringify(allowedGusset.value)));
-
 watch(userData, () => {
     if (!userData.value) return;
     localStorage.setItem('user-data', JSON.stringify(userData.value));
@@ -316,9 +252,9 @@ watch(userData, () => {
 
 // Watchers for triggering recomputations
 watch(userData, updateEntries);
-watch(deflectorMode, updateEntries);
-watch(allowReslotting, updateEntries);
-watch(allowedGusset, updateEntries);
+watch(deflectorModeSetting, updateEntries);
+watch(reslottingSetting, updateEntries);
+watch(allowedGussetSetting, updateEntries);
 
 watch(entries, updateAllowedGussets);
 watch(baseLayingRate, updateThresholds);
@@ -330,9 +266,9 @@ watch(baseShippingRate, updateThresholds);
  */
 function updateAllowedGussets() {
     const choices = [T.AllowedGusset.ANY, T.AllowedGusset.NONE,
-                     ...getOptimalGussets(userData.value?.items ?? [], !allowReslotting.value)];
-    if (!choices.includes(allowedGusset.value)) {
-        choices.push(allowedGusset.value);
+                     ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)];
+    if (!choices.includes(allowedGussetSetting.value)) {
+        choices.push(allowedGussetSetting.value);
     }
     allowedGussetChoices.value = choices.sort();
 }
@@ -349,11 +285,11 @@ function updateEntries() {
     let sets: ArtifactSet<T.Artifact | null>[][];
     try {
         errorMessage.value = "";
-        sets = allowReslotting.value ?
-               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot,
-               allowedGusset.value) :
-               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorMode.value, maxSlot,
-               allowedGusset.value);
+        sets = reslottingSetting.value ?
+               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorModeSetting.value, maxSlot,
+               allowedGussetSetting.value) :
+               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorModeSetting.value, maxSlot,
+               allowedGussetSetting.value);
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
         entries.value = [];

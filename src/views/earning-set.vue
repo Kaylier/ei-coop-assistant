@@ -1,69 +1,32 @@
 <template>
     <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
     <section class="settings">
-        <span class="setting-entry">
-            <span>
-                <span tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Swap to your best cube before<br/>
-                        buying research,<br/>
-                        or stay with the same set
-                    </span>
-                </span>
-                Cube swapping
-            </span>
-            <div class="switch">
-                <label class="switch-option" for="swap-cube-yes">
-                    <input type="radio" name="swap-cube" id="swap-cube-yes"
-                           :value="false" v-model="swapCube" />
-                    <span>no</span>
-                </label>
-                <label class="switch-option" for="swap-cube-no">
-                    <input type="radio" name="swap-cube" id="swap-cube-no"
-                           :value="true" v-model="swapCube" />
-                    <span>yes</span>
-                </label>
-            </div>
-        </span>
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Allow reslotting stones in artifacts.<br/>
-                        Stones may be arbitrarily rearranged.
-                    </span>
-                </label>
-                Reslotting
-            </label>
-            <div class="switch">
-                <label class="switch-option" for="reslotting-off">
-                    <input type="radio" name="reslotting" id="reslotting-off"
-                           :value="false" v-model="allowReslotting" />
-                    <span>no</span>
-                </label>
-                <label class="switch-option" for="reslotting-on">
-                    <input type="radio" name="reslotting" id="reslotting-on"
-                           :value="true" v-model="allowReslotting" />
-                    <span>yes</span>
-                </label>
-            </div>
-        </span>
-        <span class="setting-entry">
-            <div class="switch">
-                <label class="switch-option" for="online">
-                    <input type="radio" name="online" id="online"
-                           :value="true" v-model="online" />
-                    <span>online</span>
-                </label>
-                <label class="switch-option" for="offline">
-                    <input type="radio" name="online" id="offline"
-                           :value="false" v-model="online" />
-                    <span>offline</span>
-                </label>
-            </div>
-        </span>
+        <setting-switch id="swap-cube"
+                        v-model="swapCubeSetting"
+                        label="Cube swapping"
+                        tooltip="Swap to your best cube before<br/>
+                                 buying research,<br/>
+                                 or stay with the same set"
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
+        <setting-switch id="reslotting"
+                        v-model="reslottingSetting"
+                        label="Reslotting"
+                        tooltip="Allow reslotting stones in artifacts.<br/>
+                                 Stone-holder artifacts are interchangeable and<br/>
+                                 stones may be arbitrarily rearranged."
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
+        <setting-switch id="online"
+                        v-model="onlineSetting"
+                        :options="[
+                                  { value: true, label: 'online' },
+                                  { value: false, label: 'offline' },
+                                  ]"/>
     </section>
     <section class="inputs">
         <setting-text id="egg-value"
@@ -98,10 +61,10 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEBSet.ebMultiplier"
-            :multiplierOnline="online ? optimalEBSet.onlineMultiplier : 0"
-            :multiplierOffline="online ? 0 : optimalEBSet.offlineMultiplier"
-            :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEBSet.researchCostBonus"
-            :swappedCube="swapCube && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
+            :multiplierOnline="onlineSetting.value ? optimalEBSet.onlineMultiplier : 0"
+            :multiplierOffline="onlineSetting.value ? 0 : optimalEBSet.offlineMultiplier"
+            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalEBSet.researchCostBonus"
+            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEB" />
@@ -115,10 +78,10 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEBSet.ebMultiplier"
-            :multiplierOnline="online ? optimalEBSet.onlineMultiplier : 0"
-            :multiplierOffline="online ? 0 : optimalEBSet.offlineMultiplier"
-            :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEBSet.researchCostBonus"
-            :swappedCube="swapCube && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
+            :multiplierOnline="onlineSetting.value ? optimalEBSet.onlineMultiplier : 0"
+            :multiplierOffline="onlineSetting.value ? 0 : optimalEBSet.offlineMultiplier"
+            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalEBSet.researchCostBonus"
+            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEB" />
@@ -131,10 +94,10 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="optimalEarningSet.ebMultiplier"
-            :multiplierOnline="online ? optimalEarningSet.onlineMultiplier : 0"
-            :multiplierOffline="online ? 0 : optimalEarningSet.offlineMultiplier"
-            :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalEarningSet.researchCostBonus"
-            :swappedCube="swapCube && optimalCubeBonus < optimalEarningSet.researchCostBonus ? optimalCube : null"
+            :multiplierOnline="onlineSetting.value ? optimalEarningSet.onlineMultiplier : 0"
+            :multiplierOffline="onlineSetting.value ? 0 : optimalEarningSet.offlineMultiplier"
+            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalEarningSet.researchCostBonus"
+            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalEarningSet.researchCostBonus ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="chartDataEarning" />
@@ -148,10 +111,10 @@
             :userData="userData"
             :baseEB="userEB"
             :multiplierEB="mirrorMult"
-            :multiplierOnline="online ? optimalMirrorSet.onlineMultiplier : 0"
-            :multiplierOffline="online ? 0 : optimalMirrorSet.offlineMultiplier"
-            :researchCostMultiplier="swapCube ? optimalCubeBonus : optimalMirrorSet.researchCostBonus"
-            :swappedCube="swapCube && optimalCubeBonus < optimalMirrorSet.researchCostBonus ? optimalCube : null"
+            :multiplierOnline="onlineSetting.value ? optimalMirrorSet.onlineMultiplier : 0"
+            :multiplierOffline="onlineSetting.value ? 0 : optimalMirrorSet.offlineMultiplier"
+            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalMirrorSet.researchCostBonus"
+            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalMirrorSet.researchCostBonus ? optimalCube : null"
             :activeMirror="mirrorMult > 1"
             >
             <div v-html="graphTitleHtml"/>
@@ -166,7 +129,7 @@
 import { ref, computed, reactive, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { clamp, parseNumber, formatNumber } from '@/scripts/utils.ts';
-import { createTextInputSetting } from '@/scripts/settings.ts';
+import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 import type { ArtifactSet } from '@/scripts/earning-set.ts';
 
@@ -192,9 +155,18 @@ Can you
 
 
 // Settings variables
-const swapCube = ref<boolean>(false);
-const allowReslotting = ref<boolean>(false);
-const online = ref<boolean>(true);
+const swapCubeSetting = createSwitchSetting<boolean>({
+    localStorageKey: 'swap-cube',
+    defaultValue: false,
+});
+const reslottingSetting = createSwitchSetting<boolean>({
+    localStorageKey: 'allow-reslotting',
+    defaultValue: false,
+});
+const onlineSetting = createSwitchSetting<boolean>({
+    localStorageKey: 'online',
+    defaultValue: true,
+});
 const eggValueSetting = createTextInputSetting<number>({
     localStorageKey: 'egg-value',
     queryParamKey: 'egg_value',
@@ -238,33 +210,7 @@ const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value,
 
 
 
-// Load settings from local storage at start
-onMounted(async () => {
-    const localStorageSettings = [
-        { key: 'swap-cube'       , ref: swapCube       , parser: JSON.parse },
-        { key: 'allow-reslotting', ref: allowReslotting, parser: JSON.parse },
-        { key: 'online'          , ref: online         , parser: JSON.parse },
-    ];
-
-    localStorageSettings.forEach(({ key, ref, parser }) => {
-        const storedValue = localStorage.getItem(key);
-        if (storedValue !== null) {
-            try {
-                ref.value = parser ? parser(storedValue) : storedValue;
-            } catch (e) {
-                console.warn(`Failed to parse ${key} from localStorage:`, e);
-                console.warn(`Stored value: ${storedValue}`);
-            }
-        }
-    });
-
-});
-
-
 // Watchers for synchronisation between setting variables, local storage and state variables
-watch(swapCube        , () => localStorage.setItem('swap-cube'       , JSON.stringify(swapCube.value)));
-watch(allowReslotting , () => localStorage.setItem('allow-reslotting', JSON.stringify(allowReslotting.value)));
-watch(online          , () => localStorage.setItem('online'          , JSON.stringify(online.value)));
 
 watch(userData, () => {
     if (!userData.value) return;
@@ -274,9 +220,9 @@ watch(userData, () => {
 
 // Watchers for triggering recomputations
 watch(userData, updateSet);
-watch(swapCube, updateSet);
-watch(allowReslotting, updateSet);
-watch(online, updateSet);
+watch(swapCubeSetting, updateSet);
+watch(reslottingSetting, updateSet);
+watch(onlineSetting, updateSet);
 
 
 /**
@@ -300,24 +246,24 @@ function updateSet() {
         optimalEBSet.value = searchEBSet(userData.value?.items ?? [],
                                          maxSlot,
                                          baseBonuses,
-                                         !swapCube.value,
+                                         !swapCubeSetting.value,
                                          false, // countMonocle
-                                         online.value,
-                                         allowReslotting.value);
+                                         onlineSetting.value,
+                                         reslottingSetting.value);
         optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
                                                    maxSlot,
                                                    baseBonuses,
-                                                   !swapCube.value,
+                                                   !swapCubeSetting.value,
                                                    false, // countMonocle
-                                                   online.value,
-                                                   allowReslotting.value);
+                                                   onlineSetting.value,
+                                                   reslottingSetting.value);
         optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
                                                  maxSlot,
                                                  baseBonuses,
-                                                 !swapCube.value,
+                                                 !swapCubeSetting.value,
                                                  false, // countMonocle
-                                                 online.value,
-                                                 allowReslotting.value);
+                                                 onlineSetting.value,
+                                                 reslottingSetting.value);
         const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
         optimalCube.value = cube;
         optimalCubeBonus.value = cubeBonus;
@@ -334,18 +280,18 @@ function updateSet() {
 }
 
 function generateChartData(artifactSet?: ArtifactSet, mirrorMult: number = 1) {
-    let artifactBonus = online.value ? (artifactSet?.totalOnlineMultiplier ?? 540)
-                                     : (artifactSet?.totalOfflineMultiplier ?? 1);
-    artifactBonus /= swapCube.value ? optimalCubeBonus.value : (artifactSet?.researchCostBonus ?? 1);
+    let artifactBonus = onlineSetting.value ? (artifactSet?.totalOnlineMultiplier ?? 540)
+                                            : (artifactSet?.totalOfflineMultiplier ?? 1);
+    artifactBonus /= swapCubeSetting.value ? optimalCubeBonus.value : (artifactSet?.researchCostBonus ?? 1);
 
     let min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate /s to /min
-    if (!online.value) min *= userData.value?.awayEarningBonus ?? 1;
+    if (!onlineSetting.value) min *= userData.value?.awayEarningBonus ?? 1;
     const max = CR_TARGET_CNST;
 
     let missing = max/(min * eggValueSetting.value * miscBonusSetting.value * artifactBonus * mirrorMult);
 
     // Evaluate time and population required (heuristic formula, we need time*population ~= missing)
-    const time = clamp(Math.round(Math.log(missing/(online.value ? 4539993 : 453999))), 1, 10);
+    const time = clamp(Math.round(Math.log(missing/(onlineSetting.value ? 4539993 : 453999))), 1, 10);
     const population = clamp(missing/time, 1, 10e9);
     missing /= (time*population);
 

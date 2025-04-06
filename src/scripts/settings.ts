@@ -1,9 +1,42 @@
 /*
  * Settings modules management
+ * TODO: comments and cleanup
  */
 
 import { shallowRef, reactive, computed, watch } from 'vue';
 import type { Ref, Reactive } from 'vue';
+
+export type SwitchSetting<T> = {
+    value: Ref<T>,
+};
+
+export function createSwitchSetting<T>(options: {
+    localStorageKey?: string,
+    queryParamKey?: string,
+    defaultValue: T,
+}): Reactive<SwitchSetting<T>> {
+    const { localStorageKey, queryParamKey, defaultValue } = options;
+
+    const storedText = localStorageKey ? localStorage.getItem(localStorageKey) : null;
+    const storedValue = storedText ? JSON.parse(storedText) : null;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryText = queryParamKey ? urlParams.get(queryParamKey) : null;
+    const queryValue = queryText ? JSON.parse(queryText) : null;
+
+    const value = shallowRef<T>(queryValue ?? storedValue ?? defaultValue);
+
+    watch(value, () => {
+        if (localStorageKey) {
+            localStorage.setItem(localStorageKey, JSON.stringify(value.value));
+        }
+    });
+
+    return reactive<SwitchSetting<T>>({
+        value
+    });
+}
+
 
 export type TextInputSetting<T> = {
     text: Ref<string>,
@@ -41,8 +74,8 @@ export function createTextInputSetting<T>(options: {
     parser?: (arg0: string) => T,
     formatter?: (arg0: T) => string,
 }): Reactive<TextInputSetting<T>> {
-
     const { localStorageKey, queryParamKey, defaultValue, parser, formatter } = options;
+
     const parseValue = parser || ((s: string) => s as unknown as T);
     const formatValue = formatter || ((s: T) => s as unknown as string);
 
