@@ -66,66 +66,24 @@
         </span>
     </section>
     <section class="inputs">
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Used to evaluate time to buy researches.
-                    </span>
-                </label>
-                <label for="egg-value">
-                    Egg value
-                </label>
-            </label>
-            <input type="text" id="egg-value"
-                   :class="{ invalid: !eggValueSetting.isValid }"
-                   v-model="eggValueSetting.text"
-                   :placeholder="eggValueSetting.placeholder">
-            </input>
-        </span>
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Used to evaluate time to buy researches<br/>
-                        with a mirror set.
-                    </span>
-                </label>
-                <label for="mirror-eb">
-                    Mirror EB%
-                </label>
-            </label>
-            <input type="text" id="mirror-eb"
-                   :class="{ invalid: !mirrorSetting.isValid }"
-                   v-model="mirrorSetting.text"
-                   :placeholder="mirrorSetting.placeholder">
-            </input>
-        </span>
-        <span class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Miscellaneous bonuses.<br/>
-                        Includes video doubler,<br/>
-                        earning event, sale event,<br/>
-                        coop earning and laying bonuses<br/>
-                        and contract modifiers.<br/>
-                        Default to 4
-                    </span>
-                </label>
-                <label for="misc-bonus">
-                    Misc. bonuses
-                </label>
-            </label>
-            <input type="text" id="misc-bonus"
-                   :class="{ invalid: !miscBonusSetting.isValid }"
-                   v-model="miscBonusSetting.text"
-                   :placeholder="miscBonusSetting.placeholder">
-            </input>
-        </span>
+        <setting-text id="egg-value"
+                      v-model="eggValueSetting"
+                      label="Egg value"
+                      tooltip="Used to evaluate time to buy researches."/>
+        <setting-text id="mirror-eb"
+                      v-model="mirrorSetting"
+                      label="Mirror EB%"
+                      tooltip="Used to evaluate time to buy researches<br/>
+                               with a mirror set."/>
+        <setting-text id="misc-bonus"
+                      v-model="miscBonusSetting"
+                      label="Misc. bonuses"
+                      tooltip=" Miscellaneous bonuses.<br/>
+                               Includes video doubler,<br/>
+                               earning event, sale event,<br/>
+                               coop earning and laying bonuses<br/>
+                               and contract modifiers.<br/>
+                               Default to 4"/>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
@@ -207,7 +165,8 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { clamp, parseNumber, formatNumber, createTextInputSetting } from '@/scripts/utils.ts';
+import { clamp, parseNumber, formatNumber } from '@/scripts/utils.ts';
+import { createTextInputSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 import type { ArtifactSet } from '@/scripts/earning-set.ts';
 

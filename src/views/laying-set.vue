@@ -112,44 +112,18 @@
                 </label>
             </div>
         </span>
-        <span v-if="showExtraSettings || showExtraSettingLaying" class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Maximum laying rate with full habs<br/>
-                        without any artifact equipped.
-                    </span>
-                </label>
-                <label for="base-laying-rate">
-                    Base laying rate
-                </label>
-            </label>
-            <input type="text" id="base-laying-rate"
-                    :class="{ invalid: !baseLayingRateSetting.isValid }"
-                    v-model="baseLayingRateSetting.text"
-                    :placeholder="baseLayingRateSetting.placeholder"
-                    />
-        </span>
-        <span v-if="showExtraSettings || showExtraSettingShipping" class="setting-entry">
-            <label>
-                <label tabindex="0" class="tooltip-icon">
-                    ⓘ
-                    <span class="tooltip-text">
-                        Maximum shipping rate<br/>
-                        without any artifact equipped.
-                    </span>
-                </label>
-                <label for="base-shipping-rate">
-                    Base shipping rate
-                </label>
-            </label>
-            <input type="text" id="base-shipping-rate"
-                    :class="{ invalid: !baseShippingRateSetting.isValid }"
-                    v-model="baseShippingRateSetting.text"
-                    :placeholder="baseShippingRateSetting.placeholder"
-                    />
-        </span>
+        <setting-text v-if="showExtraSettings || showExtraSettingLaying"
+                      id="base-laying-rate"
+                      v-model="baseLayingRateSetting"
+                      label="Base laying rate"
+                      tooltip="Maximum laying rate with full habs<br/>
+                               without any artifact equipped."/>
+        <setting-text v-if="showExtraSettings || showExtraSettingShipping"
+                      id="base-shipping-rate"
+                      v-model="baseShippingRateSetting"
+                      label="Base shipping rate"
+                      tooltip="Maximum shipping rate<br/>
+                               without any artifact equipped."/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
@@ -239,7 +213,8 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { parseRate, formatRate, createTextInputSetting } from '@/scripts/utils.ts';
+import { parseRate, formatRate } from '@/scripts/utils.ts';
+import { createTextInputSetting } from '@/scripts/settings.ts';
 import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
@@ -291,7 +266,7 @@ const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const baseLayingRate = computed<number>(() =>
     baseLayingRateSetting.value ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE);
 const baseShippingRate = computed<number>(() =>
-    baseShippingRateSetting.value ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_LAYING_RATE);
+    baseShippingRateSetting.value ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE);
 
 
 // Data variables

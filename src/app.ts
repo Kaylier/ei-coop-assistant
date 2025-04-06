@@ -27,6 +27,7 @@ import InventoryComponent from '@/components/inventory.vue';
 import ItemComponent from '@/components/item.vue';
 import ArtifactSetCard from '@/components/artifact-set-card.vue';
 import ResearchChart from '@/components/earning-set/research-chart.vue';
+import SettingText from '@/components/setting-text.vue';
 
 app.component('item-tooltip', ItemTooltip);
 app.component('load-eid', LoadEid);
@@ -34,6 +35,7 @@ app.component('inventory', InventoryComponent);
 app.component('item', ItemComponent);
 app.component('artifact-set-card', ArtifactSetCard);
 app.component('research-chart', ResearchChart);
+app.component('setting-text', SettingText);
 
 
 

@@ -8,20 +8,6 @@ section.inputs {
     align-items: center;
 }
 
-section.inputs .setting-entry {
-    display: flex;
-    align-items: center;
-    gap: 0.2em;
-}
-
-section.inputs input[type=text] {
-    width: 7em;
-}
-
-section.inputs input[type=text].small {
-    width: 4em;
-}
-
 
 .main-sets {
     display: flex;

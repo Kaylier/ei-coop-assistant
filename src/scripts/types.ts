@@ -1,7 +1,6 @@
 /*
  * This file defines types and enums used in items, artifacts, stones and ingredients
  */
-import type { Ref } from 'vue';
 
 export enum ItemCategory {
     ARTIFACT,
@@ -124,13 +123,6 @@ export type ToggleSetting<T> = {
     localStorageKey?: string,
     value: T,
 }
-
-export type TextInputSetting<T> = {
-    text: Ref<string>,
-    isValid: Ref<boolean>,
-    value: Ref<T>,
-    placeholder: Ref<string>,
-};
 
 
 export enum DeflectorMode {
