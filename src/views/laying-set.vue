@@ -28,13 +28,22 @@
                         tooltip="Force to use a specific gusset.<br/>
                                  Only your best gussets are shown.<br/>
                                  Disabled on 'any'."
-                        :options="allowedGussetOptions">
-                <a v-if="allowedGussetChoices.length < 10"
+                        :options="allowedGussetChoices.map(x => ({ value: x}))">
+            <template #option="{ value: gusset }">
+                <span v-if="gusset === T.AllowedGusset.ANY">any</span>
+                <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
+                <img v-else :src="getGussetImage(gusset)"
+                            :alt="getGussetName(gusset)"
+                            :class="getGussetClass(gusset)"/>
+            </template>
+            <template #extra>
+                <button v-if="allowedGussetChoices.length < 10"
                    href="#"
-                   class="switch-option"
+                   class="switch-option extra-gusset-button"
                    @click="allowedGussetChoices = Object.values(T.AllowedGusset)">
                     …
-                </a>
+                </button>
+            </template>
         </setting-switch>
         <setting-switch v-if="showExtraSettings || showExtraSettingVariant"
                         id="show-variants"
@@ -210,20 +219,6 @@ const showExtraSettingLaying = ref<boolean>(false);
 const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
-const allowedGussetOptions = computed(() => allowedGussetChoices.value.map(gusset => {
-    if (gusset === T.AllowedGusset.ANY) {
-        return { value: gusset, label: 'any' };
-    } else if (gusset === T.AllowedGusset.NONE) {
-        return { value: gusset, label: 'Ø' };
-    } else {
-        return {
-            value: gusset,
-            label: getGussetName(gusset),
-            image: getGussetImage(gusset),
-            class: getGussetClass(gusset),
-        };
-    }
-}));
 const baseLayingRate = computed<number>(() =>
     baseLayingRateSetting.value ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE);
 const baseShippingRate = computed<number>(() =>

@@ -16,10 +16,11 @@
                        :id="`${id}-${option.value}`"
                        :value="option.value"
                        v-model="setting.value"/>
-                <img v-if="option.image" :src="option.image" :alt="option.label" :class="option.class" />
-                <span v-else v-html="option.label" :class="option.class"/>
+                <slot name="option" v-bind="option">
+                    <span v-html="option.label"/>
+                </slot>
             </label>
-            <slot/>
+            <slot name="extra"/>
         </div>
     </span>
 </template>
@@ -34,7 +35,7 @@ const props = defineProps<{
     id: string,
     label: string,
     tooltip?: string,
-    options: Array<{ value: any, label: string, image?: string, class: string }>,
+    options: Array<{ value: any, label: string }>,
 }>();
 
 </script>
