@@ -145,6 +145,7 @@ function search1(items: T.Item[],
 
     const best: AnnotatedArtifact[] = [];
     const bestScore: number[] = [];
+    let callCount: number = 0;
 
     for (const artifactBook of [...artifactBooks, null]) {
         const bookBonus = artifactBook?.bonuses.PEBonus ?? 0;
@@ -209,9 +210,10 @@ function search1(items: T.Item[],
             }
 
             const current: AnnotatedArtifact[] = [artifactBook, artifactVial].filter(x => x !== null);
-            search2(artifactOthers, 0, maxSlot, evalFn, evalUpperBoundFn, current, best, bestScore);
+            callCount += search2(artifactOthers, 0, maxSlot, evalFn, evalUpperBoundFn, current, best, bestScore);
         }
     }
+    console.log(callCount, "recursive calls");
 
     const newBaseBonuses: BaseBonuses = {
         ...baseBonuses,
@@ -243,6 +245,7 @@ function search2(artifacts: AnnotatedArtifact[][], artifactsIdx: number = 0,
                  best   : AnnotatedArtifact[] = [], bestScore: number[] = [],
                 ): AnnotatedArtifact[] {
     const currentScore = evalFn(current);
+    let callCount = 1;
     if (arrayCompare(bestScore, currentScore) < 0) {
         Object.assign(best, current);
         Object.assign(bestScore, currentScore);
@@ -250,25 +253,25 @@ function search2(artifacts: AnnotatedArtifact[][], artifactsIdx: number = 0,
 
     if (current.length >= maxSlot || artifactsIdx >= artifacts.length) {
         // We filled out set, or we don't have more artifacts to add
-        return best;
+        return callCount;
     }
 
     const scoreUpperBound = evalUpperBoundFn(current);
     if (arrayCompare(scoreUpperBound, bestScore) < 0) {
         // We can't do better than our best, no need to search further
-        return best;
+        return callCount;
     }
 
     // Try every artifact of current family
     for (let i = 0; i < artifacts[artifactsIdx].length; i++) {
         const newCurrent = [...current, artifacts[artifactsIdx][i]];
-        search2(artifacts, artifactsIdx+1, maxSlot, evalFn, evalUpperBoundFn, newCurrent, best, bestScore);
+        callCount += search2(artifacts, artifactsIdx+1, maxSlot, evalFn, evalUpperBoundFn, newCurrent, best, bestScore);
     }
 
     // Try without this family
-    search2(artifacts, artifactsIdx+1, maxSlot, evalFn, evalUpperBoundFn, current, best, bestScore);
+    callCount += search2(artifacts, artifactsIdx+1, maxSlot, evalFn, evalUpperBoundFn, current, best, bestScore);
 
-    return best;
+    return callCount;
 }
 
 

@@ -229,8 +229,8 @@ watch(onlineSetting, updateSet);
  * Find the optimal sets and populate view entries
  */
 function updateSet() {
-    console.log("Update set");
     if (!userData.value) return [];
+    console.log("Update sets");
 
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
     const baseBonuses = {
@@ -250,6 +250,7 @@ function updateSet() {
                                          false, // countMonocle
                                          onlineSetting.value,
                                          reslottingSetting.value);
+        console.log("EB set:", optimalEBSet.value);
         optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
                                                    maxSlot,
                                                    baseBonuses,
@@ -257,6 +258,7 @@ function updateSet() {
                                                    false, // countMonocle
                                                    onlineSetting.value,
                                                    reslottingSetting.value);
+        console.log("Earning set:", optimalEarningSet.value);
         optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
                                                  maxSlot,
                                                  baseBonuses,
@@ -264,7 +266,9 @@ function updateSet() {
                                                  false, // countMonocle
                                                  onlineSetting.value,
                                                  reslottingSetting.value);
+        console.log("Mirror set:", optimalMirrorSet.value);
         const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
+        console.log("Cube:", cubeBonus, cube);
         optimalCube.value = cube;
         optimalCubeBonus.value = cubeBonus;
 
