@@ -55,25 +55,19 @@ type IngredientTier = {
     odds_multiplier: number;
 };
 
+type MetadataMap = {
+    [T.ItemCategory.ARTIFACT]: { family: T.ArtifactFamily, tiers: ArtifactTier[] };
+    [T.ItemCategory.STONE]: { family: T.StoneFamily, tiers: StoneTier[] };
+    [T.ItemCategory.INGREDIENT]: { family: T.IngredientFamily, tiers: IngredientTier[] };
+};
+
 type ArtifactMetadata = {
-    [T.ItemCategory.ARTIFACT]: {
-        [family in T.ArtifactFamily]: {
-            family_name: string;
-            tiers: ArtifactTier[];
-        };
-    };
-    [T.ItemCategory.STONE]: {
-        [family in T.StoneFamily]: {
-            family_name: string;
-            tiers: StoneTier[];
-        };
-    };
-    [T.ItemCategory.INGREDIENT]: {
-        [family in T.IngredientFamily]: {
-            family_name: string;
-            tiers: IngredientTier[];
-        };
-    };
+   [K in T.ItemCategory]: {
+     [F in MetadataMap[K]["family"]]: {
+         family_name: string;
+         tiers: MetadataMap[K]["tiers"];
+     };
+   };
 };
 
 const artifactMetadata: ArtifactMetadata = {
@@ -1687,13 +1681,13 @@ const effectMetadata: Record<string, { type: EffectType, text: string }> = {
 };
 
 
+
 /**
  * Return a unique string that can be used to sort items
  */
 export function getSortId(item: T.Item | null): string {
     if (!item) return "";
-    // @ts-ignore typescript fails to correlate the category index and the family index type in artifactMetadata
-    const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
+    const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     return item.category == T.ItemCategory.ARTIFACT ? itemData?.rarities?.[item.rarity]?.id : itemData?.id;
 }
 
@@ -1702,8 +1696,7 @@ export function getSortId(item: T.Item | null): string {
  */
 export function getName(item: T.Item | null): string {
     if (!item) return "";
-    // @ts-ignore
-    const itemFamilyData = artifactMetadata[item.category]?.[item.family];
+    const itemFamilyData = (artifactMetadata[item.category] as any)?.[item.family];
     const itemData = itemFamilyData?.tiers?.[item.tier-1];
     return itemData?.name ?? itemFamilyData?.family_name ?? "Unknown Item";
 }
@@ -1713,10 +1706,9 @@ export function getName(item: T.Item | null): string {
  */
 export function getDescriptions(item: T.Item | null): [string, string][] {
     if (!item) return [];
+    const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     // @ts-ignore
-    const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
-    // @ts-ignore
-    const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
+    const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;
     const ret: [string, string][] = []
     if (!effects) {
         return [["", "Reload your EID"], ["", "Contact the dev if the problem persists"]];
@@ -1732,8 +1724,7 @@ export function getDescriptions(item: T.Item | null): [string, string][] {
  */
 export function getImageSource(item: T.Item | null): string {
     if (!item) return "/img/icons/stone-slot.png";
-    // @ts-ignore
-    const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
+    const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     const filename = itemData?.image;
     return filename ? `/img/items/${filename}.png` : "/img/not-found.png";
 }
@@ -1742,9 +1733,7 @@ export function getImageSource(item: T.Item | null): string {
  * Returns the amount of stone slots of an artifact
  */
 export function getSlotCount(artifact: T.Artifact): number {
-    // @ts-ignore
-    const itemData = artifactMetadata[artifact.category]?.[artifact.family]?.tiers?.[artifact.tier-1];
-    // @ts-ignore
+    const itemData = (artifactMetadata[artifact.category] as any)?.[artifact.family]?.tiers?.[artifact.tier-1];
     return itemData?.rarities?.[artifact.rarity]?.slot_count;
 }
 
@@ -1755,8 +1744,7 @@ export function getSlotCount(artifact: T.Artifact): number {
  */
 export function getEffects(item: T.Item | null, recursive: boolean = true): Record<string, number> {
     if (!item) return {};
-    // @ts-ignore
-    const itemData = artifactMetadata[item.category]?.[item.family]?.tiers?.[item.tier-1];
+    const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     // @ts-ignore
     const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
     if (!effects) return {};
