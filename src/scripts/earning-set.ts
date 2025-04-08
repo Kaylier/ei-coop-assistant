@@ -1,5 +1,5 @@
 import * as T from '@/scripts/types.ts';
-import { round, arrayCompare, extractParetoFrontier, product } from '@/scripts/utils.ts';
+import { arrayCompare, extractParetoFrontier, product } from '@/scripts/utils.ts';
 import { getEffects, copyItem } from '@/scripts/artifacts.ts';
 
 
@@ -54,7 +54,7 @@ export function searchEBSet(items: T.Item[],
                             reslotting: boolean): ArtifactSet {
     return search1(items, maxSlot, baseBonuses, countCube, countMonocle, online, reslotting,
                    getEBStoneQueue,
-                   (eb, bonus, cr) => [round(eb), round((1 + eb)*bonus), 1/cr]);
+                   (eb, bonus, cr) => [eb, (1 + eb)*bonus, 1/cr]);
 }
 
 
@@ -67,7 +67,7 @@ export function searchEarningSet(items: T.Item[],
                                  reslotting: boolean): ArtifactSet {
     return search1(items, maxSlot, baseBonuses, countCube, countMonocle, online, reslotting,
                    getEarningStoneQueue,
-                   (eb, bonus, cr) => [round((1 + eb)*bonus), 1/cr]);
+                   (eb, bonus, cr) => [(1 + eb)*bonus, 1/cr]);
 }
 
 
@@ -80,7 +80,7 @@ export function searchMirrorSet(items: T.Item[],
                                 reslotting: boolean): ArtifactSet {
     return search1(items, maxSlot, baseBonuses, countCube, countMonocle, online, reslotting,
                    getMirrorStoneQueue,
-                   (eb, bonus, cr) => [round(bonus), round((1 + eb)*bonus), 1/cr]);
+                   (eb, bonus, cr) => [bonus, (1 + eb)*bonus, 1/cr]);
 }
 
 
@@ -243,7 +243,7 @@ function search2(artifacts: AnnotatedArtifact[][], artifactsIdx: number = 0,
                  evalUpperBoundFn: (arg0: AnnotatedArtifact[]) => number[],
                  current: AnnotatedArtifact[] = [],
                  best   : AnnotatedArtifact[] = [], bestScore: number[] = [],
-                ): AnnotatedArtifact[] {
+                ): number {
     const currentScore = evalFn(current);
     let callCount = 1;
     if (arrayCompare(bestScore, currentScore) < 0) {
@@ -311,12 +311,12 @@ function getArtifacts(items: T.Item[],
         const annotatedArtifact: AnnotatedArtifact = {
             artifacts: [artifact],
             bonuses: {
-                PEBonus: round(prophecyEggBonus),
-                SEBonus: round(soulEggBonus),
-                EVBonus: round(eggValueBonus*layingBonus*(countMonocle ? boostBonus : 1)),
-                RCBonus: round(runningChickenBonus),
-                AEBonus: round(awayEarningBonus),
-                CRBonus: round(researchCostBonus),
+                PEBonus: prophecyEggBonus,
+                SEBonus: soulEggBonus,
+                EVBonus: eggValueBonus*layingBonus*(countMonocle ? boostBonus : 1),
+                RCBonus: runningChickenBonus,
+                AEBonus: awayEarningBonus,
+                CRBonus: researchCostBonus,
             },
             stoneSlotAmount: artifact.stones?.length ?? 0,
         };
@@ -376,12 +376,12 @@ function getStones(items: T.Item[],
         const annotatedStone: AnnotatedStone = {
             stone,
             bonuses: {
-                PEBonus: round(prophecyEggBonus),
-                SEBonus: round(soulEggBonus),
-                EVBonus: round(eggValueBonus*layingBonus*(activeBirdFeed ? boostBonus : 1)),
-                RCBonus: round(runningChickenBonus),
-                AEBonus: round(awayEarningBonus),
-                CRBonus: round(researchCostBonus),
+                PEBonus: prophecyEggBonus,
+                SEBonus: soulEggBonus,
+                EVBonus: eggValueBonus*layingBonus*(activeBirdFeed ? boostBonus : 1),
+                RCBonus: runningChickenBonus,
+                AEBonus: awayEarningBonus,
+                CRBonus: researchCostBonus,
             },
         };
 

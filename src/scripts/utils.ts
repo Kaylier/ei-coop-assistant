@@ -1,7 +1,6 @@
 /*
  * This file contains various generic functions
  */
-import * as T from '@/scripts/types.ts';
 
 
 const units: string[] = [
@@ -124,14 +123,13 @@ export function clamp(x: number, min: number, max: number): number {
 
 
 /**
- * Round float calculations in a controlled manner
- * If two sets have the same bonuses but compounded in a different order, it can result in a slightly different
- * final bonus. One set will then be prioritary over the other, ignoring a preference order that should apply for
- * equal bonuses
- * To mitigate that, I round to 9 digits
+ * Return true if the values a and b are close to each other and false otherwise.
  */
-export function round(x: number, precision = 1e6): number {
-    return Math.round(x*precision)/precision;
+export function isclose(a: number, b: number, rel_tol: number = 1e-09, abs_tol: number = 0.0): boolean {
+    if (Number.isNaN(a) || Number.isNaN(b)) return false;
+    if (a === b) return true;
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
+    return Math.abs(a-b) <= Math.max(rel_tol*Math.max(Math.abs(a), Math.abs(b)), abs_tol);
 }
 
 
@@ -158,27 +156,77 @@ export function arrayCompare(a: number | number[], b: number | number[]) {
 
 
 /**
+ * Group items that have the same coordinate (floating-point aware).
+ */
+function groupEquivalent<T, C extends number[]>(list: [C, T][]): [C, T[]][] {
+    if (list.length == 0) {
+        return [];
+    }
+    let ret: [C, T][][] = [list];
+
+    const countCoords = list[0][0].length;
+    for (let i = 0; i < countCoords; i++) {
+        ret = ret.flatMap(l => groupby(l, i));
+    }
+
+    return ret.map(eq => [eq[0][0], eq.map(([c, el]) => el)]);
+}
+
+/**
+ * Group items that have the same idx coordinate.
+ * This is used internally by groupEquivalent. Unlike groupEquivalent, coordinates are kept alongside individual items
+ * in the output.
+ */
+function groupby<T, C extends number[]>(list: [C, T][], idx: number): [C, T][][] {
+    const ret: [C, T][][] = [];
+    let current: [C, T][] = [];
+    let lastCoord: number|null = null;
+
+    list.sort(([ca], [cb]) => ca[idx] - cb[idx]);
+
+    list.forEach(([coords, el]) => {
+        if (lastCoord !== null && !isclose(coords[idx], lastCoord)) {
+            if (current.length > 1 && !isclose(current[0][0][idx], lastCoord)) {
+                console.warn("Abnormal divergence detected in groupby:", current, idx);
+            }
+            ret.push(current);
+            current = [];
+        }
+        current.push([coords, el]);
+        lastCoord = coords[idx];
+    });
+
+
+    if (lastCoord !== null) {
+        if (current.length > 1 && !isclose(current[0][0][idx], lastCoord)) {
+            console.warn("Abnormal divergence detected in groupby:", current, idx);
+        }
+        ret.push(current);
+    }
+
+    return ret;
+}
+
+/**
  * Extracts the Pareto frontier from a list of (x, y, element) tuples.
  * The frontier consists of non-dominated points.
  * Returns an array of groups, where each group contains elements with the same (x, y) values.
  *
  * Complexity in O(n*log(n)) where n is list.length
  */
-
-export function extractParetoFrontier2<T>(list: [number, number, T][]): T[][] {
-    // Sort by x (descending) and then by y (descending)
-    const sortedList = list.slice().sort(([ax, ay], [bx, by]) => bx - ax || by - ay);
+function extractParetoFrontier2<T>(list: [[number, number], T][]): T[][] {
+    // Group by coordinate, sort by x (descending) and then by y (descending)
+    const sortedList: [[number, number], T[]][] = groupEquivalent(list)
+        .sort(([[ax, ay]], [[bx, by]]) => !isclose(ax, bx) ? bx - ax : by - ay);
 
     const frontier: T[][] = [];
     let lastX = 0, lastY = -Infinity;
 
-    for (const [x, y, element] of sortedList) {
-        if (y > lastY) {
-            frontier.push([element]);
+    for (const [[x, y], element] of sortedList) {
+        if (y > lastY && !isclose(y, lastY)) {
+            frontier.push(element);
             lastX = x;
             lastY = y;
-        } else if (x === lastX && y === lastY) {
-            frontier[frontier.length - 1].push(element);
         }
     }
 
@@ -190,28 +238,21 @@ export function extractParetoFrontier2<T>(list: [number, number, T][]): T[][] {
  * The frontier consists of non-dominated points.
  * Returns an array of groups, where each group contains elements with the same coordinate values.
  *
- * Complexity in O(n^2) where n is list.length
- * /!\ This function is significantly slower than extractParetoFrontier2 for 2-coordinate inputs
+ * Complexity in O(c×n^2) where n is list.length and c is the amount of coordinates
+ *
+ * For 2 coordinates, deleguates to extractParetoFrontier2 which is in O(n×log(n))
  */
-export function extractParetoFrontier<T>(list: [number[], T][]): T[][] {
-    const groups = new Map<string, [number[], T[]]>();
+export function extractParetoFrontier<T, C extends number[]>(list: [C, T][]): T[][] {
+    if (list.length === 0) return [];
+    if (list[0][0].length == 2) return extractParetoFrontier2(list as unknown as [[number, number], T][]);
 
-    // Group elements by identical coordinates
-    for (const [coords, element] of list) {
-        const key = coords.join(':');
-        if (!groups.has(key)) {
-            groups.set(key, [coords, []]);
-        }
-        groups.get(key)![1].push(element);
-    }
-
-    const elements = Array.from(groups.values());
+    const elements: [C, T[]][] = groupEquivalent(list);
 
     // Filter out dominated elements
     return elements.filter(([coords]) =>
             !elements.some(([otherCoords]) =>
-                otherCoords.every((v, i) => v >= coords[i]) &&
-                otherCoords.some((v, i) => v > coords[i])
+                otherCoords.every((v, i) => v >= coords[i] ||  isclose(v, coords[i])) &&
+                otherCoords.some( (v, i) => v >  coords[i] && !isclose(v, coords[i]))
             )
         )
         .map(([, elements]) => elements);
