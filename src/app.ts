@@ -23,8 +23,8 @@ app.component('router-link', RouterLink);
 
 import ItemTooltip from '@/components/item-tooltip.vue';
 import LoadEid from '@/components/load-eid.vue';
-import InventoryComponent from '@/components/inventory.vue';
-import ItemComponent from '@/components/item.vue';
+import InventoryComponent from '@/components/inventory-frame.vue';
+import ItemComponent from '@/components/item-frame.vue';
 import ArtifactSetCard from '@/components/artifact-set-card.vue';
 import ResearchChart from '@/components/earning-set/research-chart.vue';
 import SettingText from '@/components/setting-text.vue';
@@ -32,8 +32,8 @@ import SettingSwitch from '@/components/setting-switch.vue';
 
 app.component('item-tooltip', ItemTooltip);
 app.component('load-eid', LoadEid);
-app.component('inventory', InventoryComponent);
-app.component('item', ItemComponent);
+app.component('inventory-frame', InventoryComponent);
+app.component('item-frame', ItemComponent);
 app.component('artifact-set-card', ArtifactSetCard);
 app.component('research-chart', ResearchChart);
 app.component('setting-text', SettingText);
@@ -85,7 +85,7 @@ const routes = [
 
 const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes });
 
-router.afterEach((to, from) => {
+router.afterEach((to) => {
     nextTick(() => {
         document.title = (to.meta.title + " — " || "") + "Coop Assistant";
     });

@@ -15,12 +15,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, unref } from 'vue';
+import { unref } from 'vue';
 import type { TextInputSetting } from '@/scripts/settings.ts';
 
-const setting = defineModel<TextInputSetting<any>>({ required: true });
+const setting = defineModel<TextInputSetting<unknown>>({ required: true });
 
-const props = defineProps<{
+defineProps<{
     id: string,
     label: string,
     tooltip?: string,

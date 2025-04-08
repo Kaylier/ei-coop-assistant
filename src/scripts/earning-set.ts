@@ -399,7 +399,7 @@ function getStones(items: T.Item[],
     });
 
     // Sort in priority order (higher tiers first) and keep only maxAmount of them
-    result.forEach((stones, key) => stones.sort((a,b) => b.stone.tier - a.stone.tier).splice(maxAmount));
+    result.forEach(stones => stones.sort((a,b) => b.stone.tier - a.stone.tier).splice(maxAmount));
 
     return result;
 }
@@ -407,7 +407,9 @@ function getStones(items: T.Item[],
 
 function getEBStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]>,
                          baseBonuses: BaseBonuses,
-                         online: boolean): AnnotatedStone[] {
+                         online: boolean // eslint-disable-line @typescript-eslint/no-unused-vars
+                        ): AnnotatedStone[] {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
     // Create priority queues for relevant stone families
     // and a list of marginal gains. …Marginals[i] is the marginal gain of the stone at index i
@@ -445,6 +447,7 @@ function getEarningStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[
                               baseBonuses: BaseBonuses,
                               online: boolean
                              ): AnnotatedStone[] {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
     // Create priority queues for relevant stone families
     // and a list of marginal gains. …Marginals[i] is the marginal gain of the stone at index i
@@ -520,6 +523,7 @@ function getMirrorStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]
                               baseBonuses: BaseBonuses,
                               online: boolean
                              ): AnnotatedStone[] {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { PECount, SECount, basePEBonus, baseSEBonus, baseRCBonus } = baseBonuses;
     // Create priority queues for relevant stone families
     // and a list of marginal gains. …Marginals[i] is the marginal gain of the stone at index i

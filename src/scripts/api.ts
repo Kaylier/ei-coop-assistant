@@ -227,7 +227,7 @@ async function queryBackup(eid: string, proto: any) {
 
     const EggIncFirstContactRequest = proto.lookupType('ei.EggIncFirstContactRequest');
     const EggIncFirstContactResponse = proto.lookupType('ei.EggIncFirstContactResponse');
-    const Platform = proto.lookupEnum('ei.Platform');
+    //const Platform = proto.lookupEnum('ei.Platform');
 
     const payload = {
         rinfo: {
@@ -391,7 +391,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     baseIHRate *= 1 + 0.05*(epicResearches.get("epic_internal_incubators") ?? 0);
     baseIHRate *= colleggtibleBuffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1;
 
-    let awayIHBonus = 1 + 0.1*(epicResearches.get("int_hatch_calm") ?? 0);
+    const awayIHBonus = 1 + 0.1*(epicResearches.get("int_hatch_calm") ?? 0);
 
 
     return {
@@ -475,7 +475,7 @@ function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[]
     return [ [...items.values()], sets ];
 }
 
-function getColleggtibleBuffs(proto: any, backup: any): Map<unknown, number> {
+function getColleggtibleBuffs(proto: any, backup: any): Map<any, number> {
     /*
      * Iterate through contracts to find colleggtibles. This is the only way to know as far as I know...
      * For ongoing contracts, assumes the population is maxed
@@ -501,7 +501,7 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<unknown, number> {
         }
     }
 
-    const colleggtibleBuffs = new Map<unknown, number>();
+    const colleggtibleBuffs = new Map<any, number>();
 
     if (backup.contracts?.customEggInfo) {
         for (const customEgg of backup.contracts?.customEggInfo) {

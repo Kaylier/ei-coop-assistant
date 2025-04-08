@@ -126,7 +126,7 @@
 <style scoped src="@/styles/earning-set.css"></style>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { clamp, parseNumber, formatNumber } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';

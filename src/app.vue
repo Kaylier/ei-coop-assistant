@@ -11,7 +11,7 @@
                 <span>Hall of Artifacts</span>
             </router-link>
             <router-link to="/earning-set" class="router-link">
-                <img src="/img/icons/earning-set.png"></img>
+                <img src="/img/icons/earning-set.png" />
                 <span>Earning Sets</span>
             </router-link>
             <router-link to="/laying-set" class="router-link">

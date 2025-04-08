@@ -59,8 +59,7 @@ function show(newItem: T.Item, event: Event) {
 
     nextTick(() => {
         if (!tooltip.value) return;
-        // @ts-ignore
-        const rect = event.target?.getBoundingClientRect?.() ?? { left: 0, top: 0 };
+        const rect = (event.target as HTMLElement)?.getBoundingClientRect?.() ?? { left: 0, top: 0 };
         const tooltipWidth = tooltip.value.offsetWidth;
         const tooltipHeight = tooltip.value.offsetHeight;
 

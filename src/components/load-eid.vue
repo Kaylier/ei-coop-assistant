@@ -2,14 +2,13 @@
     <section class="loading">
         <form action="javascript:void(0);" id="eid">
             <input type="text"
-                placeholder="EIxxxxxxxxxxxxxxxx"
-                :class="{ invalid: !checkEID(eid) }"
-                v-model="eid"
-                />
-            <button
-                :disabled="!checkEID(eid) || isLoadingEID"
-                :class="{ invalid: !checkEID(eid), 'tooltip-icon': !checkEID(eid) }"
-                @click="load(eid)">
+                   placeholder="EIxxxxxxxxxxxxxxxx"
+                   :class="{ invalid: !checkEID(eid) }"
+                   v-model="eid"
+                   />
+            <button :disabled="!checkEID(eid) || isLoadingEID"
+                    :class="{ invalid: !checkEID(eid), 'tooltip-icon': !checkEID(eid) }"
+                    @click="load(eid)">
                 Load from EID
                 <span v-if="!checkEID(eid)" class="tooltip-text invalid-text">
                     Player EID must be of the form<br/>

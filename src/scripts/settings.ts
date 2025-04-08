@@ -104,10 +104,7 @@ export function createTextInputSetting<T>(options: {
     }
 
     updateValue(false);
-
-    watch(text, (newVal, oldVal) => {
-        updateValue();
-    });
+    watch(text, updateValue);
 
     return reactive<TextInputSetting<T>>({
         text,

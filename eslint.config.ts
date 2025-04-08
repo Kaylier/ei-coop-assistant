@@ -19,4 +19,11 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+
+  {
+    rules: {
+      'vue/require-v-for-key': 'off',
+      'vue/no-use-v-if-with-v-for': 'off',
+    },
+  }
 )

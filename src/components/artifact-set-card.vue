@@ -7,7 +7,7 @@
             </label>
             {{ title }}
         </h3>
-        <inventory :artifacts="set" :isSet="true" :userData="userData" :column="4" :row="1" />
+        <inventory-frame :artifacts="set" :isSet="true" :userData="userData" :column="4" :row="1" />
         <div v-if="multiplierEB">
             <img v-if="activeMirror" src="/img/icons/mirror.png" alt="🔀"/>
             <span class="highlighted">
@@ -55,7 +55,7 @@ import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
 import { getImageSource } from '@/scripts/artifacts.ts';
 
-const props = defineProps<{
+defineProps<{
     title: string,
     description?: string,
     set: T.Item[],

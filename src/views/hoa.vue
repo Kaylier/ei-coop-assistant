@@ -3,19 +3,16 @@
 
     <section class="main">
         <div v-if="sets.length" class="sets">
-            <inventory v-for="set in sets"
-                       :artifacts="set"
-                       :isSet="true"
-                       :userData="userData"
-                       :column="4" :row="1"
-                       />
+            <inventory-frame v-for="set in sets"
+                             :artifacts="set"
+                             :isSet="true"
+                             :userData="userData"
+                             :column="4" :row="1"
+                             />
         </div>
         <div v-if="grid.length" class="grid-container">
             <div class="grid">
-                <inventory
-                    :artifacts="grid"
-                    :column="column"
-                    />
+                <inventory-frame :artifacts="grid" :column="column" />
             </div>
         </div>
     </section>

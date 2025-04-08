@@ -1,6 +1,6 @@
-import type { Config, Context } from '@netlify/edge-functions';
+import type { Config } from '@netlify/edge-functions';
 
-export default async (request: Request, context: Context) => {
+export default async (request: Request) => {
     const targetUrl = 'https://ctx-dot-auxbrainhome.appspot.com';
     const url = new URL(request.url);
     const forwardUrl = `${url.href.replace(url.origin + '/auxbrain_api', targetUrl)}`;

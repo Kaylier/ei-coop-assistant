@@ -14,7 +14,7 @@
         <div v-for="(item, index) in artifacts"
              class="subframe" :class="{ 'emptyframe': !isSet && !item, 'focused': index === currentFocusIndex }"
              @click="changeFocus(index)">
-            <item v-if="item" :item="item" />
+            <item-frame v-if="item" :item="item" />
         </div>
     </div>
 </template>
@@ -59,7 +59,7 @@ const frameStyles = computed(() => ({
 
 async function handleKeydown(event: KeyboardEvent) {
     const { key } = event;
-    const { columns, rows } = gridDimensions.value;
+    const { columns } = gridDimensions.value;
 
     // sandbox link is treated as index -1
     const minIndex = sandboxLink.value ? -1 : 0;

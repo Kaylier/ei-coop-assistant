@@ -20,15 +20,15 @@
 
         <div class="stones-frame">
             <img v-for="stone in itemStones(item)"
-                class="stone-frame"
-                :src="getImageSource(stone)"
-                :alt="getName(stone)"
-                />
+                 class="stone-frame"
+                 :src="getImageSource(stone)"
+                 :alt="getName(stone)"
+                 />
             <img v-if="item.category === T.ItemCategory.ARTIFACT && item.reslotted"
-                class="stone-frame"
-                src="/img/icons/shuffle.png"
-                alt="🔀"
-                />
+                 class="stone-frame"
+                 src="/img/icons/shuffle.png"
+                 alt="🔀"
+                 />
         </div>
 
     </div>
@@ -44,7 +44,7 @@ const showItemTooltip = inject("showItemTooltip") as (item: T.Item, event: Event
 const hideItemTooltip = inject("hideItemTooltip") as () => void;
 const highlightedItemId = inject<Ref<number | null>>("highlightedItemId", ref(null));
 
-const props = defineProps<{
+defineProps<{
     item: T.Item
 }>();
 

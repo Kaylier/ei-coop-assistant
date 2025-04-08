@@ -104,22 +104,22 @@
                     </div>
                 </div>
                 <div class="entry-sets">
-                    <inventory v-if="entry.artifactSet"
-                               :artifacts="entry.artifactSet"
-                               :isSet="true"
-                               :deflectorBonus="entry.optiThreshold"
-                               :userData="userData"
-                               :column="4" :row="1"
-                               :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
-                               />
-                    <inventory v-if="showVariantsSetting.value" v-for="subentry in entry.variants"
-                               :artifacts="subentry"
-                               :isSet="true"
-                               :deflectorBonus="entry.optiThreshold"
-                               :userData="userData"
-                               :column="4" :row="1"
-                               :style="subentry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
-                               />
+                    <inventory-frame v-if="entry.artifactSet"
+                                     :artifacts="entry.artifactSet"
+                                     :isSet="true"
+                                     :deflectorBonus="entry.optiThreshold"
+                                     :userData="userData"
+                                     :column="4" :row="1"
+                                     :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
+                                     />
+                    <inventory-frame v-if="showVariantsSetting.value" v-for="subentry in entry.variants"
+                                     :artifacts="subentry"
+                                     :isSet="true"
+                                     :deflectorBonus="entry.optiThreshold"
+                                     :userData="userData"
+                                     :column="4" :row="1"
+                                     :style="subentry.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
+                                     />
                 </div>
             </div>
         </template>
@@ -409,16 +409,19 @@ function updateThresholds() {
 
 
 function getGussetName(gusset: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [category,family,tier,rarity] = gusset.split('-');
     return `t${tier}${"crel"[Number(rarity)]}`
 }
 
 function getGussetImage(gusset: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [category,family,tier,rarity] = gusset.split('-');
     return `/img/items/${category}-${family}-${tier}.png`
 }
 
 function getGussetClass(gusset: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [category,family,tier,rarity] = gusset.split('-');
     return ["common", "rare", "epic", "legendary"][Number(rarity)];
 }

@@ -26,16 +26,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, unref } from 'vue';
 import type { SwitchSetting } from '@/scripts/settings.ts';
 
-const setting = defineModel<SwitchSetting<any>>({ required: true });
+const setting = defineModel<SwitchSetting<unknown>>({ required: true });
 
-const props = defineProps<{
+defineProps<{
     id: string,
     label: string,
     tooltip?: string,
-    options: Array<{ value: any, label: string }>,
+    options: Array<{ value: unknown, label: string }>,
 }>();
 
 </script>

@@ -169,7 +169,7 @@ function groupEquivalent<T, C extends number[]>(list: [C, T][]): [C, T[]][] {
         ret = ret.flatMap(l => groupby(l, i));
     }
 
-    return ret.map(eq => [eq[0][0], eq.map(([c, el]) => el)]);
+    return ret.map(eq => [eq[0][0], eq.map(([, el]) => el)]);
 }
 
 /**
@@ -220,12 +220,11 @@ function extractParetoFrontier2<T>(list: [[number, number], T][]): T[][] {
         .sort(([[ax, ay]], [[bx, by]]) => !isclose(ax, bx) ? bx - ax : by - ay);
 
     const frontier: T[][] = [];
-    let lastX = 0, lastY = -Infinity;
+    let lastY = -Infinity;
 
-    for (const [[x, y], element] of sortedList) {
+    for (const [[, y], element] of sortedList) {
         if (y > lastY && !isclose(y, lastY)) {
             frontier.push(element);
-            lastX = x;
             lastY = y;
         }
     }
