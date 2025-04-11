@@ -42,15 +42,11 @@ export function getOptimalGussets(items: T.Item[], includeStones: boolean = true
         if (item.category !== T.ItemCategory.ARTIFACT) return;
         if (item.family !== T.ArtifactFamily.GUSSET) return;
 
-        const {
-            hab_capacity_bonus: habCapacityBonus = 1,
-            laying_bonus      : layingBonus      = 1,
-            shipping_bonus    : shippingBonus    = 1,
-        } = getEffects(item, includeStones);
+        const effects = getEffects(item, includeStones);
 
         gussets.push([[
-            layingBonus*habCapacityBonus,
-            shippingBonus],
+            effects.get('laying_bonus')*effects.get('hab_capacity_bonus'),
+            effects.get('shipping_bonus')],
             `artifact-gusset-${item.tier}-${item.rarity}` as T.AllowedGusset]);
     });
 
@@ -228,15 +224,13 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     const tachyonBonus: number[] = [1];
     cumul = 1;
     for (const stone of tachyonQueue) {
-        const { laying_bonus: layingBonus = 1 } = getEffects(stone);
-        cumul *= layingBonus;
+        cumul *= getEffects(stone).get('laying_bonus');
         tachyonBonus.push(cumul);
     }
     const quantumBonus: number[] = [1];
     cumul = 1;
     for (const stone of quantumQueue) {
-        const { shipping_bonus: shippingBonus = 1 } = getEffects(stone);
-        cumul *= shippingBonus;
+        cumul *= getEffects(stone).get('shipping_bonus');
         quantumBonus.push(cumul);
     }
 
@@ -475,19 +469,14 @@ function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.Art
         if (item.category !== T.ItemCategory.ARTIFACT) return;
         const artifact = copyItem(item) as T.Artifact;
 
-        const {
-            hab_capacity_bonus: habCapacityBonus = 1,
-            laying_bonus      : layingBonus      = 1,
-            shipping_bonus    : shippingBonus    = 1,
-            team_laying_bonus : deflectorBonus   = 0
-        } = getEffects(artifact, includeStones);
+        const effects = getEffects(artifact, includeStones);
 
         const annotatedArtifact: AnnotatedArtifact = {
             artifact,
-            layingBonus: layingBonus,
-            habCapacityBonus: habCapacityBonus,
-            shippingBonus: shippingBonus,
-            deflectorBonus: deflectorBonus,
+            layingBonus: effects.get('laying_bonus'),
+            habCapacityBonus: effects.get('hab_capacity_bonus'),
+            shippingBonus: effects.get('shipping_bonus'),
+            deflectorBonus: effects.get('team_laying_bonus'),
             stoneSlotAmount: artifact.stones?.length ?? 0,
         };
 

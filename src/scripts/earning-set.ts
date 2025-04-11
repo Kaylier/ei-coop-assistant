@@ -87,7 +87,7 @@ export function searchMirrorSet(items: T.Item[],
 export function searchCube(items: T.Item[]): [T.Artifact | null, number] {
     return items.reduce<[T.Artifact | null, number]>((best, item) => {
         if (item.category !== T.ItemCategory.ARTIFACT) return best;
-        const bonus = getEffects(item, false)?.['research_cost_bonus'] ?? 1;
+        const bonus = getEffects(item, false)?.get('research_cost_bonus');
         return bonus < best[1] ? [item, bonus] : best;
     }, [null, 1]);
 }
@@ -297,26 +297,18 @@ function getArtifacts(items: T.Item[],
         if (item.category !== T.ItemCategory.ARTIFACT) return;
         const artifact = copyItem(item) as T.Artifact;
 
-        const {
-            prophecy_egg_bonus    : prophecyEggBonus    = 0,
-            soul_egg_bonus        : soulEggBonus        = 0,
-            egg_value_bonus       : eggValueBonus       = 1,
-            laying_bonus          : layingBonus         = 1,
-            boost_bonus           : boostBonus          = 1,
-            running_chicken_bonus : runningChickenBonus = 0,
-            away_earning_bonus    : awayEarningBonus    = 1,
-            research_cost_bonus   : researchCostBonus   = 1,
-        } = getEffects(artifact, includeStones);
+        const effects = getEffects(artifact, includeStones);
 
         const annotatedArtifact: AnnotatedArtifact = {
             artifacts: [artifact],
             bonuses: {
-                PEBonus: prophecyEggBonus,
-                SEBonus: soulEggBonus,
-                EVBonus: eggValueBonus*layingBonus*(countMonocle ? boostBonus : 1),
-                RCBonus: runningChickenBonus,
-                AEBonus: awayEarningBonus,
-                CRBonus: researchCostBonus,
+                PEBonus: effects.get('prophecy_egg_bonus'),
+                SEBonus: effects.get('soul_egg_bonus'),
+                EVBonus: effects.get('egg_value_bonus')*effects.get('laying_bonus')
+                        *(countMonocle ? effects.get('boost_bonus') : 1),
+                RCBonus: effects.get('running_chicken_bonus'),
+                AEBonus: effects.get('away_earning_bonus'),
+                CRBonus: effects.get('research_cost_bonus'),
             },
             stoneSlotAmount: artifact.stones?.length ?? 0,
         };
@@ -362,26 +354,18 @@ function getStones(items: T.Item[],
         if (item.category !== T.ItemCategory.STONE) return;
         const stone = copyItem(item) as T.Stone;
 
-        const {
-            prophecy_egg_bonus    : prophecyEggBonus    = 0,
-            soul_egg_bonus        : soulEggBonus        = 0,
-            egg_value_bonus       : eggValueBonus       = 1,
-            laying_bonus          : layingBonus         = 1,
-            boost_bonus           : boostBonus          = 1,
-            running_chicken_bonus : runningChickenBonus = 0,
-            away_earning_bonus    : awayEarningBonus    = 1,
-            research_cost_bonus   : researchCostBonus   = 1,
-        } = getEffects(stone);
+        const effects = getEffects(stone);
 
         const annotatedStone: AnnotatedStone = {
             stone,
             bonuses: {
-                PEBonus: prophecyEggBonus,
-                SEBonus: soulEggBonus,
-                EVBonus: eggValueBonus*layingBonus*(activeBirdFeed ? boostBonus : 1),
-                RCBonus: runningChickenBonus,
-                AEBonus: awayEarningBonus,
-                CRBonus: researchCostBonus,
+                PEBonus: effects.get('prophecy_egg_bonus'),
+                SEBonus: effects.get('soul_egg_bonus'),
+                EVBonus: effects.get('egg_value_bonus')
+                        *(activeBirdFeed ? effects.get('boost_bonus') : 1),
+                RCBonus: effects.get('running_chicken_bonus'),
+                AEBonus: effects.get('away_earning_bonus'),
+                CRBonus: effects.get('research_cost_bonus'),
             },
         };
 
@@ -418,7 +402,7 @@ function getEBStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]>,
     {
         let cumul = basePEBonus;
         for (const stone of prophecyStoneQueue) {
-            const eff = getEffects(stone.stone)['prophecy_egg_bonus'];
+            const eff = getEffects(stone.stone).get('prophecy_egg_bonus');
             prophecyStoneMarginals.push(Math.pow(1 + eff/cumul, PECount));
             cumul += eff;
         }
@@ -429,7 +413,7 @@ function getEBStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]>,
     {
         let cumul = baseSEBonus;
         for (const stone of soulStoneQueue) {
-            const eff = getEffects(stone.stone)['soul_egg_bonus'];
+            const eff = getEffects(stone.stone).get('soul_egg_bonus');
             soulStoneMarginals.push(1 + eff/cumul);
             cumul += eff;
         }
@@ -456,7 +440,7 @@ function getEarningStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[
     {
         let cumul = basePEBonus;
         for (const stone of prophecyStoneQueue) {
-            const eff = getEffects(stone.stone)['prophecy_egg_bonus'];
+            const eff = getEffects(stone.stone).get('prophecy_egg_bonus');
             prophecyStoneMarginals.push(Math.pow(1 + eff/cumul, PECount));
             cumul += eff;
         }
@@ -467,7 +451,7 @@ function getEarningStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[
     {
         let cumul = baseSEBonus;
         for (const stone of soulStoneQueue) {
-            const eff = getEffects(stone.stone)['soul_egg_bonus'];
+            const eff = getEffects(stone.stone).get('soul_egg_bonus');
             soulStoneMarginals.push(1 + eff/cumul);
             cumul += eff;
         }
@@ -478,7 +462,7 @@ function getEarningStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[
     {
         let cumul = baseRCBonus;
         for (const stone of terraStoneQueue) {
-            const eff = getEffects(stone.stone)['running_chicken_bonus'];
+            const eff = getEffects(stone.stone).get('running_chicken_bonus');
             terraStoneMarginals.push(1 + eff/cumul);
             cumul += eff;
         }
@@ -487,21 +471,21 @@ function getEarningStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[
     const tachyonStoneQueue = stonesByFamily.get(T.StoneFamily.TACHYON_STONE) ?? [];
     const tachyonStoneMarginals: number[] = [];
     for (const stone of tachyonStoneQueue) {
-        const eff = getEffects(stone.stone)['laying_bonus'];
+        const eff = getEffects(stone.stone).get('laying_bonus');
         tachyonStoneMarginals.push(eff);
     }
 
     const shellStoneQueue = stonesByFamily.get(T.StoneFamily.SHELL_STONE) ?? [];
     const shellStoneMarginals: number[] = [];
     for (const stone of shellStoneQueue) {
-        const eff = getEffects(stone.stone)['egg_value_bonus'];
+        const eff = getEffects(stone.stone).get('egg_value_bonus');
         shellStoneMarginals.push(eff);
     }
 
     const lunarStoneQueue = stonesByFamily.get(T.StoneFamily.LUNAR_STONE) ?? [];
     const lunarStoneMarginals: number[] = [];
     for (const stone of lunarStoneQueue) {
-        const eff = getEffects(stone.stone)['away_earning_bonus'];
+        const eff = getEffects(stone.stone).get('away_earning_bonus');
         lunarStoneMarginals.push(eff);
     }
 
@@ -532,7 +516,7 @@ function getMirrorStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]
     {
         let cumul = baseRCBonus;
         for (const stone of terraStoneQueue) {
-            const eff = getEffects(stone.stone)['running_chicken_bonus'];
+            const eff = getEffects(stone.stone).get('running_chicken_bonus');
             terraStoneMarginals.push(1 + eff/cumul);
             cumul += eff;
         }
@@ -541,21 +525,21 @@ function getMirrorStoneQueue(stonesByFamily: Map<T.StoneFamily, AnnotatedStone[]
     const tachyonStoneQueue = stonesByFamily.get(T.StoneFamily.TACHYON_STONE) ?? [];
     const tachyonStoneMarginals: number[] = [];
     for (const stone of tachyonStoneQueue) {
-        const eff = getEffects(stone.stone)['laying_bonus'];
+        const eff = getEffects(stone.stone).get('laying_bonus');
         tachyonStoneMarginals.push(eff);
     }
 
     const shellStoneQueue = stonesByFamily.get(T.StoneFamily.SHELL_STONE) ?? [];
     const shellStoneMarginals: number[] = [];
     for (const stone of shellStoneQueue) {
-        const eff = getEffects(stone.stone)['egg_value_bonus'];
+        const eff = getEffects(stone.stone).get('egg_value_bonus');
         shellStoneMarginals.push(eff);
     }
 
     const lunarStoneQueue = stonesByFamily.get(T.StoneFamily.LUNAR_STONE) ?? [];
     const lunarStoneMarginals: number[] = [];
     for (const stone of lunarStoneQueue) {
-        const eff = getEffects(stone.stone)['away_earning_bonus'];
+        const eff = getEffects(stone.stone).get('away_earning_bonus');
         lunarStoneMarginals.push(eff);
     }
 

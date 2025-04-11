@@ -139,15 +139,14 @@ export function isclose(a: number, b: number, rel_tol: number = 1e-09, abs_tol: 
  */
 export function arrayCompare(a: number | number[], b: number | number[]) {
     if (typeof a === 'number' && typeof b === 'number') {
-        console.log(a, b);
-        return a - b;
+        return isclose(a, b) ? 0 : a - b;
     }
     const arrA = typeof a === 'number' ? [a] : a;
     const arrB = typeof b === 'number' ? [b] : b;
 
     const minLength = Math.min(arrA.length, arrB.length);
     for (let i = 0; i < minLength; i++) {
-        if (arrA[i] !== arrB[i]) {
+        if (!isclose(arrA[i], arrB[i])) {
             return arrA[i] - arrB[i];
         }
     }

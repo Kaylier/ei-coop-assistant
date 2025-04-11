@@ -325,7 +325,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-1",
                     "name": "Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t1c", "slot_count": 0, "value": 23977.318202, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t1c", "slot_count": 0, "value": 23977.318202, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -335,7 +335,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-2",
                     "name": "Precise Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t2c", "slot_count": 0, "value": 73924.958295, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t2c", "slot_count": 0, "value": 73924.958295, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -345,7 +345,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-3",
                     "name": "Eggsacting Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t3c", "slot_count": 0, "value": 207471.844866, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.15, "text": "+15%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t3c", "slot_count": 0, "value": 207471.844866, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.15, "text": "+15%"}]}
                     }
                 },
                 {
@@ -355,9 +355,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-4",
                     "name": "Flawless Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t4c", "slot_count": 0, "value": 637962.638942, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 0.2, "text": "+20%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_monocle_t4e", "slot_count": 2, "value": 7813133.515615, "odds_multiplier": 0.006, "effects": [{"target": "boost_bonus", "value": 0.25, "text": "+25%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_monocle_t4l", "slot_count": 3, "value": 20173384.442059, "odds_multiplier": 0.0009, "effects": [{"target": "boost_bonus", "value": 0.3, "text": "+30%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t4c", "slot_count": 0, "value": 637962.638942, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.2, "text": "+20%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_monocle_t4e", "slot_count": 2, "value": 7813133.515615, "odds_multiplier": 0.006, "effects": [{"target": "boost_bonus", "value": 1.25, "text": "+25%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_monocle_t4l", "slot_count": 3, "value": 20173384.442059, "odds_multiplier": 0.0009, "effects": [{"target": "boost_bonus", "value": 1.3, "text": "+30%"}]}
                     }
                 }
             ]
@@ -1654,33 +1654,79 @@ enum EffectType {
     UNKNOWN
 };
 
-const effectMetadata: Record<string, { type: EffectType, text: string }> = {
-    "enlightenment_earning_bonus": { "type": EffectType.MULTIPLICATIVE, "text": "enlightenment egg value" },
-    "prophecy_egg_bonus"         : { "type": EffectType.ADDITIVE      , "text": "to Egg of Prophecy bonus" },
-    "team_laying_bonus"          : { "type": EffectType.ADDITIVE      , "text": "co-op teammates' egg laying rate" },
-    "team_earning_bonus"         : { "type": EffectType.ADDITIVE      , "text": "co-op teammates' earnings" },
-    "hold_to_hatch_bonus"        : { "type": EffectType.ADDITIVE      , "text": "hold to hatch rate" },
-    "boost_bonus"                : { "type": EffectType.ADDITIVE      , "text": "boost boost" },
-    "laying_bonus"               : { "type": EffectType.MULTIPLICATIVE, "text": "egg laying rate" },
-    "soul_egg_collection_bonus"  : { "type": EffectType.MULTIPLICATIVE, "text": "Soul Egg collection rate" },
-    "internal_hatchery_bonus"    : { "type": EffectType.MULTIPLICATIVE, "text": "internal hatchery rate" },
-    "shipping_bonus"             : { "type": EffectType.MULTIPLICATIVE, "text": "shipping rate" },
-    "drone_cash_bonus"           : { "type": EffectType.MULTIPLICATIVE, "text": "chance of cash in gifts and drones" },
-    "drone_gold_bonus"           : { "type": EffectType.MULTIPLICATIVE, "text": "chance of gold in gifts and drones" },
-    "farm_value_bonus"           : { "type": EffectType.MULTIPLICATIVE, "text": "farm valuation" },
-    "drone_frequency_bonus"      : { "type": EffectType.MULTIPLICATIVE, "text": "drone frequency" },
-    "hab_capacity_bonus"         : { "type": EffectType.MULTIPLICATIVE, "text": "hab capacity" },
-    "egg_value_bonus"            : { "type": EffectType.MULTIPLICATIVE, "text": "egg value" },
-    "drone_reward_bonus"         : { "type": EffectType.MULTIPLICATIVE, "text": "drone rewards" },
-    "running_chicken_bonus"      : { "type": EffectType.ADDITIVE      , "text": "max running chicken bonus" },
-    "away_earning_bonus"         : { "type": EffectType.MULTIPLICATIVE, "text": "away earnings" },
-    "research_cost_bonus"        : { "type": EffectType.MULTIPLICATIVE, "text": "research cost" },
-    "enlightenment_effectiveness": { "type": EffectType.ADDITIVE      , "text": "effect of artifact on enlightenment" },
-    "boost_duration_bonus"       : { "type": EffectType.MULTIPLICATIVE, "text": "boost duration" },
-    "soul_egg_bonus"             : { "type": EffectType.ADDITIVE      , "text": "bonus per Soul Egg" }
-};
+const effectMetadata: Map<string, { type: EffectType, text: string }> = new Map([
+    ["enlightenment_earning_bonus", { "type": EffectType.MULTIPLICATIVE, "text": "enlightenment egg value" }],
+    ["prophecy_egg_bonus"         , { "type": EffectType.ADDITIVE      , "text": "to Egg of Prophecy bonus" }],
+    ["team_laying_bonus"          , { "type": EffectType.ADDITIVE      , "text": "co-op teammates' egg laying rate" }],
+    ["team_earning_bonus"         , { "type": EffectType.ADDITIVE      , "text": "co-op teammates' earnings" }],
+    ["hold_to_hatch_bonus"        , { "type": EffectType.ADDITIVE      , "text": "hold to hatch rate" }],
+    ["boost_bonus"                , { "type": EffectType.MULTIPLICATIVE, "text": "boost boost" }],
+    ["laying_bonus"               , { "type": EffectType.MULTIPLICATIVE, "text": "egg laying rate" }],
+    ["soul_egg_collection_bonus"  , { "type": EffectType.MULTIPLICATIVE, "text": "Soul Egg collection rate" }],
+    ["internal_hatchery_bonus"    , { "type": EffectType.MULTIPLICATIVE, "text": "internal hatchery rate" }],
+    ["shipping_bonus"             , { "type": EffectType.MULTIPLICATIVE, "text": "shipping rate" }],
+    ["drone_cash_bonus"           , { "type": EffectType.MULTIPLICATIVE, "text": "chance of cash in gifts and drones" }],
+    ["drone_gold_bonus"           , { "type": EffectType.MULTIPLICATIVE, "text": "chance of gold in gifts and drones" }],
+    ["farm_value_bonus"           , { "type": EffectType.MULTIPLICATIVE, "text": "farm valuation" }],
+    ["drone_frequency_bonus"      , { "type": EffectType.MULTIPLICATIVE, "text": "drone frequency" }],
+    ["hab_capacity_bonus"         , { "type": EffectType.MULTIPLICATIVE, "text": "hab capacity" }],
+    ["egg_value_bonus"            , { "type": EffectType.MULTIPLICATIVE, "text": "egg value" }],
+    ["drone_reward_bonus"         , { "type": EffectType.MULTIPLICATIVE, "text": "drone rewards" }],
+    ["running_chicken_bonus"      , { "type": EffectType.ADDITIVE      , "text": "max running chicken bonus" }],
+    ["away_earning_bonus"         , { "type": EffectType.MULTIPLICATIVE, "text": "away earnings" }],
+    ["research_cost_bonus"        , { "type": EffectType.MULTIPLICATIVE, "text": "research cost" }],
+    ["enlightenment_effectiveness", { "type": EffectType.ADDITIVE      , "text": "effect of artifact on enlightenment" }],
+    ["boost_duration_bonus"       , { "type": EffectType.MULTIPLICATIVE, "text": "boost duration" }],
+    ["soul_egg_bonus"             , { "type": EffectType.ADDITIVE      , "text": "bonus per Soul Egg" }],
+]);
 
 
+export class EffectMap extends Map<string, number> {
+    constructor(...effects: EffectMap[]) {
+        super();
+        this.merge(...effects);
+    }
+    get(key: string): number {
+        if (!this.has(key)) {
+            const type: EffectType = effectMetadata.get(key)?.type ?? EffectType.UNKNOWN;
+
+            let defaultValue: number;
+            switch (type) {
+                case EffectType.ADDITIVE      : defaultValue = 0; break;
+                case EffectType.MULTIPLICATIVE: defaultValue = 1; break;
+                default:
+                    console.warn(`Unknown effect type for ${key}`);
+                    defaultValue = 0;
+                    break;
+            }
+            this.set(key, defaultValue);
+            return defaultValue;
+        }
+        return super.get(key)!;
+    }
+    update(key: string, value: number, amount: number = 1): this {
+        const type: EffectType = effectMetadata.get(key)?.type ?? EffectType.UNKNOWN;
+
+        let res = this.get(key);
+        switch (type) {
+            case EffectType.ADDITIVE      : res += value*amount; break;
+            case EffectType.MULTIPLICATIVE: res *= value**amount; break;
+            default:
+                console.warn(`update: Unknown effect type for ${key}, ignoring`);
+                break;
+        }
+        this.set(key, res);
+        return this;
+    }
+    merge(...effects: EffectMap[]): this {
+        for (const effect of effects) {
+            for (const [key, value] of effect.entries()) {
+                this.update(key, value);
+            }
+        }
+        return this;
+    }
+}
 
 /**
  * Return a unique string that can be used to sort items
@@ -1714,7 +1760,7 @@ export function getDescriptions(item: T.Item | null): [string, string][] {
         return [["", "Reload your EID"], ["", "Contact the dev if the problem persists"]];
     }
     for (const effect of effects) {
-        ret.push([effect.text ?? "unknown", effectMetadata[effect.target]?.["text"] ?? "bonus"]);
+        ret.push([effect.text ?? "unknown", effectMetadata.get(effect.target)?.["text"] ?? "bonus"]);
     }
     return ret;
 }
@@ -1740,38 +1786,24 @@ export function getSlotCount(artifact: T.Artifact): number {
 /**
  * Returns a map of effects for an item
  * If the item contains stones, compound their effects, unless recursive is set to false.
- * If a certain bonus does not appear, the caller must handle the default value.
+ * If targets is given, only read these effects
  */
-export function getEffects(item: T.Item | null, recursive: boolean = true): Record<string, number> {
-    if (!item) return {};
+export function getEffects(item: T.Item | null, recursive: boolean = true, targets?: string[]): EffectMap {
+    if (!item) return new EffectMap();
     const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     // @ts-ignore
     const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
-    if (!effects) return {};
+    if (!effects) return new EffectMap();
 
-    const ret: Record<string, number> = {};
-
-    function applyEffect(target: string, value: number) {
-        const type: EffectType = effectMetadata[target]?.["type"] ?? EffectType.UNKNOWN;
-        switch (type) {
-            case EffectType.ADDITIVE:
-                ret[target] = (ret[target] ?? 0) + value;
-                break;
-            case EffectType.MULTIPLICATIVE:
-                ret[target] = (ret[target] ?? 1) * value;
-                break;
-            case EffectType.UNKNOWN:
-                console.log(`Unknown effect type '${type}' for ${target}, ignoring`);
-                break;
-        }
-    };
-
-    effects.forEach(({target, value}) => applyEffect(target, value));
+    let ret: EffectMap = new EffectMap();
+    for (const { target, value } of effects) {
+        if (targets && !targets.includes(target)) continue;
+        ret.update(target, value);
+    }
 
     if (recursive && item.category === T.ItemCategory.ARTIFACT) {
         const artifact = item as T.Artifact;
-        artifact.stones?.flatMap(stone => Object.entries(getEffects(stone)))
-                    .forEach(([target, value]) => applyEffect(target, value));
+        ret.merge(...artifact.stones.map(stone => getEffects(stone, recursive, targets)));
     }
 
     return ret;
