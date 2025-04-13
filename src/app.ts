@@ -55,12 +55,17 @@ const routes = [
     {
         path: '/earning-set',
         component: () => import('@/views/earning-set.vue'),
-        meta: { title: "Earning Set" }
+        meta: { title: "Earning" }
+    },
+    {
+        path: '/boosting-set',
+        component: () => import('@/views/boosting-set.vue'),
+        meta: { title: "Boosting" }
     },
     {
         path: '/laying-set',
         component: () => import('@/views/laying-set.vue'),
-        meta: { title: "Laying Set" }
+        meta: { title: "Laying" }
     },
     {
         path: '/error',

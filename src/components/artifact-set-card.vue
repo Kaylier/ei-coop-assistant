@@ -45,6 +45,24 @@
             </span>
             research cost
         </div>
+        <div v-if="multiplierDili && multiplierDili !== 1">
+            <span class="highlighted">
+                ×{{ formatNumber(multiplierDili) }}
+            </span>
+            boost duration
+        </div>
+        <div v-if="multiplierIHR && multiplierIHR !== 1">
+            <span class="highlighted">
+                ×{{ formatNumber(multiplierIHR) }}
+            </span>
+            IHR
+        </div>
+        <div v-if="multiplierELR && multiplierELR !== 1">
+            <span class="highlighted">
+                ×{{ formatNumber(multiplierELR) }}
+            </span>
+            laying rate
+        </div>
 
         <slot/>
     </div>
@@ -67,6 +85,9 @@ defineProps<{
     multiplierOffline?: number,
     swappedCube?: T.Artifact,
     researchCostMultiplier?: number,
+    multiplierDili?: number,
+    multiplierIHR?: number,
+    multiplierELR?: number,
 }>();
 
 </script>

@@ -32,7 +32,7 @@ const setting = defineModel<SwitchSetting<unknown>>({ required: true });
 
 defineProps<{
     id: string,
-    label: string,
+    label?: string,
     tooltip?: string,
     options: Array<{ value: unknown, label: string }>,
 }>();

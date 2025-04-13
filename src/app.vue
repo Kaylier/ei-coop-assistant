@@ -12,11 +12,15 @@
             </router-link>
             <router-link to="/earning-set" class="router-link">
                 <img src="/img/icons/earning-set.png" />
-                <span>Earning Sets</span>
+                <span>Earning</span>
+            </router-link>
+            <router-link to="/boosting-set" class="router-link">
+                <img src="/img/icons/boosting-set.png" />
+                <span>Boosting</span>
             </router-link>
             <router-link to="/laying-set" class="router-link">
                 <img src="/img/icons/laying-set.png" />
-                <span>Laying Sets</span>
+                <span>Laying</span>
             </router-link>
         </nav>
     </header>
