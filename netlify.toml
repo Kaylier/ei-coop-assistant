@@ -20,6 +20,11 @@
   status = 200
 
 [[redirects]]
+  from = "/boosting-set"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/laying-set"
   to = "/index.html"
   status = 200
