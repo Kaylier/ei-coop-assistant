@@ -42,29 +42,20 @@
         <artifact-set-card v-if="setDili"
             title="Dilithium set"
             description="Equip when starting boosts</br>to extend their durations."
-            :set="setDili.set"
+            :set="setDili"
             :userData="userData"
-            :multiplierDili="setDili.effects.get('boost_duration_bonus')"
-            :multiplierIHR="setDili.effects.get('internal_hatchery_bonus')*setDili.effects.get('boost_bonus')"
-            :multiplierELR="setDili.effects.get('laying_bonus')"
             />
         <artifact-set-card v-if="setIHR"
             title="IHR set"
             description="Equip when boosting</br>with tachyon prisms."
-            :set="setIHR.set"
+            :set="setIHR"
             :userData="userData"
-            :multiplierDili="setIHR.effects.get('boost_duration_bonus')"
-            :multiplierIHR="setIHR.effects.get('internal_hatchery_bonus')*setIHR.effects.get('boost_bonus')"
-            :multiplierELR="setIHR.effects.get('laying_bonus')"
             />
         <artifact-set-card v-if="setSlow"
             title="Slow-boost set"
             description="Equip when using large tachyons</br>to maximize your contribution."
-            :set="setSlow.set"
+            :set="setSlow"
             :userData="userData"
-            :multiplierDili="setSlow.effects.get('boost_duration_bonus')"
-            :multiplierIHR="setSlow.effects.get('internal_hatchery_bonus')*setSlow.effects.get('boost_bonus')"
-            :multiplierELR="setSlow.effects.get('laying_bonus')"
             />
 
     </section>
@@ -73,12 +64,11 @@
 <style scoped src="@/styles/earning-set.css"></style>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, shallowRef, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
 import { createSwitchSetting } from '@/scripts/settings.ts';
 import { searchDiliSet, searchIHRSet, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
-import type { ArtifactSet } from '@/scripts/solvers.ts';
 
 
 
@@ -109,10 +99,10 @@ const errorMessage = ref<string>("");
 
 
 // Data variables
-const userData = ref<T.UserData>(null); // loaded via load-eid component
-const setDili = ref<ArtifactSet|null>();
-const setIHR  = ref<ArtifactSet|null>();
-const setSlow = ref<ArtifactSet|null>();
+const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const setDili = shallowRef<T.ArtifactSet|null>();
+const setIHR  = shallowRef<T.ArtifactSet|null>();
+const setSlow = shallowRef<T.ArtifactSet|null>();
 
 
 
@@ -164,10 +154,9 @@ function updateSet() {
 
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
-        setDili.value = undefined;
-        setIHR.value = undefined;
-        setSlow.value = undefined;
-        throw e;
+        setDili.value = null;
+        setIHR.value = null;
+        setSlow.value = null;
         return;
     }
 }

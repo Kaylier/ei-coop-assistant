@@ -53,72 +53,52 @@
 
     <section v-if="!errorMessage" class="main-sets">
 
-        <template v-if="optimalEBSet?.ebMultiplier === optimalEarningSet?.ebMultiplier">
+        <template v-if="mergeEBEarningSets">
         <artifact-set-card v-if="optimalEBSet"
             title="EB/Earning set"
             description="Maximize your earnings<br/>and increase your EB<br/>to help teammates<br/>mirroring you"
-            :set="optimalEBSet.set"
             :userData="userData"
-            :baseEB="userEB"
-            :multiplierEB="optimalEBSet.ebMultiplier"
-            :multiplierOnline="onlineSetting.value ? optimalEBSet.onlineMultiplier : 0"
-            :multiplierOffline="onlineSetting.value ? 0 : optimalEBSet.offlineMultiplier"
-            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalEBSet.researchCostBonus"
-            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
+            :set="optimalEarningSet"
+            :externalCube="swapCubeSetting.value ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
-            <research-chart size="80%" :data="chartDataEB" />
+            <research-chart size="80%" :data="generateChartData(optimalEBSet)" />
         </artifact-set-card>
         </template>
         <template v-else>
         <artifact-set-card v-if="optimalEBSet"
             title="EB set"
             description="Increase your EB<br/>to help teammates<br/>mirroring you"
-            :set="optimalEBSet.set"
             :userData="userData"
-            :baseEB="userEB"
-            :multiplierEB="optimalEBSet.ebMultiplier"
-            :multiplierOnline="onlineSetting.value ? optimalEBSet.onlineMultiplier : 0"
-            :multiplierOffline="onlineSetting.value ? 0 : optimalEBSet.offlineMultiplier"
-            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalEBSet.researchCostBonus"
-            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalEBSet.researchCostBonus ? optimalCube : null"
+            :set="optimalEBSet"
+            :externalCube="swapCubeSetting.value ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
-            <research-chart size="80%" :data="chartDataEB" />
+            <research-chart size="80%" :data="generateChartData(optimalEBSet)" />
         </artifact-set-card>
 
         <artifact-set-card v-if="optimalEarningSet"
             title="Earning set"
             description="Maximize your earnings<br/>when not mirroring"
-            :set="optimalEarningSet.set"
             :userData="userData"
-            :baseEB="userEB"
-            :multiplierEB="optimalEarningSet.ebMultiplier"
-            :multiplierOnline="onlineSetting.value ? optimalEarningSet.onlineMultiplier : 0"
-            :multiplierOffline="onlineSetting.value ? 0 : optimalEarningSet.offlineMultiplier"
-            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalEarningSet.researchCostBonus"
-            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalEarningSet.researchCostBonus ? optimalCube : null"
+            :set="optimalEarningSet"
+            :externalCube="swapCubeSetting.value ? optimalCube : null"
             >
             <div v-html="graphTitleHtml"/>
-            <research-chart size="80%" :data="chartDataEarning" />
+            <research-chart size="80%" :data="generateChartData(optimalEarningSet)" />
         </artifact-set-card>
         </template>
 
         <artifact-set-card v-if="optimalMirrorSet"
             title="Mirror set"
             description="Maximize your earnings<br/>when mirroring"
-            :set="optimalMirrorSet.set"
             :userData="userData"
-            :baseEB="userEB"
-            :multiplierEB="mirrorMult"
-            :multiplierOnline="onlineSetting.value ? optimalMirrorSet.onlineMultiplier : 0"
-            :multiplierOffline="onlineSetting.value ? 0 : optimalMirrorSet.offlineMultiplier"
-            :researchCostMultiplier="swapCubeSetting.value ? optimalCubeBonus : optimalMirrorSet.researchCostBonus"
-            :swappedCube="swapCubeSetting.value && optimalCubeBonus < optimalMirrorSet.researchCostBonus ? optimalCube : null"
-            :activeMirror="mirrorMult > 1"
+            :set="optimalMirrorSet"
+            :externalCube="swapCubeSetting.value ? optimalCube : null"
+            :mirror="mirrorMult"
             >
             <div v-html="graphTitleHtml"/>
-            <research-chart size="80%" :data="chartDataMirror" />
+            <research-chart size="80%" :data="generateChartData(optimalMirrorSet, mirrorMult)" />
         </artifact-set-card>
     </section>
 </template>
@@ -126,12 +106,11 @@
 <style scoped src="@/styles/earning-set.css"></style>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { clamp, parseNumber, formatNumber } from '@/scripts/utils.ts';
+import { clamp, isclose, parseNumber, formatNumber } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
-import type { ArtifactSet } from '@/scripts/earning-set.ts';
 
 
 const MIN_EGG_VALUE = 0.01; // default base for showing egg value bonus in progress circle
@@ -190,23 +169,20 @@ const miscBonusSetting = createTextInputSetting<number>({
 
 // State variables
 const errorMessage = ref<string>("");
-const userEB = computed(() => (userData.value?.soulEggBonus ?? 0.1)*(userData.value?.soulEggs ?? 0)*
+const userEB = computed(() => 1 + (userData.value?.soulEggBonus ?? 0.1)*(userData.value?.soulEggs ?? 0)*
                               Math.pow(userData.value?.prophecyEggBonus ?? 1.05, userData.value?.prophecyEggs ?? 0));
 const mirrorMult = computed(() => Math.max(1, mirrorSetting.value/100/userEB.value));
 
 
 
 // Data variables
-const userData = ref<T.UserData>(null); // loaded via load-eid component
-const optimalEBSet = ref<ArtifactSet>();
-const optimalEarningSet = ref<ArtifactSet>();
-const optimalMirrorSet = ref<ArtifactSet>();
-const optimalCube = ref<T.Artifact | null>();
+const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const optimalEBSet = shallowRef<T.ArtifactSet|null>(null);
+const optimalEarningSet = shallowRef<T.ArtifactSet|null>(null);
+const optimalMirrorSet = shallowRef<T.ArtifactSet|null>(null);
+const optimalCube = shallowRef<T.Artifact|null>(null);
 const optimalCubeBonus = ref<number>(1);
-const chartDataEB = computed(() => generateChartData(optimalEBSet.value));
-const chartDataEarning = computed(() => generateChartData(optimalEarningSet.value));
-const chartDataMirror = computed(() => generateChartData(optimalMirrorSet.value,
-                                                         mirrorMult.value));
+const mergeEBEarningSets = ref<boolean>(false);
 
 
 
@@ -272,26 +248,53 @@ function updateSet() {
         optimalCube.value = cube;
         optimalCubeBonus.value = cubeBonus;
 
+        mergeEBEarningSets.value = isclose(getEBMultiplier(optimalEBSet.value), getEBMultiplier(optimalEarningSet.value));
+
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
-        optimalEBSet.value = undefined;
-        optimalEarningSet.value = undefined;
-        optimalMirrorSet.value = undefined;
-        optimalCube.value = undefined;
+        optimalEBSet.value = null;
+        optimalEarningSet.value = null;
+        optimalMirrorSet.value = null;
+        optimalCube.value = null;
         optimalCubeBonus.value = 1;
+        mergeEBEarningSets.value = false;
         return;
     }
 }
 
-function generateChartData(artifactSet?: ArtifactSet, mirrorMult: number = 1) {
-    let artifactBonus = onlineSetting.value ? (artifactSet?.totalOnlineMultiplier ?? 540)
-                                            : (artifactSet?.totalOfflineMultiplier ?? 1);
-    artifactBonus /= swapCubeSetting.value ? optimalCubeBonus.value : (artifactSet?.researchCostBonus ?? 1);
+function getEBMultiplier(set: T.ArtifactSet|null): number {
+    if (!set) return 1;
+    const SEBonus: number = set.effects.get('soul_egg_bonus');
+    const baseSEBonus: number = userData.value?.soulEggBonus ?? 0.1;
+    const PEBonus: number = set.effects.get('prophecy_egg_bonus');
+    const basePEBonus: number = userData.value?.prophecyEggBonus ?? 1.05;
+    const PECount: number = userData.value?.prophecyEggs ?? 0;
+    return (1 + SEBonus/baseSEBonus)*Math.pow(1 + PEBonus/basePEBonus, PECount);
+}
 
-    let min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate /s to /min
+function generateChartData(set: T.ArtifactSet, mirrorMult?: number) {
+    let artifactBonus: number = set.effects.get('egg_value_bonus')*set.effects.get('laying_bonus');
+    if (onlineSetting.value) {
+        artifactBonus *= ((userData.value?.mrcbEarningBonus ?? 5) + set.effects.get('running_chicken_bonus'));
+    } else {
+        artifactBonus *= set.effects.get('away_earning_bonus');
+    }
+    if (!mirrorMult) {
+        artifactBonus *= getEBMultiplier(set);
+    }
+    if (swapCubeSetting.value) {
+        artifactBonus /= optimalCubeBonus.value;
+    } else {
+        artifactBonus /= set.effects.get('research_cost_bonus');
+    }
+
+
+    let min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate from /s to /min
     if (!onlineSetting.value) min *= userData.value?.awayEarningBonus ?? 1;
     const max = CR_TARGET_CNST;
 
+
+    mirrorMult = mirrorMult ?? 1;
     let missing = max/(min * eggValueSetting.value * miscBonusSetting.value * artifactBonus * mirrorMult);
 
     // Evaluate time and population required (heuristic formula, we need time*population ~= missing)

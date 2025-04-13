@@ -1681,6 +1681,10 @@ const effectMetadata: Map<string, { type: EffectType, text: string }> = new Map(
 ]);
 
 
+export function getEffectDescription(key: string) {
+    return effectMetadata.get(key)?.text ?? "bonus";
+}
+
 export class EffectMap extends Map<string, number> {
     constructor(...effects: EffectMap[]) {
         super();

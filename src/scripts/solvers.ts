@@ -1,5 +1,7 @@
 /**
  * Generic artifact set solver
+ *
+ * See boosting-set.ts for examples on how to use
  */
 import * as T from '@/scripts/types.ts';
 import { arrayCompare, extractParetoFrontier, product } from '@/scripts/utils.ts';
@@ -17,10 +19,6 @@ type AnnotatedStone = {
     effects: EffectMap,
 };
 
-export type ArtifactSet = {
-    set: (T.Artifact | null)[],
-    effects: EffectMap,
-};
 
 
 /**
@@ -131,7 +129,7 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                               optionalFamilies?: T.ArtifactFamily[],
                               stoneFamilies?: T.StoneFamily[],
                               minimumScore?: number[],
-                          }): ArtifactSet | null {
+                          }): T.ArtifactSet | null {
     let { requiredFamilies, optionalFamilies, stoneFamilies } = options;
     const { minimumScore } = options;
 

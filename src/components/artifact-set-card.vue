@@ -7,61 +7,76 @@
             </label>
             {{ title }}
         </h3>
-        <inventory-frame :artifacts="set" :isSet="true" :userData="userData" :column="4" :row="1" />
-        <div v-if="multiplierEB">
-            <img v-if="activeMirror" src="/img/icons/mirror.png" alt="🔀"/>
+        <inventory-frame :artifacts="set.set" :isSet="true" :userData="userData" :column="4" :row="1" />
+
+        <div v-if="(mirror && mirror > 1) || ebMultiplier > 1">
+            <img v-if="mirror" src="/img/icons/mirror.png" alt="🔀"/>
             <span class="highlighted">
-                ×{{ formatNumber(multiplierEB) }}
+                ×{{ formatNumber(mirror ?? ebMultiplier) }}
             </span>
             EB
-            <template v-if="baseEB">
+            <template v-if="userEB">
                 (
                 <span class="highlighted">
-                    {{ formatNumber(baseEB*100) }}%
+                    {{ formatNumber(userEB*100) }}%
                 </span>
                 &rarr;
                 <span class="highlighted">
-                    {{ formatNumber(baseEB*multiplierEB*100) }}%
+                    {{ formatNumber(userEB*(mirror ?? ebMultiplier)*100) }}%
                 </span>
                 )
             </template>
         </div>
-        <div v-if="multiplierOnline">
+        <div v-if="earningMultiplier > 1 && earningMultiplier >= awayEarningMultiplier">
             <span class="highlighted">
-                ×{{ formatNumber(multiplierOnline) }}
+                ×{{ formatNumber(earningMultiplier) }}
             </span>
-            egg value
+            earnings (with rcb)
         </div>
-        <div v-if="multiplierOffline">
+        <div v-if="awayEarningMultiplier > 1 && awayEarningMultiplier > earningMultiplier">
             <span class="highlighted">
-                ×{{ formatNumber(multiplierOffline) }}
+                ×{{ formatNumber(awayEarningMultiplier) }}
             </span>
             away earnings
         </div>
-        <div v-if="researchCostMultiplier && researchCostMultiplier !== 1">
-            <img v-if="swappedCube" :src="getImageSource(swappedCube)" alt="🔀"/>
+        <div v-if="externalCubeMult < 1 || set.effects.get('research_cost_bonus') < 1">
+            <img v-if="externalCube && externalCubeMult < set.effects.get('research_cost_bonus')"
+                 :src="getImageSource(externalCube)" alt="🔀"/>
             <span class="highlighted">
-                -{{ formatNumber((1 - researchCostMultiplier)*100) }}%
+                -{{ formatNumber((1 - Math.min(externalCubeMult, set.effects.get('research_cost_bonus')))*100) }}%
             </span>
-            research cost
+            {{ getEffectDescription('research_cost_bonus') }}
         </div>
-        <div v-if="multiplierDili && multiplierDili !== 1">
+
+        <div v-if="set.effects.get('boost_duration_bonus') > 1">
             <span class="highlighted">
-                ×{{ formatNumber(multiplierDili) }}
+                ×{{ formatNumber(set.effects.get('boost_duration_bonus')) }}
             </span>
-            boost duration
+            {{ getEffectDescription('boost_duration_bonus') }}
         </div>
-        <div v-if="multiplierIHR && multiplierIHR !== 1">
+        <div v-if="set.effects.get('internal_hatchery_bonus') > 1">
             <span class="highlighted">
-                ×{{ formatNumber(multiplierIHR) }}
+                ×{{ formatNumber(set.effects.get('internal_hatchery_bonus')*set.effects.get('boost_bonus')) }}
             </span>
-            IHR
+            {{ getEffectDescription('internal_hatchery_bonus') }}
         </div>
-        <div v-if="multiplierELR && multiplierELR !== 1">
+        <div v-if="set.effects.get('hab_capacity_bonus') > 1">
             <span class="highlighted">
-                ×{{ formatNumber(multiplierELR) }}
+                ×{{ formatNumber(set.effects.get('hab_capacity_bonus')) }}
             </span>
-            laying rate
+            {{ getEffectDescription('hab_capacity_bonus') }}
+        </div>
+        <div v-if="set.effects.get('laying_bonus') > 1">
+            <span class="highlighted">
+                ×{{ formatNumber(set.effects.get('laying_bonus')) }}
+            </span>
+            {{ getEffectDescription('laying_bonus') }}
+        </div>
+        <div v-if="set.effects.get('shipping_bonus') > 1">
+            <span class="highlighted">
+                ×{{ formatNumber(set.effects.get('shipping_bonus')) }}
+            </span>
+            {{ getEffectDescription('shipping_bonus') }}
         </div>
 
         <slot/>
@@ -69,26 +84,52 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
-import { getImageSource } from '@/scripts/artifacts.ts';
+import { getImageSource, getEffectDescription, getEffects } from '@/scripts/artifacts.ts';
 
-defineProps<{
+const props = defineProps<{
     title: string,
     description?: string,
-    set: T.Item[],
     userData: T.UserData,
-    baseEB?: number,
-    activeMirror?: boolean,
-    multiplierEB?: number,
-    multiplierOnline?: number,
-    multiplierOffline?: number,
-    swappedCube?: T.Artifact,
-    researchCostMultiplier?: number,
-    multiplierDili?: number,
-    multiplierIHR?: number,
-    multiplierELR?: number,
+    set: T.ArtifactSet,
+    externalCube?: T.Artifact,
+    mirror?: number,
 }>();
+
+const userEB = computed(() => {
+    let eb: number = props.userData?.soulEggs ?? 0;
+    eb *= props.userData?.soulEggBonus ?? 0.1;
+    eb *= Math.pow(props.userData?.prophecyEggBonus ?? 1.05, props.userData?.prophecyEggs ?? 0)
+    return 1 + eb;
+});
+
+const ebMultiplier = computed(() => {
+    const SEBonus = props.set.effects.get('soul_egg_bonus');
+    const baseSEBonus = props.userData?.soulEggBonus ?? 0.1;
+    const PEBonus = props.set.effects.get('prophecy_egg_bonus');
+    const basePEBonus = props.userData?.prophecyEggBonus ?? 1.05;
+    const PECount = props.userData?.prophecyEggs ?? 0;
+    return (1 + SEBonus/baseSEBonus)*Math.pow(1 + PEBonus/basePEBonus, PECount);
+});
+
+const earningMultiplier = computed(() => {
+    const baseRCB = props.userData?.mrcbEarningBonus ?? 5;
+    return props.set.effects.get('laying_bonus')
+         * props.set.effects.get('egg_value_bonus')
+         * (baseRCB + props.set.effects.get('running_chicken_bonus'));
+});
+
+const awayEarningMultiplier = computed(() => {
+    return props.set.effects.get('laying_bonus')
+         * props.set.effects.get('egg_value_bonus')
+         * props.set.effects.get('away_earning_bonus');
+});
+
+const externalCubeMult = computed(() => {
+    return props.externalCube ? getEffects(props.externalCube).get('research_cost_bonus') : 1;
+});
 
 </script>
 

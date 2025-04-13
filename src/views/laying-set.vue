@@ -155,7 +155,7 @@
 <style scoped src="@/styles/laying-set.css"></style>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';
@@ -226,8 +226,8 @@ const baseShippingRate = computed<number>(() =>
 
 
 // Data variables
-const userData = ref<T.UserData>(null); // loaded via load-eid component
-const entries = ref<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
+const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const entries = shallowRef<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
 
 
 onMounted(async () => {
