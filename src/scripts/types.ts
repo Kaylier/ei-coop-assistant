@@ -84,6 +84,7 @@ export type Stone = BaseItem & {
     category: ItemCategory.STONE,
     family: StoneFamily,
     tier: number,
+    reslotted?: boolean,
 };
 
 export type Artifact = BaseItem & {

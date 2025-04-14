@@ -628,6 +628,7 @@ function assignStones(set: ArtifactSet<T.Artifact>, stones: T.Stone[]): T.Artifa
     for (let i = 0; i < slotsToFill.length && i < remainingStones.length; i++) {
         const { artifact, index } = slotsToFill[i];
         artifact.stones[index] = remainingStones[i];
+        artifact.stones[index].reslotted = true;
         artifact.reslotted = (artifact.reslotted ?? 0) + 1;
     }
 

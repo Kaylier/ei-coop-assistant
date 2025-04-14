@@ -21,7 +21,7 @@
         <span v-for="stone in getStones(item)" class="stone-line">
             <img :src="getImageSource(stone)" />
             <div class="description-container">
-                <span class="name">
+                <span class="name" :class="{ reslotted: stone.reslotted }">
                     {{ getName(stone) }}
                 </span>
                 <span class="description" v-for="descr in getDescriptions(stone)">
@@ -197,6 +197,10 @@ function getStamp(item: T.Item): string {
 .description-container .name {
     margin-left: 0;
     font-weight: bold;
+}
+
+.description-container .name.reslotted {
+    color: var(--warning-text-color);
 }
 
 .description-container .stamp {
