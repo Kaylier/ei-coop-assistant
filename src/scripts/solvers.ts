@@ -124,14 +124,14 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                           stones: Map<T.StoneFamily, AnnotatedStone[]>,
                           maxSlot: number,
                           scoreFn: (effect: EffectMap) => number[],
-                          options: {
+                          options?: {
                               requiredFamilies?: T.ArtifactFamily[],
                               optionalFamilies?: T.ArtifactFamily[],
                               stoneFamilies?: T.StoneFamily[],
                               minimumScore?: number[],
                           }): T.ArtifactSet | null {
-    let { requiredFamilies, optionalFamilies, stoneFamilies } = options;
-    const { minimumScore } = options;
+    let { requiredFamilies, optionalFamilies, stoneFamilies } = options ?? {};
+    const { minimumScore } = options ?? {};
 
     function itemCompare<A extends { effects: EffectMap }>(a: A, b: A) {
         return arrayCompare(scoreFn(a.effects), scoreFn(b.effects));

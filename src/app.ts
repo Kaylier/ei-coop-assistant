@@ -68,6 +68,11 @@ const routes = [
         meta: { title: "Laying" }
     },
     {
+        path: '/optimal-set',
+        component: () => import('@/views/optimal-set.vue'),
+        meta: { title: "Optimal sets" }
+    },
+    {
         path: '/error',
         name: 'error',
         component: () => import('@/views/error.vue'),

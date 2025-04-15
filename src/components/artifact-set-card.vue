@@ -27,7 +27,7 @@
                 )
             </template>
         </div>
-        <div v-if="earningMultiplier > (userData.mrcbEarningBonus ?? 5) && earningMultiplier >= awayEarningMultiplier">
+        <div v-if="earningMultiplier > (userData?.mrcbEarningBonus ?? 5) && earningMultiplier >= awayEarningMultiplier">
             <span class="highlighted">
                 ×{{ formatNumber(earningMultiplier) }}
             </span>
