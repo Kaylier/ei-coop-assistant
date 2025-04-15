@@ -60,6 +60,8 @@
             :userData="userData"
             :set="optimalEarningSet"
             :externalCube="swapCubeSetting.value ? optimalCube : null"
+            :stats="['eb', onlineSetting.value ? 'rcb' : 'away', 'cr']"
+            :substats="['rcb', 'away', 'ihr', 'hab', 'lay', 'ship']"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalEBSet)" />
@@ -72,6 +74,8 @@
             :userData="userData"
             :set="optimalEBSet"
             :externalCube="swapCubeSetting.value ? optimalCube : null"
+            :stats="['eb', onlineSetting.value ? 'rcb' : 'away', 'cr']"
+            :substats="['rcb', 'away', 'ihr', 'hab', 'lay', 'ship']"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalEBSet)" />
@@ -83,6 +87,8 @@
             :userData="userData"
             :set="optimalEarningSet"
             :externalCube="swapCubeSetting.value ? optimalCube : null"
+            :stats="['eb', onlineSetting.value ? 'rcb' : 'away', 'cr']"
+            :substats="['rcb', 'away', 'ihr', 'hab', 'lay', 'ship']"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalEarningSet)" />
@@ -96,6 +102,8 @@
             :set="optimalMirrorSet"
             :externalCube="swapCubeSetting.value ? optimalCube : null"
             :mirror="mirrorMult"
+            :stats="['eb', onlineSetting.value ? 'rcb' : 'away', 'cr']"
+            :substats="['rcb', 'away', 'ihr', 'hab', 'lay', 'ship']"
             >
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalMirrorSet, mirrorMult)" />

@@ -44,18 +44,24 @@
             description="Equip when starting boosts</br>to extend their durations."
             :set="setDili"
             :userData="userData"
+            :stats="['dili']"
+            :substats="['ihr']"
             />
         <artifact-set-card v-if="setIHR"
             title="IHR set"
             description="Equip when boosting</br>with tachyon prisms."
             :set="setIHR"
             :userData="userData"
+            :stats="['ihr']"
+            :substats="['hab', 'lay']"
             />
         <artifact-set-card v-if="setSlow"
             title="Slow-boost set"
             description="Equip when using large tachyons</br>to maximize your contribution."
             :set="setSlow"
             :userData="userData"
+            :stats="['lay', 'ihr']"
+            :substats="['hab']"
             />
 
     </section>
