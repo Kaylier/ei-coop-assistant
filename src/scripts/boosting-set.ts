@@ -9,19 +9,32 @@ export function searchDiliSet(items: T.Item[],
                               maxSlot: number,
                               includeDeflector: boolean,
                               includeShip: boolean,
-                              reslotting: boolean
+                              reslotting: boolean,
+                              allowedGusset: T.AllowedGusset
                              ): T.ArtifactSet | null {
-    const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
+    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+        if (x.category !== T.ItemCategory.ARTIFACT) return true;
+        if (x.family !== T.ArtifactFamily.GUSSET) return true;
+        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+    });
+
+    const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
         'boost_duration_bonus',
         'internal_hatchery_bonus',
         'boost_bonus',
+        'hab_capacity_bonus',
     ]);
 
     const requiredFamilies: T.ArtifactFamily[] = [];
     if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
     if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
 
-    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
+    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()]
+        .filter(x => !requiredFamilies.includes(x)
+                  && (allowedGusset !== T.AllowedGusset.NONE || x !== T.ArtifactFamily.GUSSET));
 
     function scoreFn(effects: EffectMap): number[] {
         return [
@@ -41,9 +54,16 @@ export function searchIHRSet(items: T.Item[],
                              maxSlot: number,
                              includeDeflector: boolean,
                              includeShip: boolean,
-                             reslotting: boolean
+                             reslotting: boolean,
+                             allowedGusset: T.AllowedGusset
                             ): T.ArtifactSet | null {
-    const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
+    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+        if (x.category !== T.ItemCategory.ARTIFACT) return true;
+        if (x.family !== T.ArtifactFamily.GUSSET) return true;
+        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+    });
+
+    const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
         'team_laying_bonus',
         'team_earning_bonus',
         'internal_hatchery_bonus',
@@ -58,6 +78,9 @@ export function searchIHRSet(items: T.Item[],
     const requiredFamilies: T.ArtifactFamily[] = [];
     if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
     if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
 
     const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
 
@@ -81,9 +104,16 @@ export function searchSlowIHRSet(items: T.Item[],
                                  maxSlot: number,
                                  includeDeflector: boolean,
                                  includeShip: boolean,
-                                 reslotting: boolean
+                                 reslotting: boolean,
+                                 allowedGusset: T.AllowedGusset
                                 ): T.ArtifactSet | null {
-    const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
+    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+        if (x.category !== T.ItemCategory.ARTIFACT) return true;
+        if (x.family !== T.ArtifactFamily.GUSSET) return true;
+        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+    });
+
+    const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
         'team_laying_bonus',
         'team_earning_bonus',
         'internal_hatchery_bonus',
@@ -106,6 +136,9 @@ export function searchSlowIHRSet(items: T.Item[],
     const requiredFamilies: T.ArtifactFamily[] = [];
     if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
     if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
 
     const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
 
