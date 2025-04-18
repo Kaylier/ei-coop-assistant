@@ -14,7 +14,7 @@
             <div id="boost-info">
                 <div v-for="boost in props.boosts" class="boost">
                     <img v-for="idx in boost.amount ?? 1" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
-                    {{ boostMetadata.get(boost.id)?.text ?? 'unknown boost' }}
+                    {{ boostMetadata[boost.id].text ?? 'unknown boost' }}
                 </div>
             </div>
         </div>
@@ -29,12 +29,13 @@
 </template>
 
 <script setup lang="ts">
+import * as T from '@/scripts/types.ts';
 import { computed } from 'vue';
 import { formatNumber, formatTime } from '@/scripts/utils.ts';
 
 
 const props = defineProps<{
-    boosts: { id: string, amount?: number }[],
+    boosts: { id: T.Boost, amount?: number }[],
     ihr: number,
     dili: number,
     maxPopulation: number,
@@ -45,29 +46,41 @@ enum BoostType {
     BOOST,
 };
 
-const boostMetadata = new Map([
-    ["tachyon_10x30"  , { type: BoostType.TACHYON, value:   10, duration:  30, tokens: 1, ge:   200, text: "10× for 30min" }],
-    ["tachyon_10x10"  , { type: BoostType.TACHYON, value:   10, duration:  10, tokens: 0, ge:    50, text: "10× for 10min" }],
-    ["tachyon_10x240" , { type: BoostType.TACHYON, value:   10, duration: 240, tokens: 0, ge:   500, text: "10× for 4hr" }],
-    ["tachyon_100x20" , { type: BoostType.TACHYON, value:  100, duration:  20, tokens: 3, ge:  1000, text: "100× for 20min" }],
-    ["tachyon_100x10" , { type: BoostType.TACHYON, value:  100, duration:  10, tokens: 2, ge:  1000, text: "100× for 10min" }],
-    ["tachyon_100x120", { type: BoostType.TACHYON, value:  100, duration: 120, tokens: 2, ge:  5000, text: "100× for 2hr" }],
-    ["tachyon_1000x10", { type: BoostType.TACHYON, value: 1000, duration:  10, tokens: 4, ge: 12000, text: "1000× for 10min" }],
-    ["tachyon_1000x60", { type: BoostType.TACHYON, value: 1000, duration:  60, tokens: 4, ge: 25000, text: "1000× for 1hr" }],
-    ["boost_2x30"     , { type: BoostType.BOOST  , value:    2, duration:  30, tokens: 1, ge:  1000, text: "2× for 30min" }],
-    ["boost_10x10"    , { type: BoostType.BOOST  , value:   10, duration:  10, tokens: 4, ge:  8000, text: "10× for 10min" }],
-    ["boost_5x60"     , { type: BoostType.BOOST  , value:    5, duration:  60, tokens: 3, ge: 15000, text: "5× for 1hr" }],
-    ["boost_50x10"    , { type: BoostType.BOOST  , value:   50, duration:  10, tokens: 8, ge: 50000, text: "50× for 10min" }],
-]);
+const boostMetadata = {
+    [T.Boost.TACHYON_10X30  ]: {
+        type: BoostType.TACHYON, value:   10, duration:  30, tokens: 1, ge:   200, text: "10× for 30min" },
+    [T.Boost.TACHYON_10X10  ]: {
+        type: BoostType.TACHYON, value:   10, duration:  10, tokens: 0, ge:    50, text: "10× for 10min" },
+    [T.Boost.TACHYON_10X240 ]: {
+        type: BoostType.TACHYON, value:   10, duration: 240, tokens: 0, ge:   500, text: "10× for 4hr" },
+    [T.Boost.TACHYON_100X20 ]: {
+        type: BoostType.TACHYON, value:  100, duration:  20, tokens: 3, ge:  1000, text: "100× for 20min" },
+    [T.Boost.TACHYON_100X10 ]: {
+        type: BoostType.TACHYON, value:  100, duration:  10, tokens: 2, ge:  1000, text: "100× for 10min" },
+    [T.Boost.TACHYON_100X120]: {
+        type: BoostType.TACHYON, value:  100, duration: 120, tokens: 2, ge:  5000, text: "100× for 2hr" },
+    [T.Boost.TACHYON_1000X10]: {
+        type: BoostType.TACHYON, value: 1000, duration:  10, tokens: 4, ge: 12000, text: "1000× for 10min" },
+    [T.Boost.TACHYON_1000X60]: {
+        type: BoostType.TACHYON, value: 1000, duration:  60, tokens: 4, ge: 25000, text: "1000× for 1hr" },
+    [T.Boost.BOOST_2X30     ]: {
+        type: BoostType.BOOST  , value:    2, duration:  30, tokens: 1, ge:  1000, text: "2× for 30min" },
+    [T.Boost.BOOST_10X10    ]: {
+        type: BoostType.BOOST  , value:   10, duration:  10, tokens: 4, ge:  8000, text: "10× for 10min" },
+    [T.Boost.BOOST_5X60     ]: {
+        type: BoostType.BOOST  , value:    5, duration:  60, tokens: 3, ge: 15000, text: "5× for 1hr" },
+    [T.Boost.BOOST_50X10    ]: {
+        type: BoostType.BOOST  , value:   50, duration:  10, tokens: 8, ge: 50000, text: "50× for 10min" },
+};
 
-const tokenCost = computed(() => props.boosts.reduce((tot, cur) => tot + boostMetadata.get(cur.id).tokens*(cur.amount ?? 1), 0));
-const geCost = computed(() => props.boosts.reduce((tot, cur) => tot + boostMetadata.get(cur.id).ge*(cur.amount ?? 1), 0));
+const tokenCost = computed(() => props.boosts.reduce((tot, cur) => tot + boostMetadata[cur.id].tokens*(cur.amount ?? 1), 0));
+const geCost = computed(() => props.boosts.reduce((tot, cur) => tot + boostMetadata[cur.id].ge*(cur.amount ?? 1), 0));
 
 const milestones = computed(() => {
     // Find the times when the boost state changes
-    const times = [];
+    const times: number[] = [];
     for (const boost of props.boosts) {
-        const duration = boostMetadata.get(boost.id).duration;
+        const duration = boostMetadata[boost.id].duration;
         times.includes(duration) || times.push(duration);
     }
     times.sort((a,b) => a-b);
@@ -80,7 +93,7 @@ const milestones = computed(() => {
         let totalTachyon = 0;
         let totalBoost = 0;
         for (const boost of props.boosts) {
-            const boostData = boostMetadata.get(boost.id);
+            const boostData = boostMetadata[boost.id];
             if (boostData.duration < time) continue;
 
             if (boostData.type === BoostType.TACHYON) {

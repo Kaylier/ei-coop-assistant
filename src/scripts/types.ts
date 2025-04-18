@@ -151,3 +151,18 @@ export enum AllowedGusset {
     T4L = "artifact-gusset-4-3",
 };
 
+export enum Boost {
+    TACHYON_10X30 = "tachyon_10x30",
+    TACHYON_10X10 = "tachyon_10x10",
+    TACHYON_10X240 = "tachyon_10x240",
+    TACHYON_100X20 = "tachyon_100x20",
+    TACHYON_100X10 = "tachyon_100x10",
+    TACHYON_100X120 = "tachyon_100x120",
+    TACHYON_1000X10 = "tachyon_1000x10",
+    TACHYON_1000X60 = "tachyon_1000x60",
+    BOOST_2X30 = "boost_2x30",
+    BOOST_10X10 = "boost_10x10",
+    BOOST_5X60 = "boost_5x60",
+    BOOST_50X10 = "boost_50x10",
+};
+

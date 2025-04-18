@@ -103,25 +103,25 @@
     <section v-if="!errorMessage" class="boost-sets">
 
         <boost-set-card
-            :boosts="[{ id: 'tachyon_100x120', amount: 2 }]"
+            :boosts="[{ id: T.Boost.TACHYON_100X120, amount: 2 }]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
-            :boosts="[{ id: 'tachyon_100x120' }, { id: 'boost_2x30' , amount: 3}]"
+            :boosts="[{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30 , amount: 3}]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
-            :boosts="[{ id: 'tachyon_1000x60' }]"
+            :boosts="[{ id: T.Boost.TACHYON_1000X60 }]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
-            :boosts="[{ id: 'tachyon_1000x60' }, { id: 'boost_2x30'}]"
+            :boosts="[{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30}]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
-            :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_2x30'}]"
+            :boosts="[{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30}]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
-            :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_2x30', amount: 2}]"
+            :boosts="[{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 2}]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
-            :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_10x10'}]"
+            :boosts="[{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_10X10}]"
             :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
 
     </section>
@@ -193,19 +193,20 @@ const setIHR  = shallowRef<T.ArtifactSet|null>();
 const setSlow = shallowRef<T.ArtifactSet|null>();
 const habCapacity = computed<number>(() => {
     if (capacitySetting.value) return capacitySetting.value;
-    const caps = new Map([
-        [T.AllowedGusset.NONE, 11340000000*1.00],
-        [T.AllowedGusset.T1C , 11340000000*1.05],
-        [T.AllowedGusset.T2C , 11340000000*1.10],
-        [T.AllowedGusset.T2E , 11340000000*1.12],
-        [T.AllowedGusset.T3C , 11340000000*1.15],
-        [T.AllowedGusset.T3R , 11340000000*1.16],
-        [T.AllowedGusset.T4C , 11340000000*1.20],
-        [T.AllowedGusset.T4E , 11340000000*1.22],
-        [T.AllowedGusset.T4L , 11340000000*1.25],
-    ]);
-    return caps.get(allowedGussetSetting.value) ??
-           caps.get(allowedGussetChoices.value.at(-1)) ??
+    const caps = {
+        [T.AllowedGusset.ANY ]: null,
+        [T.AllowedGusset.NONE]: 11340000000*1.00,
+        [T.AllowedGusset.T1C ]: 11340000000*1.05,
+        [T.AllowedGusset.T2C ]: 11340000000*1.10,
+        [T.AllowedGusset.T2E ]: 11340000000*1.12,
+        [T.AllowedGusset.T3C ]: 11340000000*1.15,
+        [T.AllowedGusset.T3R ]: 11340000000*1.16,
+        [T.AllowedGusset.T4C ]: 11340000000*1.20,
+        [T.AllowedGusset.T4E ]: 11340000000*1.22,
+        [T.AllowedGusset.T4L ]: 11340000000*1.25,
+    };
+    return caps[allowedGussetSetting.value] ??
+           caps[allowedGussetChoices.value.at(-1)!] ?? // ANY is guaranteed to always be in allowedGussetChoices
            DEFAULT_HAB_CAPACITY;
 });
 
