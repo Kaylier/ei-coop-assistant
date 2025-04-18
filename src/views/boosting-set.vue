@@ -52,11 +52,11 @@
         </setting-switch>
         <setting-switch v-if="showExtraSettings || showExtraSettingOnline"
                         id="online"
-                        v-model="onlineSetting"
+                        v-model="ihcSetting"
                         tooltip="Enables Internal Hatchery Calm if offline"
                         :options="[
-                                  { value: false, label: 'offline' },
-                                  { value: true, label: 'online' },
+                                  { value: true, label: 'offline' },
+                                  { value: false, label: 'online' },
                                   ]"/>
         <setting-text v-if="showExtraSettings || showExtraSettingCapacity"
                       id="hab-capacity"
@@ -157,9 +157,9 @@ const allowedGussetSetting = createSwitchSetting<T.AllowedGusset>({
     localStorageKey: 'allowed-gusset',
     defaultValue: T.AllowedGusset.ANY,
 });
-const onlineSetting = createSwitchSetting<boolean>({
-    localStorageKey: 'online',
-    defaultValue: false,
+const ihcSetting = createSwitchSetting<boolean>({
+    localStorageKey: 'ihc-enabled',
+    defaultValue: true,
 });
 const capacitySetting = createTextInputSetting<number|null>({
     localStorageKey: 'hab-capacity',
@@ -179,7 +179,7 @@ const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_bonus') ?? 1);
 const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440)*
-                               (onlineSetting.value ? 1 : userData.value?.awayIHBonus ?? 1));
+                               (ihcSetting.value ? userData.value?.awayIHBonus ?? 1 : 1));
 const ihrBonus = computed(() => (setIHR.value?.effects.get('internal_hatchery_bonus') ?? 1)*
                                 (setIHR.value?.effects.get('boost_bonus') ?? 1));
 const slowihrBonus = computed(() => (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
@@ -213,7 +213,7 @@ const habCapacity = computed<number>(() => {
 
 onMounted(async () => {
     showExtraSettingGusset.value = allowedGussetSetting.value !== T.AllowedGusset.ANY;
-    showExtraSettingOnline.value = onlineSetting.value !== false;
+    showExtraSettingOnline.value = ihcSetting.value !== true;
     showExtraSettingCapacity.value = !!capacitySetting.text;
 });
 
@@ -231,7 +231,7 @@ watch(deflectorSetting, updateSet);
 watch(shipSetting, updateSet);
 watch(reslottingSetting, updateSet);
 watch(allowedGussetSetting, updateSet);
-watch(onlineSetting, updateSet);
+watch(ihcSetting, updateSet);
 
 
 /**
