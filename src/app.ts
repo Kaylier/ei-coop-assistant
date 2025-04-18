@@ -29,6 +29,7 @@ import ArtifactSetCard from '@/components/artifact-set-card.vue';
 import ResearchChart from '@/components/earning-set/research-chart.vue';
 import SettingText from '@/components/setting-text.vue';
 import SettingSwitch from '@/components/setting-switch.vue';
+import BoostSetCard from '@/components/boosting-set/boost-set-card.vue';
 
 app.component('item-tooltip', ItemTooltip);
 app.component('load-eid', LoadEid);
@@ -38,6 +39,7 @@ app.component('artifact-set-card', ArtifactSetCard);
 app.component('research-chart', ResearchChart);
 app.component('setting-text', SettingText);
 app.component('setting-switch', SettingSwitch);
+app.component('boost-set-card', BoostSetCard);
 
 
 

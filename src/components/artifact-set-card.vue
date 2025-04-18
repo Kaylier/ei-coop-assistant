@@ -35,12 +35,12 @@ import { formatNumber } from '@/scripts/utils.ts';
 import { getImageSource, getEffectDescription, getEffects } from '@/scripts/artifacts.ts';
 
 type Entry = {
-        img?: string,
-        text: string,
-        valueUpd: string,
-        valueOld?: string,
-        valueNew?: string,
-        relevant?: boolean,
+    img?: string,
+    text: string,
+    valueUpd: string,
+    valueOld?: string,
+    valueNew?: string,
+    relevant?: boolean,
 };
 
 const props = defineProps<{

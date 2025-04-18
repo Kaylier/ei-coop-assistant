@@ -65,12 +65,65 @@
             />
 
     </section>
+
+    <section v-if="!errorMessage" class="boost-sets">
+
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_100x120', amount: 2 }]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_100x120' }, { id: 'boost_2x30' , amount: 3}]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_1000x60' }]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_1000x60' }, { id: 'boost_2x30'}]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_1000x60' }, { id: 'boost_2x30', amount: 2}]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_2x30'}]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_2x30', amount: 2}]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+        <boost-set-card
+            :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_10x10'}]"
+            :ihr="ihrBonus"
+            :dili="diliBonus"
+            :maxPopulation="habCapacity"
+            />
+
+    </section>
 </template>
 
-<style scoped src="@/styles/earning-set.css"></style>
+<style scoped src="@/styles/boosting-set.css"></style>
 
 <script setup lang="ts">
-import { ref, shallowRef, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
 import { createSwitchSetting } from '@/scripts/settings.ts';
@@ -101,7 +154,12 @@ const onlineSetting = createSwitchSetting<boolean>({
 
 // State variables
 const errorMessage = ref<string>("");
-
+const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_bonus') ?? 1);
+const ihrBonus = computed(() => 7440*4*3*(setIHR.value?.effects.get('internal_hatchery_bonus') ?? 1)*
+                                (setIHR.value?.effects.get('boost_bonus') ?? 1));
+const slowihrBonus = computed(() => (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
+                                    (setSlow.value?.effects.get('boost_bonus') ?? 1));
+// TODO: fetch IHC and baseIHR from userData
 
 
 // Data variables
@@ -109,7 +167,7 @@ const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
 const setDili = shallowRef<T.ArtifactSet|null>();
 const setIHR  = shallowRef<T.ArtifactSet|null>();
 const setSlow = shallowRef<T.ArtifactSet|null>();
-
+const habCapacity = ref<number>(14.175e9); // TODO use setting, default to best gusset
 
 
 // Watchers for synchronisation between setting variables, local storage and state variables
