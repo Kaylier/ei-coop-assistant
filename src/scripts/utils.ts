@@ -116,6 +116,46 @@ export function formatRate(x: number, timeUnit: string = 'h'): string {
 
 
 /**
+ * Format a time to a game format string
+ * If no time unit is specified, uses seconds
+ */
+export function formatTime(x: number, timeUnit: string = 's'): string {
+    x = Number(x);
+    switch (timeUnit) {
+        case 's':
+            break;
+        case 'm':
+            x *= 60;
+            break;
+        case 'h':
+            x *= 3600;
+            break;
+        default:
+            throw new Error(`invalid unit: '${timeUnit}'`);
+    }
+    if (x < 60*60) {
+        const minutes = Math.floor(x/60);
+        const seconds = Math.floor(x%60);
+        return `${minutes}min ${seconds}s`;
+    }
+    x /= 60;
+    if (x < 24*60) {
+        const hours = Math.floor(x/60);
+        const minutes = Math.floor(x%60);
+        return `${hours}hr${hours > 1 ? 's' : ''} ${minutes}min`;
+    }
+    x /= 60;
+    if (x < 7*24) {
+        const days = Math.floor(x/24);
+        const hours = Math.floor(x%24);
+        return `${days}day${days > 1 ? 's' : ''} ${hours}hr${hours > 1 ? 's' : ''}`;
+    }
+    const days = Math.floor(x/24);
+    return `${days}day${days > 1 ? 's' : ''}`;
+}
+
+
+/**
  */
 export function clamp(x: number, min: number, max: number): number {
     return Math.max(Math.min(x, max), min);

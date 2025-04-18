@@ -104,52 +104,25 @@
 
         <boost-set-card
             :boosts="[{ id: 'tachyon_100x120', amount: 2 }]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
             :boosts="[{ id: 'tachyon_100x120' }, { id: 'boost_2x30' , amount: 3}]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
             :boosts="[{ id: 'tachyon_1000x60' }]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
             :boosts="[{ id: 'tachyon_1000x60' }, { id: 'boost_2x30'}]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
-        <boost-set-card
-            :boosts="[{ id: 'tachyon_1000x60' }, { id: 'boost_2x30', amount: 2}]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
             :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_2x30'}]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
             :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_2x30', amount: 2}]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
         <boost-set-card
             :boosts="[{ id: 'tachyon_1000x10' }, { id: 'boost_10x10'}]"
-            :ihr="baseIHR*ihrBonus"
-            :dili="diliBonus"
-            :maxPopulation="habCapacity"
-            />
+            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
 
     </section>
 </template>

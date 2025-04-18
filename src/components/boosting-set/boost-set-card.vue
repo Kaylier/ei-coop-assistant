@@ -20,7 +20,9 @@
         </div>
         <div id="bar-frame">
             <div id="bar">
-                <div v-for="s in barStyles" class="bar-fill" :style="s"/>
+                <div v-for="{ style, tooltip} in barData" tabindex="0" class="bar-fill tooltip-icon" :style="style">
+                    <span class="tooltip-text" v-html="tooltip"/>
+                </div>
             </div>
         </div>
     </div>
@@ -28,7 +30,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { formatNumber } from '@/scripts/utils.ts';
+import { formatNumber, formatTime } from '@/scripts/utils.ts';
 
 
 const props = defineProps<{
@@ -87,24 +89,39 @@ const milestones = computed(() => {
                 totalBoost += boostData.value*(boost.amount ?? 1);
             }
         }
-        population += (totalTachyon || 1)*(totalBoost || 1)*props.ihr*props.dili*(time - prevTime);
+        const rate = (totalTachyon || 1)*(totalBoost || 1)*props.ihr*props.dili;
+        const increase = rate*(time - prevTime);
+
+        if (population < props.maxPopulation && population + increase >= props.maxPopulation) {
+            // Insert a milestone for maxed habs
+            const filledTime = (props.maxPopulation - population)/rate;
+            ret.push({ population: props.maxPopulation, time: (prevTime + filledTime)*props.dili });
+        }
+
+        population += increase;
         prevTime = time;
-        ret.push({ population, time });
+        ret.push({ population, time: time*props.dili });
     }
 
     return ret;
 });
 
-const barStyles = computed(() => {
+const barData = computed(() => {
     const ret = [];
 
     let opacity = 1;
     for (const { population, time } of milestones.value) {
         if (population < props.maxPopulation) {
-            ret.push({ width: `${100*population/props.maxPopulation}%`, opacity });
-            opacity *= 0.6;
+            ret.push({
+                style: {width: `${100*population/props.maxPopulation}%`, opacity },
+                tooltip: `${formatNumber(population)} chickens after ${formatTime(time, 'm')}`,
+                });
+            //opacity *= 0.6;
         } else {
-            ret.push({ width: `100%`, opacity });
+            ret.push({
+                style: { width: `100%`, opacity },
+                tooltip: `Filled after ${formatTime(time, 'm')}`,
+                });
             break;
         }
     }
@@ -188,6 +205,11 @@ const barStyles = computed(() => {
 img {
     height: 0.75em;
     transform: scale(1.5);
+}
+
+.tooltip-text {
+    transform: translate(-50%, 50%);
+    opacity: 1;
 }
 
 </style>
