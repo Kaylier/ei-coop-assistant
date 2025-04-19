@@ -13,7 +13,7 @@
             </div>
             <div id="boost-info">
                 <div v-for="boost in props.boosts" class="boost">
-                    <img v-for="idx in boost.amount ?? 1" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
+                    <img v-for="idx in (boost.amount ?? 1)*(boost.streamlined ?? 1)" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
                     {{ boostMetadata[boost.id].text ?? 'unknown boost' }}
                 </div>
             </div>
@@ -42,7 +42,7 @@ import { formatNumber, formatTime } from '@/scripts/utils.ts';
 
 
 const props = defineProps<{
-    boosts: { id: T.Boost, amount?: number }[],
+    boosts: { id: T.Boost, amount?: number, streamlined?: number }[],
     ihr: number,
     dili: number,
     maxPopulation: number,
@@ -80,15 +80,30 @@ const boostMetadata = {
         type: BoostType.BOOST  , value:   50, duration:  10, tokens: 8, ge: 50000, text: "50× for 10min" },
 };
 
-const tokenCost = computed(() => props.boosts.reduce((tot, cur) => tot + boostMetadata[cur.id].tokens*(cur.amount ?? 1), 0));
-const geCost = computed(() => props.boosts.reduce((tot, cur) => tot + boostMetadata[cur.id].ge*(cur.amount ?? 1), 0));
+const tokenCost = computed(() => {
+    let tot = 0;
+    for (const b of props.boosts) {
+        tot += boostMetadata[b.id].tokens*(b.amount ?? 1)*(b.streamlined ?? 1);
+    }
+    return tot;
+});
+
+const geCost = computed(() => {
+    let tot = 0;
+    for (const b of props.boosts) {
+        tot += boostMetadata[b.id].ge*(b.amount ?? 1)*(b.streamlined ?? 1);
+    }
+    return tot;
+});
 
 const milestones = computed(() => {
     // Find the times when the boost state changes
     const times: number[] = [];
     for (const boost of props.boosts) {
         const duration = boostMetadata[boost.id].duration;
-        times.includes(duration) || times.push(duration);
+        for (let i = 1; i <= (boost.streamlined ?? 1); i++) {
+            times.includes(duration*i) || times.push(duration*i);
+        }
     }
     times.sort((a,b) => a-b);
 
@@ -101,7 +116,7 @@ const milestones = computed(() => {
         let totalBoost = 0;
         for (const boost of props.boosts) {
             const boostData = boostMetadata[boost.id];
-            if (boostData.duration < time) continue;
+            if (boostData.duration*(boost.streamlined ?? 1) < time) continue;
 
             if (boostData.type === BoostType.TACHYON) {
                 totalTachyon += boostData.value*(boost.amount ?? 1);
@@ -116,8 +131,8 @@ const milestones = computed(() => {
 
         if (population < props.maxPopulation && population + increase >= props.maxPopulation) {
             // Insert a milestone for maxed habs
-            const filledTime = (props.maxPopulation - population)/rate;
-            ret.push({ population: props.maxPopulation, time: (prevTime + filledTime)*props.dili });
+            const filledTime = prevTime + (props.maxPopulation - population)/rate;
+            ret.push({ population: props.maxPopulation, time: filledTime*props.dili });
         }
 
         population += increase;
@@ -131,17 +146,15 @@ const milestones = computed(() => {
 const barData = computed(() => {
     const ret = [];
 
-    let opacity = 1;
     for (const { population, time } of milestones.value) {
         if (population < props.maxPopulation) {
             ret.push({
-                style: {width: `${100*population/props.maxPopulation}%`, opacity },
+                style: {width: `${100*population/props.maxPopulation}%` },
                 tag: formatTime(time, 'm'),
                 });
-            //opacity *= 0.6;
         } else {
             ret.push({
-                style: { width: `100%`, opacity },
+                style: { width: `100%` },
                 tag: formatTime(time, 'm'),
                 });
             break;
@@ -258,6 +271,7 @@ img {
     box-shadow: .0em 0 .4em #0008;
     background: var(--bg-alt-color);
     opacity: 0.9;
+    text-wrap: nowrap;
 }
 
 .time-tag:hover,

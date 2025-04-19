@@ -157,3 +157,51 @@ export function searchSlowIHRSet(items: T.Item[],
 }
 
 
+export const boostSets: {
+    id: string,
+    boosts: { id: T.Boost, amount?: number, streamlined?: number }[],
+    freePermit?: boolean,
+    proPermit?: boolean,
+}[] = [
+    {
+        id: "tach_100x120x2",
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }],
+    },
+    {
+        id: "tach_100x120+boost_2x30x3",
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+    },
+    {
+        id: "tach_100x120+boost_2x30#3",
+        freePermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 3 }],
+    },
+    {
+        id: "tach_1000x60",
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }],
+    },
+    {
+        id: "tach_1000x60+boost_2x30",
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30}],
+    },
+    {
+        id: "tach_1000x10+boost_2x30",
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30}],
+    },
+    {
+        id: "tach_1000x10+boost_2x30*2",
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 2}],
+    },
+    {
+        id: "tach_1000x10+boost_10x10",
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_10X10}],
+    },
+];
+

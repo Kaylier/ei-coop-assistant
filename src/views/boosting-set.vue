@@ -102,27 +102,12 @@
 
     <section v-if="!errorMessage" class="boost-sets">
 
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_100X120, amount: 2 }]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30 , amount: 3}]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_1000X60 }]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30}]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30}]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 2}]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
-        <boost-set-card
-            :boosts="[{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_10X10}]"
-            :ihr="baseIHR*ihrBonus" :dili="diliBonus" :maxPopulation="habCapacity"/>
+        <boost-set-card v-for="{ id, boosts } in boostSets.filter(x => userData?.proPermit ? x.proPermit : x.freePermit)"
+                        v-key="id"
+                        :boosts="boosts"
+                        :ihr="baseIHR*ihrBonus"
+                        :dili="diliBonus"
+                        :maxPopulation="habCapacity"/>
 
     </section>
 </template>
@@ -134,7 +119,7 @@ import { ref, shallowRef, computed, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber, parseNumber } from '@/scripts/utils.ts';
 import { createSwitchSetting, createTextInputSetting } from '@/scripts/settings.ts';
-import { searchDiliSet, searchIHRSet, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
+import { boostSets, searchDiliSet, searchIHRSet, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
 
@@ -182,8 +167,6 @@ const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440)*
                                (ihcSetting.value ? userData.value?.awayIHBonus ?? 1 : 1));
 const ihrBonus = computed(() => (setIHR.value?.effects.get('internal_hatchery_bonus') ?? 1)*
                                 (setIHR.value?.effects.get('boost_bonus') ?? 1));
-const slowihrBonus = computed(() => (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
-                                    (setSlow.value?.effects.get('boost_bonus') ?? 1));
 
 
 // Data variables
@@ -309,5 +292,6 @@ function getGussetClass(gusset: string) {
     const [category,family,tier,rarity] = gusset.split('-');
     return ["common", "rare", "epic", "legendary"][Number(rarity)];
 }
+
 
 </script>
