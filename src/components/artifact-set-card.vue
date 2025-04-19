@@ -189,9 +189,10 @@ const awaySoulEggMultiplier = computed(() => {
     gap: 0.3em;
     padding: 0.3em;
     background-color: #333333;
-    border-radius: 1em;
+    border-radius: 2em 2em 1em 1em;
     font: 1.1em always-together;
     width: min(16em, 90vw);
+    box-shadow: 0 0 .5em var(--bg-hover-color) inset;
 }
 
 .card-frame h3 {

@@ -142,16 +142,16 @@ export function formatTime(x: number, timeUnit: string = 's'): string {
     if (x < 24*60) {
         const hours = Math.floor(x/60);
         const minutes = Math.floor(x%60);
-        return `${hours}hr${hours > 1 ? 's' : ''} ${minutes}min`;
+        return `${hours}hr ${minutes}min`;
     }
     x /= 60;
     if (x < 7*24) {
         const days = Math.floor(x/24);
         const hours = Math.floor(x%24);
-        return `${days}day${days > 1 ? 's' : ''} ${hours}hr${hours > 1 ? 's' : ''}`;
+        return `${days}d ${hours}hr`;
     }
     const days = Math.floor(x/24);
-    return `${days}day${days > 1 ? 's' : ''}`;
+    return `${days}d`;
 }
 
 

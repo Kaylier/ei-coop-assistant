@@ -20,10 +20,17 @@
         </div>
         <div id="bar-frame">
             <div id="bar">
-                <div v-for="{ style, tooltip} in barData" tabindex="0" class="bar-fill tooltip-icon" :style="style">
-                    <span class="tooltip-text" v-html="tooltip"/>
+                <div v-for="{ style, tag} in barData" class="bar-fill" :style="style">
+                    <span class="time-tag" v-html="tag"/>
                 </div>
             </div>
+        </div>
+        <div id="details-frame">
+            <span v-for="{ population, time } in milestones">
+                <span class="highlighted">{{ formatNumber(population) }}</span>
+                chickens after
+                <span class="highlighted">{{ formatTime(time, 'm') }}</span>
+            </span>
         </div>
     </div>
 </template>
@@ -102,6 +109,8 @@ const milestones = computed(() => {
                 totalBoost += boostData.value*(boost.amount ?? 1);
             }
         }
+        if (!totalTachyon) continue
+
         const rate = (totalTachyon || 1)*(totalBoost || 1)*props.ihr*props.dili;
         const increase = rate*(time - prevTime);
 
@@ -127,13 +136,13 @@ const barData = computed(() => {
         if (population < props.maxPopulation) {
             ret.push({
                 style: {width: `${100*population/props.maxPopulation}%`, opacity },
-                tooltip: `${formatNumber(population)} chickens after ${formatTime(time, 'm')}`,
+                tag: formatTime(time, 'm'),
                 });
             //opacity *= 0.6;
         } else {
             ret.push({
                 style: { width: `100%`, opacity },
-                tooltip: `Filled after ${formatTime(time, 'm')}`,
+                tag: formatTime(time, 'm'),
                 });
             break;
         }
@@ -147,11 +156,18 @@ const barData = computed(() => {
 <style scoped>
 
 #card-frame {
+    position: relative;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     border-radius: 1em;
     font: 1.1em always-together;
+}
+
+#header-frame:hover ~ #details-frame,
+#header-frame:active ~ #details-frame,
+#header-frame:focus ~ #details-frame {
+    display: flex;
 }
 
 #header-frame {
@@ -161,6 +177,19 @@ const barData = computed(() => {
     padding: 0.5em 1em 0 1em;
     background-color: #333333;
     border-radius: 2em 2em 0 0;
+    box-shadow: 0 0 .5em var(--bg-hover-color) inset;
+}
+
+#details-frame {
+    position: absolute;
+    top: 100%;
+    display: none;
+    flex-flow: column nowrap;
+    padding: 0.5em 1em 0.2em 1em;
+    background-color: #333333;
+    border-radius: 0 0 1em 1em;
+    z-index: 1;
+    box-shadow: 0 0 .5em var(--bg-hover-color) inset;
 }
 
 #cost-info {
@@ -220,10 +249,26 @@ img {
     transform: scale(1.5);
 }
 
-.tooltip-text {
-    transform: translate(-50%, 50%);
-    opacity: 1;
+.time-tag {
+    position: absolute;
+    padding: .25em .5em 0 .5em;
+    right: 0;
+    top: calc(100% + .2em);
+    border-radius: .5em 0 .5em .5em;
+    box-shadow: .0em 0 .4em #0008;
+    background: var(--bg-alt-color);
+    opacity: 0.9;
 }
 
+.time-tag:hover,
+.time-tag:active,
+.time-tag:focus {
+    z-index: 1;
+}
+
+.highlighted {
+    color: color-mix(in srgb, var(--active-color) 75%, white);
+    font-kerning: none;
+}
 </style>
 
