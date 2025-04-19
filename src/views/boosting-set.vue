@@ -209,6 +209,7 @@ const setIHR  = shallowRef<T.ArtifactSet|null>();
 const setSlow = shallowRef<T.ArtifactSet|null>();
 const habCapacity = computed<number>(() => {
     if (capacitySetting.value) return capacitySetting.value;
+    if (setIHR.value) return 11340000000*setIHR.value.effects.get('hab_capacity_bonus');
     const caps = {
         [T.AllowedGusset.ANY ]: null,
         [T.AllowedGusset.NONE]: 11340000000*1.00,
