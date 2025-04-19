@@ -39,7 +39,11 @@ section.inputs {
     max-width: 70%;
 }
 
-
+#show-all-boosts {
+    margin: auto;
+    font-size: .8em;
+    padding: 2em;
+}
 
 
 

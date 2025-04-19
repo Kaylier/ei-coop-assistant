@@ -102,14 +102,22 @@
 
     <section v-if="!errorMessage" class="boost-sets">
 
-        <boost-set-card v-for="{ id, boosts } in boostSets.filter(x => userData?.proPermit ? x.proPermit : x.freePermit)"
-                        v-key="id"
+        <boost-set-card v-for="{ id, boosts } in shownBoostSets"
+                        :key="id"
                         :boosts="boosts"
                         :ihr="baseIHR*ihrBonus"
                         :dili="diliBonus"
-                        :maxPopulation="habCapacity"/>
-
+                        :maxPopulation="habCapacity"
+                        :pinned="showAllBoostSets ? pinnedBoostSetting.value.has(id) : undefined"
+                        @changed="changePin(id, $event)"
+                        />
     </section>
+
+    <div id="show-all-boosts">
+        <a href="#" @click="showAllBoostSets = !showAllBoostSets">
+            {{ showAllBoostSets ? 'only show pinned boost sets' : 'more boost sets' }}
+        </a>
+    </div>
 </template>
 
 <style scoped src="@/styles/boosting-set.css"></style>
@@ -118,31 +126,31 @@
 import { ref, shallowRef, computed, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber, parseNumber } from '@/scripts/utils.ts';
-import { createSwitchSetting, createTextInputSetting } from '@/scripts/settings.ts';
+import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
 import { boostSets, searchDiliSet, searchIHRSet, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
 
 const DEFAULT_HAB_CAPACITY = 11340000000;
 
-// Settings variables
-const deflectorSetting = createSwitchSetting<boolean>({
+
+const deflectorSetting = createSetting<boolean>({
     localStorageKey: 'boosting-deflector',
     defaultValue: false,
 });
-const shipSetting = createSwitchSetting<boolean>({
+const shipSetting = createSetting<boolean>({
     localStorageKey: 'boosting-ship',
     defaultValue: false,
 });
-const reslottingSetting = createSwitchSetting<boolean>({
+const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'allow-reslotting',
     defaultValue: false,
 });
-const allowedGussetSetting = createSwitchSetting<T.AllowedGusset>({
+const allowedGussetSetting = createSetting<T.AllowedGusset>({
     localStorageKey: 'allowed-gusset',
     defaultValue: T.AllowedGusset.ANY,
 });
-const ihcSetting = createSwitchSetting<boolean>({
+const ihcSetting = createSetting<boolean>({
     localStorageKey: 'ihc-enabled',
     defaultValue: true,
 });
@@ -152,10 +160,24 @@ const capacitySetting = createTextInputSetting<number|null>({
     parser: (s: string) => s ? parseNumber(s) : null,
     formatter: (x: number|null): string => formatNumber(x ?? habCapacity.value),
 });
+const pinnedBoostSetting = createSetting<Set<string>>({
+    localStorageKey: 'pinned-boost-sets',
+    defaultValue: new Set([...boostSets.entries()].filter(([,x]) => x.default).map(([k,]) => k)),
+    parser: (s: string) => new Set(JSON.parse(s)),
+    formatter: (x: Set<string>) => JSON.stringify([...x]),
+});
+
+function changePin(id: string, checked: boolean) {
+    if (checked) {
+        pinnedBoostSetting.value.add(id);
+    } else {
+        pinnedBoostSetting.value.delete(id);
+    }
+    // Force triggering the ref
+    pinnedBoostSetting.value = new Set(pinnedBoostSetting.value);
+}
 
 
-
-// State variables
 const showExtraSettings = ref<boolean>(false);
 const showExtraSettingGusset = ref<boolean>(false);
 const showExtraSettingOnline = ref<boolean>(false);
@@ -168,8 +190,19 @@ const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440)*
 const ihrBonus = computed(() => (setIHR.value?.effects.get('internal_hatchery_bonus') ?? 1)*
                                 (setIHR.value?.effects.get('boost_bonus') ?? 1));
 
+const showAllBoostSets = ref<boolean>(false);
+const shownBoostSets = computed(() => {
+    const ret = [];
+    for (const id of (showAllBoostSets.value ? boostSets.keys() : pinnedBoostSetting.value)) {
+        const x = boostSets.get(id);
+        if (!x) continue;
+        if (userData.value?.proPermit ? !x.proPermit : !x.freePermit) continue;
+        ret.push({ id, boosts: x.boosts });
+    }
+    return ret;
+});
 
-// Data variables
+
 const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
 const setDili = shallowRef<T.ArtifactSet|null>();
 const setIHR  = shallowRef<T.ArtifactSet|null>();
@@ -200,7 +233,6 @@ onMounted(async () => {
     showExtraSettingCapacity.value = !!capacitySetting.text;
 });
 
-// Watchers for synchronisation between setting variables, local storage and state variables
 
 watch(userData, () => {
     if (!userData.value) return;
@@ -208,7 +240,6 @@ watch(userData, () => {
 });
 
 
-// Watchers for triggering recomputations
 watch(userData, updateSet);
 watch(deflectorSetting, updateSet);
 watch(shipSetting, updateSet);

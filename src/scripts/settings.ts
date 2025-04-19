@@ -1,38 +1,57 @@
 /*
  * Settings modules management
- * TODO: comments and cleanup
  */
 
 import { shallowRef, reactive, computed, watch } from 'vue';
 import type { Ref, Reactive } from 'vue';
 
-export type SwitchSetting<T> = {
+export type Setting<T> = {
     value: Ref<T>,
 };
 
-export function createSwitchSetting<T>(options: {
+/*
+ * Create a Setting, a generic structure used for managing settings
+ * text is populated by query parameter (if provided), or previously stored localStorage entry (if provided),
+ * or default value.
+ * If user modifies it, it is automatically saved to localStorage, and the value reacts to the change.
+ * If conversion to string is not JSON-friendly (eg. with Set), custom parser/formatter function can be provided
+ *
+ * Example usage:
+ *  const setting = createSetting<number>({
+ *      localStorageKey: 'key',
+ *      queryParamKey: 'key',
+ *      defaultValue: 1,
+ *  });
+ *  setting.value = 5;
+ */
+export function createSetting<T>(options: {
     localStorageKey?: string,
     queryParamKey?: string,
     defaultValue: T,
-}): Reactive<SwitchSetting<T>> {
-    const { localStorageKey, queryParamKey, defaultValue } = options;
+    parser?: (arg0: string) => T,
+    formatter?: (arg0: T) => string,
+}): Reactive<Setting<T>> {
+    const { localStorageKey, queryParamKey, defaultValue, parser, formatter } = options;
+
+    const parseValue = parser || JSON.parse;
+    const formatValue = formatter || JSON.stringify;
 
     const storedText = localStorageKey ? localStorage.getItem(localStorageKey) : null;
-    const storedValue = storedText ? JSON.parse(storedText) : null;
+    const storedValue = storedText ? parseValue(storedText) : null;
 
     const urlParams = new URLSearchParams(window.location.search);
     const queryText = queryParamKey ? urlParams.get(queryParamKey) : null;
-    const queryValue = queryText ? JSON.parse(queryText) : null;
+    const queryValue = queryText ? parseValue(queryText) : null;
 
     const value = shallowRef<T>(queryValue ?? storedValue ?? defaultValue);
 
     watch(value, () => {
         if (localStorageKey) {
-            localStorage.setItem(localStorageKey, JSON.stringify(value.value));
+            localStorage.setItem(localStorageKey, formatValue(value.value));
         }
     });
 
-    return reactive<SwitchSetting<T>>({
+    return reactive<Setting<T>>({
         value
     });
 }

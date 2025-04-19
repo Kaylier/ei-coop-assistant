@@ -117,7 +117,7 @@
 import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { clamp, isclose, parseNumber, formatNumber } from '@/scripts/utils.ts';
-import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';
+import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 
 
@@ -142,15 +142,15 @@ Can you
 
 
 // Settings variables
-const swapCubeSetting = createSwitchSetting<boolean>({
+const swapCubeSetting = createSetting<boolean>({
     localStorageKey: 'swap-cube',
     defaultValue: false,
 });
-const reslottingSetting = createSwitchSetting<boolean>({
+const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'allow-reslotting',
     defaultValue: false,
 });
-const onlineSetting = createSwitchSetting<boolean>({
+const onlineSetting = createSetting<boolean>({
     localStorageKey: 'online',
     defaultValue: true,
 });

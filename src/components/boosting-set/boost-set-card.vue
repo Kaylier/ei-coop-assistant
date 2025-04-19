@@ -1,6 +1,11 @@
 <template>
     <div id="card-frame">
         <div id="header-frame">
+            <input v-if="pinned !== undefined"
+                   id="pin"
+                   type="checkbox"
+                   :checked="pinned"
+                   @change="(e: Event) => emit('changed', (e.target as HTMLInputElement).checked)"/>
             <div id="cost-info">
                 <div>
                     <span> {{ formatNumber(tokenCost) }} </span>
@@ -46,6 +51,11 @@ const props = defineProps<{
     ihr: number,
     dili: number,
     maxPopulation: number,
+    pinned?: boolean, // not shown if undefined
+}>();
+
+const emit = defineEmits<{
+    (e: 'changed', value: boolean): void
 }>();
 
 enum BoostType {
@@ -184,6 +194,7 @@ const barData = computed(() => {
 }
 
 #header-frame {
+    position: relative;
     display: flex;
     flex-flow: row nowrap;
     gap: .5em;
@@ -203,6 +214,15 @@ const barData = computed(() => {
     border-radius: 0 0 1em 1em;
     z-index: 1;
     box-shadow: 0 0 .5em var(--bg-hover-color) inset;
+}
+
+#pin {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#pin:focus {
+    outline: auto;
 }
 
 #cost-info {

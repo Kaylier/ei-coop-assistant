@@ -26,9 +26,9 @@
 </template>
 
 <script setup lang="ts">
-import type { SwitchSetting } from '@/scripts/settings.ts';
+import type { Setting } from '@/scripts/settings.ts';
 
-const setting = defineModel<SwitchSetting<unknown>>({ required: true });
+const setting = defineModel<Setting<unknown>>({ required: true });
 
 defineProps<{
     id: string,
@@ -67,6 +67,8 @@ defineProps<{
     position: absolute;
     opacity: 0;
     z-index: -1;
+    height: 0;
+    width: 0;
 }
 
 .switch:focus-within {

@@ -158,7 +158,7 @@
 import { onMounted, ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
-import { createTextInputSetting, createSwitchSetting } from '@/scripts/settings.ts';
+import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
 import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
@@ -182,19 +182,19 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 
 // Settings variables
-const deflectorModeSetting = createSwitchSetting<T.DeflectorMode>({
+const deflectorModeSetting = createSetting<T.DeflectorMode>({
     localStorageKey: 'deflector-mode',
     defaultValue: T.DeflectorMode.TEAMWORK,
 });
-const reslottingSetting = createSwitchSetting<boolean>({
+const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'allow-reslotting',
     defaultValue: false,
 });
-const showVariantsSetting = createSwitchSetting<boolean>({
+const showVariantsSetting = createSetting<boolean>({
     localStorageKey: 'allow-variants',
     defaultValue: false,
 });
-const allowedGussetSetting = createSwitchSetting<T.AllowedGusset>({
+const allowedGussetSetting = createSetting<T.AllowedGusset>({
     localStorageKey: 'allowed-gusset',
     defaultValue: T.AllowedGusset.ANY,
 });

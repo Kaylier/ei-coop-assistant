@@ -36,7 +36,7 @@
 import { ref, shallowRef, triggerRef, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { EffectMap } from '@/scripts/artifacts.ts';
-import { createSwitchSetting } from '@/scripts/settings.ts';
+import { createSetting } from '@/scripts/settings.ts';
 import { prepareItems, searchSet } from '@/scripts/solvers.ts';
 
 
@@ -48,7 +48,7 @@ type SetEntry = {
     scoreFn: (effect: EffectMap) => number[];
 };
 
-const reslottingSetting = createSwitchSetting<boolean>({
+const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'allow-reslotting',
     defaultValue: false,
 });

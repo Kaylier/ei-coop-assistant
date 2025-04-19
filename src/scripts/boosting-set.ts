@@ -157,51 +157,105 @@ export function searchSlowIHRSet(items: T.Item[],
 }
 
 
-export const boostSets: {
-    id: string,
+export const boostSets = new Map<string, {
     boosts: { id: T.Boost, amount?: number, streamlined?: number }[],
+    default?: boolean,
     freePermit?: boolean,
     proPermit?: boolean,
-}[] = [
-    {
-        id: "tach_100x120x2",
-        freePermit: true, proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }],
-    },
-    {
-        id: "tach_100x120+boost_2x30x3",
-        proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 3}],
-    },
-    {
-        id: "tach_100x120+boost_2x30#3",
-        freePermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 3 }],
-    },
-    {
-        id: "tach_1000x60",
-        freePermit: true, proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X60 }],
-    },
-    {
-        id: "tach_1000x60+boost_2x30",
-        freePermit: true, proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30}],
-    },
-    {
-        id: "tach_1000x10+boost_2x30",
+}>([
+    // 10-minute boosts
+    ["tach_1000x10+boost_2x30", {
         freePermit: true, proPermit: true,
         boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30}],
-    },
-    {
-        id: "tach_1000x10+boost_2x30*2",
+    }],
+    ["tach_1000x10+boost_2x30x2", {
+        default: true,
         proPermit: true,
         boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 2}],
-    },
-    {
-        id: "tach_1000x10+boost_10x10",
+    }],
+    ["tach_1000x10+boost_2x30x3", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+    }],
+    ["tach_1000x10+boost_2x30x4", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 4}],
+    }],
+    ["tach_1000x10+boost_10x10", {
+        default: true,
         freePermit: true, proPermit: true,
         boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_10X10}],
-    },
-];
+    }],
+    // 1-hour boosts
+    ["tach_1000x60", {
+        default: true,
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }],
+    }],
+    ["tach_1000x60+boost_2x30", {
+        default: true,
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30}],
+    }],
+    // 2-hour boosts
+    ["tach_100x120", {
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }],
+    }],
+    ["tach_100x120+boost_2x30", {
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30 }],
+    }],
+    ["tach_100x120+boost_2x30x2", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 2}],
+    }],
+    ["tach_100x120+boost_2x30*2", {
+        freePermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 2}],
+    }],
+    ["tach_100x120+boost_2x30x3", {
+        default: true,
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+    }],
+    ["tach_100x120+boost_2x30*3", {
+        default: true,
+        freePermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 3 }],
+    }],
+    ["tach_100x120+boost_2x30x4", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 4}],
+    }],
+    ["tach_100x120+boost_2x30*4", {
+        freePermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 4}],
+    }],
+    ["tach_100x120+boost_5x60", {
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_5X60 }],
+    }],
+    ["tach_100x120x2", {
+        default: true,
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }],
+    }],
+    ["tach_100x120x2+boost_2x30", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30 }],
+    }],
+    ["tach_100x120x2+boost_2x30x2", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30, amount: 2}],
+    }],
+    ["tach_100x120x2+boost_2x30x3", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+    }],
+    ["tach_100x120x2+boost_5x60", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_5X60 }],
+    }],
+]);
 
