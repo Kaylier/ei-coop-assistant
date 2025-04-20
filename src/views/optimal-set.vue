@@ -254,8 +254,11 @@ const sets = shallowRef<SetEntry[]>([
     },
     {
         title: "Drone (Cash)",
-        effects: ['drone_cash_bonus', 'drone_frequency_bonus', 'drone_reward_bonus'],
-        scoreFn: (e) => [ Math.min(1, 0.7*e.get('drone_cash_bonus'))*e.get('drone_frequency_bonus')*e.get('drone_reward_bonus') ],
+        effects: ['drone_cash_bonus', 'drone_frequency_bonus', 'drone_reward_bonus', 'running_chicken_bonus',
+        'farm_value_bonus'],
+        scoreFn: (e) => [ Math.min(1,
+        0.7*e.get('drone_cash_bonus'))*e.get('drone_frequency_bonus')*e.get('drone_reward_bonus')*Math.sqrt((userData.value?.mrcbEarningBonus
+        ?? 5) + e.get('running_chicken_bonus'))*e.get('farm_value_bonus') ],
     },
 ]);
 
