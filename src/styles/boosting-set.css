@@ -46,4 +46,8 @@ section.inputs {
 }
 
 
+.highlighted {
+    color: color-mix(in srgb, var(--active-color) 75%, white);
+    font-kerning: none;
+}
 

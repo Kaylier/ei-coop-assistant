@@ -96,7 +96,16 @@
             :userData="userData"
             :stats="['lay', 'ihr']"
             :substats="['hab']"
-            />
+            >
+            <span>
+                <img v-for="i in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
+            </span>
+            <span v-for="{ population, time } in slowIHRMilestones">
+                <span class="highlighted">{{ formatNumber(population) }}</span>
+                chickens after
+                <span class="highlighted">{{ formatTime(time) }}</span>
+            </span>
+        </artifact-set-card>
 
     </section>
 
@@ -125,7 +134,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { formatNumber, parseNumber } from '@/scripts/utils.ts';
+import { formatNumber, parseNumber, formatTime } from '@/scripts/utils.ts';
 import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
 import { boostSets, searchDiliSet, searchIHRSet, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
@@ -190,6 +199,15 @@ const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440)*
 const ihrBonus = computed(() => (setIHR.value?.effects.get('internal_hatchery_bonus') ?? 1)*
                                 (setIHR.value?.effects.get('boost_bonus') ?? 1));
 
+const slowIHRMilestones = computed(() => {
+    const ihrbonus = (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
+                     (setSlow.value?.effects.get('boost_bonus') ?? 1);
+    return [
+        { population: baseIHR.value*ihrbonus*60*10*diliBonus.value, time: 60*10*diliBonus.value },
+        { population: baseIHR.value*ihrbonus*60*240*diliBonus.value, time: 60*240*diliBonus.value },
+    ];
+});
+
 const showAllBoostSets = ref<boolean>(false);
 const shownBoostSets = computed(() => {
     const ret = [];
@@ -209,18 +227,18 @@ const setIHR  = shallowRef<T.ArtifactSet|null>();
 const setSlow = shallowRef<T.ArtifactSet|null>();
 const habCapacity = computed<number>(() => {
     if (capacitySetting.value) return capacitySetting.value;
-    if (setIHR.value) return 11340000000*setIHR.value.effects.get('hab_capacity_bonus');
+    if (setIHR.value) return DEFAULT_HAB_CAPACITY*setIHR.value.effects.get('hab_capacity_bonus');
     const caps = {
         [T.AllowedGusset.ANY ]: null,
-        [T.AllowedGusset.NONE]: 11340000000*1.00,
-        [T.AllowedGusset.T1C ]: 11340000000*1.05,
-        [T.AllowedGusset.T2C ]: 11340000000*1.10,
-        [T.AllowedGusset.T2E ]: 11340000000*1.12,
-        [T.AllowedGusset.T3C ]: 11340000000*1.15,
-        [T.AllowedGusset.T3R ]: 11340000000*1.16,
-        [T.AllowedGusset.T4C ]: 11340000000*1.20,
-        [T.AllowedGusset.T4E ]: 11340000000*1.22,
-        [T.AllowedGusset.T4L ]: 11340000000*1.25,
+        [T.AllowedGusset.NONE]: DEFAULT_HAB_CAPACITY*1.00,
+        [T.AllowedGusset.T1C ]: DEFAULT_HAB_CAPACITY*1.05,
+        [T.AllowedGusset.T2C ]: DEFAULT_HAB_CAPACITY*1.10,
+        [T.AllowedGusset.T2E ]: DEFAULT_HAB_CAPACITY*1.12,
+        [T.AllowedGusset.T3C ]: DEFAULT_HAB_CAPACITY*1.15,
+        [T.AllowedGusset.T3R ]: DEFAULT_HAB_CAPACITY*1.16,
+        [T.AllowedGusset.T4C ]: DEFAULT_HAB_CAPACITY*1.20,
+        [T.AllowedGusset.T4E ]: DEFAULT_HAB_CAPACITY*1.22,
+        [T.AllowedGusset.T4L ]: DEFAULT_HAB_CAPACITY*1.25,
     };
     return caps[allowedGussetSetting.value] ??
            caps[allowedGussetChoices.value.at(-1)!] ?? // ANY is guaranteed to always be in allowedGussetChoices
