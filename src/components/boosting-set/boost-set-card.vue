@@ -25,7 +25,7 @@
         </div>
         <div id="bar-frame">
             <div id="bar">
-                <div v-for="{ style, tag} in barData" class="bar-fill" :style="style">
+                <div v-for="{ style, speed, tag} in barData" class="bar-fill" :class="speed" :style="style">
                     <span class="time-tag" v-html="tag"/>
                 </div>
             </div>
@@ -136,18 +136,18 @@ const milestones = computed(() => {
         }
         if (!totalTachyon) continue
 
-        const rate = (totalTachyon || 1)*(totalBoost || 1)*props.ihr*props.dili;
-        const increase = rate*(time - prevTime);
+        const rate = (totalTachyon || 1)*(totalBoost || 1)*props.ihr;
+        const increase = rate*(time - prevTime)*props.dili;
 
         if (population < props.maxPopulation && population + increase >= props.maxPopulation) {
             // Insert a milestone for maxed habs
-            const filledTime = prevTime + (props.maxPopulation - population)/rate;
-            ret.push({ population: props.maxPopulation, time: filledTime*props.dili });
+            const filledTime = prevTime + (props.maxPopulation - population)/rate/props.dili;
+            ret.push({ population: props.maxPopulation, time: filledTime*props.dili, rate });
         }
 
         population += increase;
         prevTime = time;
-        ret.push({ population, time: time*props.dili });
+        ret.push({ population, time: time*props.dili, rate });
     }
 
     return ret;
@@ -156,15 +156,20 @@ const milestones = computed(() => {
 const barData = computed(() => {
     const ret = [];
 
-    for (const { population, time } of milestones.value) {
+    const highRate = milestones.value.reduce((tot,cur) => Math.max(tot, cur.rate), 0);
+
+    for (const { population, time, rate } of milestones.value) {
+        const speed = rate >= highRate*0.6 ? 'fast' : 'slow';
         if (population < props.maxPopulation) {
             ret.push({
-                style: {width: `${100*population/props.maxPopulation}%` },
+                style: { width: `${100*population/props.maxPopulation}%` },
+                speed: speed,
                 tag: formatTime(time, 'm'),
                 });
         } else {
             ret.push({
                 style: { width: `100%` },
+                speed: speed,
                 tag: formatTime(time, 'm'),
                 });
             break;
@@ -271,10 +276,18 @@ const barData = computed(() => {
 
 .bar-fill {
     position: absolute;
-    background: linear-gradient(to right, #3848, #384);
+    background: linear-gradient(to right, #444, #888);
     height: 100%;
     border-radius: .5em;
     box-shadow: .2em 0 .4em #0008;
+}
+
+.bar-fill.fast {
+    background: linear-gradient(to right, #3b6644, #384);
+}
+
+.bar-fill.slow {
+    background: linear-gradient(to right, #3b665d, #387);
 }
 
 img {
