@@ -11,7 +11,7 @@
             <label v-for="option in options"
                    class="switch-option"
                    :for="`${id}-${option.value}`">
-                <input type="radio"
+                <input :type="type ?? 'radio'"
                        :name="id"
                        :id="`${id}-${option.value}`"
                        :value="option.value"
@@ -35,6 +35,7 @@ defineProps<{
     label?: string,
     tooltip?: string,
     options: Array<{ value: unknown, label: string }>,
+    type?: 'radio'|'checkbox',
 }>();
 
 </script>

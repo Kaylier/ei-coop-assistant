@@ -1,22 +1,19 @@
 <template>
     <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
     <section class="settings">
-        <setting-switch id="deflector-mode"
-                        v-model="deflectorSetting"
-                        label="Deflector"
-                        tooltip="Include a deflector in your IHR sets"
+        <setting-switch id="includes"
+                        v-model="includesSetting"
+                        label="Includes"
+                        tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
+                        type="checkbox"
                         :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
-                                  ]"/>
-        <setting-switch id="ship-mode"
-                        v-model="shipSetting"
-                        label="Ship in a Bottle"
-                        tooltip="Include a ship in a bottle in your IHR sets"
-                        :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
-                                  ]"/>
+                                  { value: 'Deflector', img: '/img/items/artifact-tachyon_deflector-3.png' },
+                                  { value: 'SiaB', img: '/img/items/artifact-ship_in_a_bottle-3.png' },
+                                  ]">
+            <template #option="{ value, img }">
+                <img :src="img" :alt="value"/>
+            </template>
+        </setting-switch>
         <setting-switch id="reslotting"
                         v-model="reslottingSetting"
                         label="Reslotting"
@@ -143,13 +140,9 @@ import { getOptimalGussets } from '@/scripts/laying-set.ts';
 const DEFAULT_HAB_CAPACITY = 11340000000;
 
 
-const deflectorSetting = createSetting<boolean>({
-    localStorageKey: 'boosting-deflector',
-    defaultValue: false,
-});
-const shipSetting = createSetting<boolean>({
-    localStorageKey: 'boosting-ship',
-    defaultValue: false,
+const includesSetting = createSetting<string[]>({
+    localStorageKey: 'boosting-includes',
+    defaultValue: [],
 });
 const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'allow-reslotting',
@@ -260,8 +253,7 @@ watch(userData, () => {
 
 
 watch(userData, updateSet);
-watch(deflectorSetting, updateSet);
-watch(shipSetting, updateSet);
+watch(includesSetting, updateSet);
 watch(reslottingSetting, updateSet);
 watch(allowedGussetSetting, updateSet);
 watch(ihcSetting, updateSet);
@@ -300,15 +292,15 @@ function updateSet() {
         console.log("Dili set:", setDili.value);
         setIHR.value = searchIHRSet(userData.value?.items ?? [],
                                     maxSlot,
-                                    deflectorSetting.value,
-                                    shipSetting.value,
+                                    includesSetting.value.includes('Deflector'),
+                                    includesSetting.value.includes('SiaB'),
                                     reslottingSetting.value,
                                     allowedGussetSetting.value);
         console.log("IHR set:", setIHR.value);
         setSlow.value = searchSlowIHRSet(userData.value?.items ?? [],
                                          maxSlot,
-                                         deflectorSetting.value,
-                                         shipSetting.value,
+                                         includesSetting.value.includes('Deflector'),
+                                         includesSetting.value.includes('SiaB'),
                                          reslottingSetting.value,
                                          allowedGussetSetting.value);
         console.log("Slow-IHR set:", setSlow.value);
