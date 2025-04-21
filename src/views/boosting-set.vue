@@ -121,7 +121,7 @@
 
     <div id="show-all-boosts">
         <a href="#" @click="showAllBoostSets = !showAllBoostSets">
-            {{ showAllBoostSets ? 'only show pinned boost sets' : 'more boost sets' }}
+            {{ showAllBoostSets ? 'only show favourite boost sets' : 'select favourite boost sets' }}
         </a>
     </div>
 </template>

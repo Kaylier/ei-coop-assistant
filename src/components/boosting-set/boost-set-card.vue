@@ -1,11 +1,9 @@
 <template>
     <div id="card-frame">
         <div id="header-frame">
-            <input v-if="pinned !== undefined"
-                   id="pin"
-                   type="checkbox"
-                   :checked="pinned"
-                   @change="(e: Event) => emit('changed', (e.target as HTMLInputElement).checked)"/>
+            <button v-if="pinned !== undefined" id="pin" @click="(e: Event) => emit('changed', !pinned)">
+                {{ pinned ? '★' : '☆' }}
+            </button>
             <div id="cost-info">
                 <div>
                     <span> {{ formatNumber(tokenCost) }} </span>
@@ -225,9 +223,16 @@ const barData = computed(() => {
     position: absolute;
     top: 0;
     left: 0;
+    width: 1em;
+    height: 1em;
+    scale: 1.8;
+    padding: 0;
+    background: none;
+    cursor: pointer;
 }
 #pin:focus {
-    outline: auto;
+    outline: none;
+    color: var(--active-hover-color);
 }
 
 #cost-info {
