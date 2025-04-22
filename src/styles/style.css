@@ -219,6 +219,17 @@ section.settings {
 
 
 /* General styles */
+@media (min-width: 600px) {
+    .smartphone-only {
+        display: none;
+    }
+}
+
+.quick-link {
+    margin: auto;
+    font-size: .8em;
+}
+
 a, input, button {
     color: inherit;
 }

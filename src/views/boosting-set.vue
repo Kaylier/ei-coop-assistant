@@ -71,7 +71,9 @@
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
-    <section v-if="!errorMessage" class="main-sets">
+    <a class="quick-link smartphone-only" href="#boost-sets">go to boost sets</a>
+
+    <section v-if="!errorMessage" id="main-sets">
 
         <artifact-set-card v-if="setDili"
             title="Dilithium set"
@@ -109,7 +111,7 @@
 
     </section>
 
-    <section v-if="!errorMessage" class="boost-sets">
+    <section v-if="!errorMessage" id="boost-sets">
 
         <boost-set-card v-for="{ id, boosts } in shownBoostSets"
                         :key="id"
@@ -121,11 +123,11 @@
                         />
     </section>
 
-    <div id="show-all-boosts">
-        <a href="#" @click="showAllBoostSets = !showAllBoostSets">
-            {{ showAllBoostSets ? 'only show favourite boost sets' : 'select favourite boost sets' }}
-        </a>
-    </div>
+    <a href="#boost-sets"
+       class="quick-link"
+       @click="showAllBoostSets = !showAllBoostSets">
+        {{ showAllBoostSets ? 'only show favourite boost sets' : 'select favourite boost sets' }}
+    </a>
 </template>
 
 <style scoped src="@/styles/boosting-set.css"></style>

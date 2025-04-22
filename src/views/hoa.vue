@@ -1,8 +1,10 @@
 <template>
     <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x" />
 
+    <a class="quick-link smartphone-only" href="#artifacts">go to artifacts</a>
+
     <section class="main">
-        <div v-if="sets.length" class="sets">
+        <div v-if="sets.length" class="sets" id="sets">
             <inventory-frame v-for="set in sets"
                              :artifacts="set"
                              :isSet="true"
@@ -10,7 +12,7 @@
                              :column="4" :row="1"
                              />
         </div>
-        <div v-if="grid.length" class="grid-container">
+        <div v-if="grid.length" class="grid-container" id="artifacts">
             <div class="grid">
                 <inventory-frame :artifacts="grid" :column="column" />
             </div>

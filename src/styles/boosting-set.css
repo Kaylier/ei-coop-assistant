@@ -20,7 +20,7 @@ section.inputs {
 }
 
 
-.main-sets {
+#main-sets {
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;
@@ -29,7 +29,7 @@ section.inputs {
     text-align: center;
 }
 
-.boost-sets {
+#boost-sets {
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;
@@ -37,12 +37,7 @@ section.inputs {
     gap: 2em;
     text-align: center;
     max-width: 70%;
-}
-
-#show-all-boosts {
-    margin: auto;
-    font-size: .8em;
-    padding: 2em;
+    padding: 0 0 2em 0;
 }
 
 
