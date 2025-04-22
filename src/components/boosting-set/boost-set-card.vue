@@ -1,7 +1,9 @@
 <template>
     <div id="card-frame">
         <div id="header-frame">
-            <button v-if="pinned !== undefined" id="pin" @click="(e: Event) => emit('changed', !pinned)">
+            <button v-if="pinned !== undefined" id="pin"
+                    title="Mark as favourite"
+                    @click="(e: Event) => emit('changed', !pinned)">
                 {{ pinned ? '★' : '☆' }}
             </button>
             <div id="cost-info">
@@ -230,9 +232,16 @@ const barData = computed(() => {
     background: none;
     cursor: pointer;
 }
+
+#pin:hover,
+#pin:focus:hover {
+    outline: none;
+    color: var(--valid-hover-color);
+}
+
 #pin:focus {
     outline: none;
-    color: var(--active-hover-color);
+    color: var(--valid-color);
 }
 
 #cost-info {
