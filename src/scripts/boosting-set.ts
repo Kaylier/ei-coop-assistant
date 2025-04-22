@@ -49,17 +49,17 @@ export function searchDiliSet(items: T.Item[],
 }
 
 
-export function searchIHRSet(items: T.Item[],
-                             maxSlot: number,
-                             includeDeflector: boolean,
-                             includeShip: boolean,
-                             reslotting: boolean,
-                             allowedGusset: T.AllowedGusset
-                            ): T.ArtifactSet | null {
-    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+export function searchIHRSets(items: T.Item[],
+                              maxSlot: number,
+                              includeDeflector: boolean,
+                              includeShip: boolean,
+                              reslotting: boolean,
+                              targetGusset: T.AllowedGusset
+                             ): T.ArtifactSet[] {
+    const filteredItems = targetGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
         if (x.category !== T.ItemCategory.ARTIFACT) return true;
         if (x.family !== T.ArtifactFamily.GUSSET) return true;
-        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+        return `artifact-gusset-${x.tier}-${x.rarity}` <= targetGusset;
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
@@ -70,18 +70,6 @@ export function searchIHRSet(items: T.Item[],
         'hab_capacity_bonus',
     ]);
 
-    // No restriction on deflector/ship, prefer the one that maximizes IHR
-    // ie T3R with life stone will be prefered over T4C
-
-    const requiredFamilies: T.ArtifactFamily[] = [];
-    if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
-    if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
-    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
-        requiredFamilies.push(T.ArtifactFamily.GUSSET);
-    }
-
-    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
-
     function scoreFn(effects: EffectMap): number[] {
         //return [effects.get('internal_hatchery_bonus')*effects.get('boost_bonus')];
         return [
@@ -91,10 +79,47 @@ export function searchIHRSet(items: T.Item[],
         ];
     }
 
-    return searchSet(artifacts, stones, maxSlot, scoreFn, {
+    // No restriction on deflector/ship, prefer the one that maximizes IHR
+    // ie T3R with life stone will be prefered over T4C
+
+    const requiredFamilies: T.ArtifactFamily[] = [];
+    if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
+    if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+
+    const ret = [];
+    let set = searchSet(artifacts, stones, maxSlot, scoreFn, {
         requiredFamilies,
-        optionalFamilies,
+        optionalFamilies: [...artifacts.keys()].filter(x => !requiredFamilies.includes(x)),
     });
+
+    if (targetGusset !== T.AllowedGusset.ANY && targetGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
+    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
+
+    while (set !== null) {
+        ret.push(set);
+
+        const lastGussetItem = set.set.filter(x => x && x.family === T.ArtifactFamily.GUSSET).at(0);
+        const lastGusset = `artifact-gusset-${lastGussetItem?.tier ?? 0}-${lastGussetItem?.rarity ?? 0}`;
+
+        // Found the set for target gusset, returns
+        if (lastGusset === targetGusset || targetGusset === T.AllowedGusset.ANY) return ret;
+
+        const gussets = artifacts.get(T.ArtifactFamily.GUSSET)?.filter(x => {
+            return lastGusset < `artifact-gusset-${x.artifacts[0].tier}-${x.artifacts[0].rarity}`;
+        }) ?? null;
+        if (gussets) {
+            artifacts.set(T.ArtifactFamily.GUSSET, gussets);
+        }
+
+        set = searchSet(artifacts, stones, maxSlot, scoreFn, {
+            requiredFamilies,
+            optionalFamilies,
+        });
+    }
+    // Couldn't solve for the target gusset, abort
+    return [];
 }
 
 

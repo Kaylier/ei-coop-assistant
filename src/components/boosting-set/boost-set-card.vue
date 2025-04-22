@@ -18,7 +18,7 @@
             </div>
             <div id="boost-info">
                 <div v-for="boost in props.boosts" class="boost">
-                    <img v-for="idx in (boost.amount ?? 1)*(boost.streamlined ?? 1)" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
+                    <img v-for="_ in (boost.amount ?? 1)*(boost.streamlined ?? 1)" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
                     {{ boostMetadata[boost.id].text ?? 'unknown boost' }}
                 </div>
             </div>
@@ -31,10 +31,16 @@
             </div>
         </div>
         <div id="details-frame">
-            <span v-for="{ population, time } in milestones">
-                <span class="highlighted">{{ formatNumber(population) }}</span>
-                chickens after
+            <span v-for="{ population, time, type } in milestones">
+                <span v-if="type === 'filled'">Habs filled</span>
+                <span v-if="type === 'artiswap'">Swap artifacts</span>
+                <span v-if="type === 'boostswap'">Swap boosts</span>
+                <span v-if="type === 'boostend'">Boosts end</span>
+                after
                 <span class="highlighted">{{ formatTime(time, 'm') }}</span>
+                at
+                <span class="highlighted">{{ formatNumber(population) }}</span>
+                chickens
             </span>
         </div>
     </div>
@@ -48,9 +54,8 @@ import { formatNumber, formatTime } from '@/scripts/utils.ts';
 
 const props = defineProps<{
     boosts: { id: T.Boost, amount?: number, streamlined?: number }[],
-    ihr: number,
+    stats: { ihr: number, habCapacity: number }[],
     dili: number,
-    maxPopulation: number,
     pinned?: boolean, // not shown if undefined
 }>();
 
@@ -106,22 +111,33 @@ const geCost = computed(() => {
     return tot;
 });
 
+const maxCapacity = computed(() => props.stats.at(-1)?.habCapacity ?? 11340000000);
+
 const milestones = computed(() => {
     // Find the times when the boost state changes
     const times: number[] = [];
+    const startTimes: number[] = [];
     for (const boost of props.boosts) {
         const duration = boostMetadata[boost.id].duration;
         for (let i = 1; i <= (boost.streamlined ?? 1); i++) {
-            times.includes(duration*i) || times.push(duration*i);
+            if (!times.includes(duration*i)) times.push(duration*i);
+        }
+        for (let i = 1; i < (boost.streamlined ?? 1); i++) {
+            if (!startTimes.includes(duration*i)) startTimes.push(duration*i);
         }
     }
     times.sort((a,b) => a-b);
 
     const ret = [];
 
+    let nextStatIdx = 1;
+    let ihr = props.stats[0].ihr;
+    let habCapacity = props.stats[0].habCapacity;
+
     // At each time threshold, calculate the increased population
     let population = 0, prevTime = 0;
     for (const time of times) {
+        // step between prevTime and time
         let totalTachyon = 0;
         let totalBoost = 0;
         for (const boost of props.boosts) {
@@ -134,20 +150,31 @@ const milestones = computed(() => {
                 totalBoost += boostData.value*(boost.amount ?? 1);
             }
         }
-        if (!totalTachyon) continue
+        // no more tachyons? we're done.
+        if (!totalTachyon) break;
+        const boostBonus = (totalTachyon || 1)*(totalBoost || 1);
+        const speed = totalBoost ? 'fast' : 'slow';
 
-        const rate = (totalTachyon || 1)*(totalBoost || 1)*props.ihr;
-        const increase = rate*(time - prevTime)*props.dili;
+        let filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
+        while (population < habCapacity && filledTime < time) {
+            // Milestone: Hab capacity reached + potential artifact swap
+            population += boostBonus*ihr*(filledTime - prevTime)*props.dili;
+            prevTime = filledTime;
+            const type = nextStatIdx == props.stats.length ? 'filled' : 'artiswap';
+            ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type });
 
-        if (population < props.maxPopulation && population + increase >= props.maxPopulation) {
-            // Insert a milestone for maxed habs
-            const filledTime = prevTime + (props.maxPopulation - population)/rate/props.dili;
-            ret.push({ population: props.maxPopulation, time: filledTime*props.dili, rate });
+            if (nextStatIdx >= props.stats.length) break;
+            ihr = props.stats[nextStatIdx].ihr;
+            habCapacity = props.stats[nextStatIdx].habCapacity;
+            filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
+            nextStatIdx++;
         }
 
-        population += increase;
+        // Milestone: boost state change
+        population += boostBonus*ihr*(time - prevTime)*props.dili;
         prevTime = time;
-        ret.push({ population, time: time*props.dili, rate });
+        const type = startTimes.includes(time) ? 'boostswap' : 'boostend';
+        ret.push({ population, time: time*props.dili, speed, type });
     }
 
     return ret;
@@ -156,13 +183,10 @@ const milestones = computed(() => {
 const barData = computed(() => {
     const ret = [];
 
-    const highRate = milestones.value.reduce((tot,cur) => Math.max(tot, cur.rate), 0);
-
-    for (const { population, time, rate } of milestones.value) {
-        const speed = rate >= highRate*0.6 ? 'fast' : 'slow';
-        if (population < props.maxPopulation) {
+    for (const { population, time, speed } of milestones.value) {
+        if (population < maxCapacity.value) {
             ret.push({
-                style: { width: `${100*population/props.maxPopulation}%` },
+                style: { width: `${100*population/maxCapacity.value}%` },
                 speed: speed,
                 tag: formatTime(time, 'm'),
                 });

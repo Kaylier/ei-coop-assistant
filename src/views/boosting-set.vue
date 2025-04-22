@@ -24,6 +24,15 @@
                                   { value: false, label: 'no' },
                                   { value: true, label: 'yes' },
                                   ]"/>
+        <setting-switch id="swapping"
+                        v-model="swappingSetting"
+                        label="Gusset swapping"
+                        tooltip="Allow swapping gusset mid-boost<br/>
+                                 for a higher IHR at lower population"
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
         <setting-switch v-if="showExtraSettings || showExtraSettingGusset"
                         id="gusset"
                         v-model="allowedGussetSetting"
@@ -55,13 +64,6 @@
                                   { value: true, label: 'offline' },
                                   { value: false, label: 'online' },
                                   ]"/>
-        <setting-text v-if="showExtraSettings || showExtraSettingCapacity"
-                      id="hab-capacity"
-                      v-model="capacitySetting"
-                      label="Hab capacity"
-                      tooltip="Maximum capacity of your habs</br>
-                               used in boost sets</br>
-                               Leave empty for automatic"/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
@@ -79,14 +81,6 @@
             :stats="['dili']"
             :substats="['ihr']"
             />
-        <artifact-set-card v-if="setIHR"
-            title="IHR set"
-            description="Equip when boosting</br>with tachyon prisms."
-            :set="setIHR"
-            :userData="userData"
-            :stats="['ihr']"
-            :substats="['hab', 'lay']"
-            />
         <artifact-set-card v-if="setSlow"
             title="Slow-boost set"
             description="Equip when using large tachyons</br>to maximize your contribution."
@@ -96,7 +90,7 @@
             :substats="['hab']"
             >
             <span>
-                <img v-for="i in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
+                <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
             </span>
             <span v-for="{ population, time } in slowIHRMilestones">
                 <span class="highlighted">{{ formatNumber(population) }}</span>
@@ -104,6 +98,14 @@
                 <span class="highlighted">{{ formatTime(time) }}</span>
             </span>
         </artifact-set-card>
+        <artifact-set-card v-for="set of setIHR"
+            title="IHR set"
+            description="Equip when boosting</br>with tachyon prisms."
+            :set="set"
+            :userData="userData"
+            :stats="['ihr']"
+            :substats="['hab', 'lay']"
+            />
 
     </section>
 
@@ -112,9 +114,8 @@
         <boost-set-card v-for="{ id, boosts } in shownBoostSets"
                         :key="id"
                         :boosts="boosts"
-                        :ihr="baseIHR*ihrBonus"
                         :dili="diliBonus"
-                        :maxPopulation="habCapacity"
+                        :stats="boostSetCardStats"
                         :pinned="showAllBoostSets ? pinnedBoostSetting.value.has(id) : undefined"
                         @changed="changePin(id, $event)"
                         />
@@ -132,13 +133,11 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { formatNumber, parseNumber, formatTime } from '@/scripts/utils.ts';
-import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
-import { boostSets, searchDiliSet, searchIHRSet, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
+import { formatNumber, formatTime } from '@/scripts/utils.ts';
+import { createSetting } from '@/scripts/settings.ts';
+import { boostSets, searchDiliSet, searchIHRSets, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
-
-const DEFAULT_HAB_CAPACITY = 11340000000;
 
 
 const includesSetting = createSetting<string[]>({
@@ -149,6 +148,10 @@ const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'allow-reslotting',
     defaultValue: false,
 });
+const swappingSetting = createSetting<boolean>({
+    localStorageKey: 'gusset-swapping',
+    defaultValue: false,
+});
 const allowedGussetSetting = createSetting<T.AllowedGusset>({
     localStorageKey: 'allowed-gusset',
     defaultValue: T.AllowedGusset.ANY,
@@ -156,12 +159,6 @@ const allowedGussetSetting = createSetting<T.AllowedGusset>({
 const ihcSetting = createSetting<boolean>({
     localStorageKey: 'ihc-enabled',
     defaultValue: true,
-});
-const capacitySetting = createTextInputSetting<number|null>({
-    localStorageKey: 'hab-capacity',
-    defaultValue: DEFAULT_HAB_CAPACITY,
-    parser: (s: string) => s ? parseNumber(s) : null,
-    formatter: (x: number|null): string => formatNumber(x ?? habCapacity.value),
 });
 const pinnedBoostSetting = createSetting<Set<string>>({
     localStorageKey: 'pinned-boost-sets',
@@ -184,14 +181,24 @@ function changePin(id: string, checked: boolean) {
 const showExtraSettings = ref<boolean>(false);
 const showExtraSettingGusset = ref<boolean>(false);
 const showExtraSettingOnline = ref<boolean>(false);
-const showExtraSettingCapacity = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_bonus') ?? 1);
-const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440)*
-                               (ihcSetting.value ? userData.value?.awayIHBonus ?? 1 : 1));
-const ihrBonus = computed(() => (setIHR.value?.effects.get('internal_hatchery_bonus') ?? 1)*
-                                (setIHR.value?.effects.get('boost_bonus') ?? 1));
+const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440*4)*
+                               (ihcSetting.value ? userData.value?.awayIHBonus ?? 3 : 1));
+const baseHabCapacity = computed(() => 11340000000); // TODO: read from userData
+const boostSetCardStats = computed(() => {
+    const ret = [];
+    for (const set of setIHR.value) {
+        const ihr = baseIHR.value*set.effects.get('internal_hatchery_bonus')*set.effects.get('boost_bonus');
+        const habCapacity = baseHabCapacity.value*set.effects.get('hab_capacity_bonus');
+        ret.push({ ihr, habCapacity });
+    }
+    if (ret.length === 0) {
+        ret.push({ ihr: baseIHR.value, habCapacity: baseHabCapacity.value });
+    }
+    return ret;
+});
 
 const slowIHRMilestones = computed(() => {
     const ihrbonus = (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
@@ -217,33 +224,13 @@ const shownBoostSets = computed(() => {
 
 const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
 const setDili = shallowRef<T.ArtifactSet|null>();
-const setIHR  = shallowRef<T.ArtifactSet|null>();
+const setIHR  = shallowRef<T.ArtifactSet[]>([]);
 const setSlow = shallowRef<T.ArtifactSet|null>();
-const habCapacity = computed<number>(() => {
-    if (capacitySetting.value) return capacitySetting.value;
-    if (setIHR.value) return DEFAULT_HAB_CAPACITY*setIHR.value.effects.get('hab_capacity_bonus');
-    const caps = {
-        [T.AllowedGusset.ANY ]: null,
-        [T.AllowedGusset.NONE]: DEFAULT_HAB_CAPACITY*1.00,
-        [T.AllowedGusset.T1C ]: DEFAULT_HAB_CAPACITY*1.05,
-        [T.AllowedGusset.T2C ]: DEFAULT_HAB_CAPACITY*1.10,
-        [T.AllowedGusset.T2E ]: DEFAULT_HAB_CAPACITY*1.12,
-        [T.AllowedGusset.T3C ]: DEFAULT_HAB_CAPACITY*1.15,
-        [T.AllowedGusset.T3R ]: DEFAULT_HAB_CAPACITY*1.16,
-        [T.AllowedGusset.T4C ]: DEFAULT_HAB_CAPACITY*1.20,
-        [T.AllowedGusset.T4E ]: DEFAULT_HAB_CAPACITY*1.22,
-        [T.AllowedGusset.T4L ]: DEFAULT_HAB_CAPACITY*1.25,
-    };
-    return caps[allowedGussetSetting.value] ??
-           caps[allowedGussetChoices.value.at(-1)!] ?? // ANY is guaranteed to always be in allowedGussetChoices
-           DEFAULT_HAB_CAPACITY;
-});
 
 
 onMounted(async () => {
     showExtraSettingGusset.value = allowedGussetSetting.value !== T.AllowedGusset.ANY;
     showExtraSettingOnline.value = ihcSetting.value !== true;
-    showExtraSettingCapacity.value = !!capacitySetting.text;
 });
 
 
@@ -256,6 +243,7 @@ watch(userData, () => {
 watch(userData, updateSet);
 watch(includesSetting, updateSet);
 watch(reslottingSetting, updateSet);
+watch(swappingSetting, updateSet);
 watch(allowedGussetSetting, updateSet);
 watch(ihcSetting, updateSet);
 
@@ -284,6 +272,8 @@ function updateSet() {
 
     try {
         errorMessage.value = "";
+        updateAllowedGussets();
+
         setDili.value = searchDiliSet(userData.value?.items ?? [],
                                       maxSlot,
                                       false, // include deflector
@@ -291,13 +281,18 @@ function updateSet() {
                                       reslottingSetting.value,
                                       T.AllowedGusset.ANY);
         console.log("Dili set:", setDili.value);
-        setIHR.value = searchIHRSet(userData.value?.items ?? [],
-                                    maxSlot,
-                                    includesSetting.value.includes('Deflector'),
-                                    includesSetting.value.includes('SiaB'),
-                                    reslottingSetting.value,
-                                    allowedGussetSetting.value);
-        console.log("IHR set:", setIHR.value);
+        const targetGusset = swappingSetting.value && allowedGussetSetting.value === T.AllowedGusset.ANY ?
+                             allowedGussetChoices.value.at(-1) ?? T.AllowedGusset.NONE : allowedGussetSetting.value;
+        setIHR.value = searchIHRSets(userData.value?.items ?? [],
+                                     maxSlot,
+                                     includesSetting.value.includes('Deflector'),
+                                     includesSetting.value.includes('SiaB'),
+                                     reslottingSetting.value,
+                                     targetGusset);
+        if (swappingSetting.value === false) {
+            setIHR.value = setIHR.value.slice(-1);
+        }
+        console.log("IHR sets:", ...setIHR.value);
         setSlow.value = searchSlowIHRSet(userData.value?.items ?? [],
                                          maxSlot,
                                          includesSetting.value.includes('Deflector'),
@@ -306,12 +301,11 @@ function updateSet() {
                                          allowedGussetSetting.value);
         console.log("Slow-IHR set:", setSlow.value);
 
-        updateAllowedGussets();
 
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
         setDili.value = null;
-        setIHR.value = null;
+        setIHR.value = [];
         setSlow.value = null;
         return;
     }

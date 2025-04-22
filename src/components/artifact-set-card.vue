@@ -117,6 +117,8 @@ const entries = computed(() => {
     ret.set('hab', {
         text: getEffectDescription('hab_capacity_bonus'),
         valueUpd: `×${formatNumber(props.set.effects.get('hab_capacity_bonus'))}`,
+        // TODO: get base hab capacity from userData instead
+        valueNew: formatNumber(11340000000*props.set.effects.get('hab_capacity_bonus')),
         relevant: props.set.effects.get('hab_capacity_bonus') > 1,
     });
 
