@@ -7,20 +7,71 @@ The website is currently hosted on Netlify: <https://ei-coop-assistant.netlify.a
 [![Netlify Status](https://api.netlify.com/api/v1/badges/3761eac5-1efd-4414-8715-98e632eb3e3a/deploy-status)](https://app.netlify.com/sites/ei-coop-assistant/deploys)
 
 ## ✨ Features
+### Loading player inventory
+This tool loads player’s data via their EID:
+- Artifacts and stones
+- Saved artifact sets
+- Permit type (free/pro)
+- Epic researches
+- Colleggtibles
+- Mystical Eggs
+- Date and time of synchronization
+
 ### Hall of Artifacts
 Visualize your current inventory and saved artifact sets.
 Details on bonuses and stone slots are shown on mouse hover or keyboard focus.
 
-### Laying sets
-This tool analyzes a player’s inventory (via their EID) to determine optimal artifact sets and the tipping points between them, balancing egg laying and shipping rates based on deflector bonuses.
+### Earning (`/earning-set`)
+#### Artifact solver
+- **EB set** maximizes your EB in priority, and then your personal earnings
+- **Earning set** maximizes your personal earnings
+- **Mirror set** maximizes your personal earnings while mirroring
+#### Settings
+- **Cube swapping** includes the effect of the cube to the calculation if you don't want to hot-swap when buying
+- **Reslotting** allows moving stones around in your inventory
+- **Online** uses Max Running Chicken Bonus multiplier, while **Offline** uses away earnings
+#### Estimation for maxing shipping researches
+You must provide egg value, mirror EB and miscellaneous extra bonuses (from video doubler, events, teammate artifacts and contract modifiers).
+> ℹ️ Research cost reductions can be included. For example a 70% sale is equivalent to a $\frac{100}{100-70} = 1/0.3$ earning bonus.
 
-It offers three deflector modes: No Forced Deflector (maximizes personal rate without locking a deflector), Forced Deflector for Personal Contribution (includes the deflector that maximizes personal rate), and Forced Deflector for Teamwork (locks in the highest deflector).
+🟢 Green if you can complete without boosts, with an example of how long it takes at a certain population.\
+🟡 Yellow if you can but need boosts. Take note of the boost multiplier you need! It may require what some consider unreasonable boosts.\
+🔴 Red if you cannot complete even with the best boost combos.\
+The border circle illustrates how much different bonuses weight (logarithmic scale).
+#### Direct link for coop organizers
+For easier usage, coop organizers can prefill input fields for their members with GET parameters:
+- `egg_value`
+- `mirror`
+- `misc_bonus`
 
-An option to allow stone reslotting is also present.
+### Boosting (`/boosting-set`)
+#### Artifact solver
+- **Dilithium set** that's a dilithium set.
+- **IHR set** maximizes your IHR while boosting
+- **Slow-boost set** maximizes your contribution while using large tachyons
+#### Settings
+- **Including** a deflector and/or ship in a bottle in your IHR sets. IHR is prefered in your IHR set and team bonus is prefered in Slow-boost set
+- **Reslotting** allows moving stones around in your inventory
+- **Gusset** forces a specific gusset in IHR and Slow-boost sets. Choose *any* to disable
+- **Offline** mode enables Internal Hatchery Calm
+- **Hab capacity** can be forced to a desired value. If left empty, uses the highest possible capacity with your IHR set.
+#### Boost combos overview
+Selection of common boost combos with an overview of how much they fill your habs with your artifacts (dili and IHR set).\
+You can personalize the combos you want to show.\
+The green bar shows the contribution of the bulk of your boosts, the blue bar shows the extra contribution from left-over boosts (after boost beacons have expired for example), and the red bar is unfilled capacity.\
+On hover, extra details are shown on various milestones (boost expire, hab capacity reached, artifact change)
 
-The tool assumes all common research, vehicles, habs, and silos are purchased, habs are filled.
-Epic research, Hyperloop, and Colleggtibles are read from the user’s EID to calculate base rates (with no artifacts equipped, not even a Gusset).
-These rates can be customized in the settings if needed.
+### Laying (`/laying-set`)
+Determine optimal artifact sets and the tipping points between them, balancing egg laying and shipping rates based on deflector bonuses.\
+Assumes all common research, vehicles, habs, silos are purchased and habs are filled.
+If habs are not filled, consider using Slow-boost set instead.
+
+#### Settings
+- **Deflector mode** changes how deflectors are handled: maximizes personal rate (none), maximizes personal rate with a deflector equipped (contribution) or maximizes teamwork bonus (teamwork)
+- **Reslotting** allows moving stones around in your inventory
+- **Gusset** forces a specific gusset in your sets. Choose *any* to disable
+- **Show variants** shows equivalent sets when there are (limited to 6)
+
 
 ## 📦 Build Dependencies
 - Node.js

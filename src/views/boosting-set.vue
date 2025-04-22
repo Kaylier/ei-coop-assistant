@@ -50,7 +50,7 @@
         <setting-switch v-if="showExtraSettings || showExtraSettingOnline"
                         id="online"
                         v-model="ihcSetting"
-                        tooltip="Enables Internal Hatchery Calm if offline"
+                        tooltip="Offline enables Internal Hatchery Calm"
                         :options="[
                                   { value: true, label: 'offline' },
                                   { value: false, label: 'online' },
@@ -59,8 +59,9 @@
                       id="hab-capacity"
                       v-model="capacitySetting"
                       label="Hab capacity"
-                      tooltip="Capacity of your habs</br>
-                               Empty for automatic"/>
+                      tooltip="Maximum capacity of your habs</br>
+                               used in boost sets</br>
+                               Leave empty for automatic"/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
