@@ -309,6 +309,5 @@ export const boostSets = new Map<string, {
         freePermit: true,
         boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_50X10, streamlined: 6 }],
     }],
-
 ]);
 
