@@ -100,14 +100,25 @@
                 <span class="highlighted">{{ formatTime(time) }}</span>
             </span>
         </artifact-set-card>
-        <artifact-set-card v-for="set of setIHR"
+        <artifact-set-card v-for="set, i of setIHR"
             title="IHR set"
             description="Equip when boosting</br>with tachyon prisms."
             :set="set"
             :userData="userData"
             :stats="['ihr']"
             :substats="['hab', 'lay']"
-            />
+            >
+            <template v-if="i === 0">
+            <span>
+                <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
+            </span>
+            <span v-for="{ population, time } in IHRMilestones">
+                <span class="highlighted">{{ formatNumber(population) }}</span>
+                chickens after
+                <span class="highlighted">{{ formatTime(time) }}</span>
+            </span>
+            </template>
+        </artifact-set-card>
 
     </section>
 
@@ -202,6 +213,14 @@ const boostSetCardStats = computed(() => {
     return ret;
 });
 
+const IHRMilestones = computed(() => {
+    const ihrbonus = (setIHR.value?.at(0)?.effects.get('internal_hatchery_bonus') ?? 1)*
+                     (setIHR.value?.at(0)?.effects.get('boost_bonus') ?? 1);
+    return [
+        { population: baseIHR.value*ihrbonus*60*10*diliBonus.value, time: 60*10*diliBonus.value },
+        { population: baseIHR.value*ihrbonus*60*240*diliBonus.value, time: 60*240*diliBonus.value },
+    ];
+});
 const slowIHRMilestones = computed(() => {
     const ihrbonus = (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
                      (setSlow.value?.effects.get('boost_bonus') ?? 1);
