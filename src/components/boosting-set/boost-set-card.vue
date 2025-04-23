@@ -29,6 +29,9 @@
                     <span v-if="tag" class="time-tag" v-html="tag"/>
                 </div>
             </div>
+            <button v-if="timerData.length" class="timer-button" @click="timerToggle">
+                {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
+            </button>
         </div>
         <div id="details-frame">
             <span v-for="{ population, time, type } in milestones">
@@ -48,8 +51,9 @@
 
 <script setup lang="ts">
 import * as T from '@/scripts/types.ts';
-import { computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { formatNumber, formatTime } from '@/scripts/utils.ts';
+import type { Ref } from 'vue';
 
 
 const props = defineProps<{
@@ -215,6 +219,85 @@ const barData = computed(() => {
     return ret.reverse();
 });
 
+const timerData = computed(() => {
+    const ret = [];
+
+    for (const { time, type } of milestones.value) {
+        let title, msg;
+        switch (type) {
+            case 'filled':
+                title = "⏱️ eica - Habs filled";
+                break;
+            case 'artiswap':
+                // remove 5s to give some margin
+                title = "⏱️ eica - Time to swap artifacts";
+                break;
+            case 'boostswap':
+                title = "⏱️ eica - Time to restart boosts";
+                break;
+        }
+        if (title) {
+            ret.push({ time: time*60, title, msg });
+        }
+    }
+
+    return ret.sort((a,b) => a.time - b.time);
+});
+
+const timer: {
+    elapsed: Ref<number>,
+    isRunning: Ref<boolean>,
+    intervalId: number|null,
+    startTimestamp: number,
+    notifications: { time: number, title?: string, msg?: string }[],
+} = { elapsed: ref(0), isRunning: ref(false), intervalId: null, startTimestamp: 0, notifications: [] };
+
+onUnmounted(() => {
+    if (timer.intervalId != null) {
+        clearInterval(timer.intervalId);
+    }
+});
+
+function timerToggle() {
+    if (timer.isRunning.value) {
+        // stop timer
+        console.log("Stop timer");
+        timer.isRunning.value = false;
+        if (timer.intervalId != null) {
+            clearInterval(timer.intervalId);
+            timer.intervalId = null;
+        }
+    } else {
+        // start timer
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        timer.notifications = timerData.value;
+        if (timer.notifications.length === 0) return;
+
+        console.log("Start timer", timer.notifications);
+        timer.isRunning.value = true;
+        timer.elapsed.value = 0;
+        timer.startTimestamp = Date.now();
+        timer.intervalId = window.setInterval(timerUpdate, 1000);
+    }
+}
+
+function timerUpdate() {
+    timer.elapsed.value = (Date.now() - timer.startTimestamp)/1000;
+    if (timer.elapsed.value >= timer.notifications[0]?.time) {
+        if (Notification.permission === 'granted') {
+            const { title, msg } = timer.notifications[0];
+            new Notification(title || "⏱️ eica", { body: msg, });
+        }
+        timer.notifications = timer.notifications.slice(1);
+        if (timer.notifications.length === 0 && timer.isRunning.value) {
+            timerToggle();
+        }
+    }
+}
+
 </script>
 
 <style scoped>
@@ -230,7 +313,11 @@ const barData = computed(() => {
 
 #header-frame:hover ~ #details-frame,
 #header-frame:active ~ #details-frame,
-#header-frame:focus ~ #details-frame {
+#header-frame:focus ~ #details-frame,
+#bar-frame:hover ~ #details-frame,
+#bar-frame:active ~ #details-frame,
+#bar-frame:focus ~ #details-frame,
+#bar-frame:focus-within ~ #details-frame {
     display: flex;
 }
 
@@ -302,7 +389,7 @@ const barData = computed(() => {
     flex-flow: row nowrap;
     align-items: center;
     border: 1px var(--bg-alt-color) solid;
-    border-radius: 0.45em;
+    border-radius: 0.5em;
 }
 
 #timer {
@@ -367,5 +454,23 @@ img {
     color: color-mix(in srgb, var(--active-color) 75%, white);
     font-kerning: none;
 }
+
+.timer-button {
+    position: absolute;
+    top: 50%;
+    left: 0.45em;
+    padding: 0.2em 0.4em 0 .4em;
+    height: 1.2em;
+    min-width: 1.2em;
+    transform: translate(-50%, -50%);
+    border-radius: 1em;
+    font: inherit;
+    transition: all .15s;
+}
+
+.timer-button:hover {
+    min-width: 1.5em;
+}
+
 </style>
 
