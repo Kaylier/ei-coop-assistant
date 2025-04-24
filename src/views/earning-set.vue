@@ -28,7 +28,7 @@
                                   { value: false, label: 'offline' },
                                   ]"/>
     </section>
-    <section class="inputs">
+    <section id="inputs">
         <setting-text id="egg-value"
                       v-model="eggValueSetting"
                       label="Egg value"
@@ -51,7 +51,7 @@
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
-    <section v-if="!errorMessage" class="main-sets">
+    <section v-if="!errorMessage" id="main-sets">
 
         <template v-if="mergeEBEarningSets">
         <artifact-set-card v-if="optimalEBSet"
@@ -121,6 +121,10 @@ import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 
 
+const DEFAULT_EGG_VALUE = 0.05;
+const DEFAULT_MISC_VALUE = 4;
+const DEFAULT_MIRROR_VALUE = 1e24;
+
 const MIN_EGG_VALUE = 0.01; // default base for showing egg value bonus in progress circle
 const MIN_MISC_BONUS = 1; // default base for showing misc bonuses in progress circle
 const CR_TARGET_CNST = 3.340e45; // precomputed time constant for max shipping research
@@ -129,7 +133,7 @@ const CR_TARGET_CNST = 3.340e45; // precomputed time constant for max shipping r
 const graphTitleHtml = `
 Can you
 <span tabindex="0" class="tooltip-icon">
-    max CR? <sup>ⓘ</sup>
+    max relevant CR? <sup>ⓘ</sup>
     <span class="tooltip-text">
         Matter Reconfiguration level 403<br/>
         Timeline Splicing level 0<br/>
@@ -157,20 +161,23 @@ const onlineSetting = createSetting<boolean>({
 const eggValueSetting = createTextInputSetting<number>({
     localStorageKey: 'egg-value',
     queryParamKey: 'egg_value',
-    defaultValue: 0.05,
-    parser: parseNumber, formatter: formatNumber,
+    defaultValue: DEFAULT_EGG_VALUE,
+    parser: (s: string) => s ? parseNumber(s) : DEFAULT_EGG_VALUE,
+    formatter: formatNumber,
 });
 const mirrorSetting = createTextInputSetting<number>({
     localStorageKey: 'mirror',
     queryParamKey: 'mirror',
-    defaultValue: 1,
-    parser: parseNumber, formatter: formatNumber,
+    defaultValue: DEFAULT_MIRROR_VALUE,
+    parser: (s: string) => s ? parseNumber(s) : DEFAULT_MIRROR_VALUE,
+    formatter: formatNumber,
 });
 const miscBonusSetting = createTextInputSetting<number>({
     localStorageKey: 'misc-bonus',
     queryParamKey: 'misc_bonus',
-    defaultValue: 4,
-    parser: parseNumber, formatter: formatNumber,
+    defaultValue: DEFAULT_MISC_VALUE,
+    parser: (s: string) => s ? parseNumber(s) : DEFAULT_MISC_VALUE,
+    formatter: formatNumber,
 });
 
 

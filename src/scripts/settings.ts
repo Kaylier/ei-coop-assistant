@@ -103,6 +103,8 @@ export function createTextInputSetting<T>(options: {
     const urlParams = new URLSearchParams(window.location.search);
     const queryText = queryParamKey ? urlParams.get(queryParamKey) : null;
 
+    const ephemeral = (queryText != null);
+
     const text = shallowRef<string>(queryText ?? stored ?? "");
     const isValid = shallowRef<boolean>(false);
     const value = shallowRef<T>(defaultValue);
@@ -123,7 +125,7 @@ export function createTextInputSetting<T>(options: {
     }
 
     updateValue(false);
-    watch(text, () => updateValue());
+    watch(text, () => updateValue(!ephemeral));
 
     return reactive<TextInputSetting<T>>({
         text,

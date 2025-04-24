@@ -34,3 +34,8 @@
   to = "/index.html"
   status = 200
 
+[[redirects]]
+  from = "/error"
+  to = "/index.html"
+  status = 200
+

@@ -22,7 +22,6 @@ export function searchDiliSet(items: T.Item[],
         'boost_duration_bonus',
         'internal_hatchery_bonus',
         'boost_bonus',
-        'hab_capacity_bonus',
     ]);
 
     const requiredFamilies: T.ArtifactFamily[] = [];
@@ -64,8 +63,7 @@ export function searchIHRSet(items: T.Item[],
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
-        'team_laying_bonus',
-        'team_earning_bonus',
+        'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
         'internal_hatchery_bonus',
         'laying_bonus',
         'boost_bonus',
@@ -114,8 +112,7 @@ export function searchSlowIHRSet(items: T.Item[],
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
-        'team_laying_bonus',
-        'team_earning_bonus',
+        'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
         'internal_hatchery_bonus',
         'laying_bonus',
         'boost_bonus',
@@ -171,20 +168,20 @@ export const boostSets = new Map<string, {
     ["tach_1000x10+boost_2x30x2", {
         default: true,
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 2}],
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 2 }],
     }],
     ["tach_1000x10+boost_2x30x3", {
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 3 }],
     }],
     ["tach_1000x10+boost_2x30x4", {
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 4}],
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30, amount: 4 }],
     }],
     ["tach_1000x10+boost_10x10", {
         default: true,
         freePermit: true, proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_10X10}],
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_10X10 }],
     }],
     // 1-hour boosts
     ["tach_1000x60", {
@@ -195,7 +192,17 @@ export const boostSets = new Map<string, {
     ["tach_1000x60+boost_2x30", {
         default: true,
         freePermit: true, proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30}],
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30 }],
+    }],
+    ["tach_1000x60+boost_2x30x2", {
+        default: true,
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30, amount: 2 }],
+    }],
+    ["tach_1000x60+boost_2x30*2", {
+        default: true,
+        freePermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_2X30, streamlined: 2 }],
     }],
     // 2-hour boosts
     ["tach_100x120", {
@@ -208,16 +215,16 @@ export const boostSets = new Map<string, {
     }],
     ["tach_100x120+boost_2x30x2", {
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 2}],
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 2 }],
     }],
     ["tach_100x120+boost_2x30*2", {
         freePermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 2}],
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 2 }],
     }],
     ["tach_100x120+boost_2x30x3", {
         default: true,
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 3 }],
     }],
     ["tach_100x120+boost_2x30*3", {
         default: true,
@@ -226,16 +233,17 @@ export const boostSets = new Map<string, {
     }],
     ["tach_100x120+boost_2x30x4", {
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 4}],
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, amount: 4 }],
     }],
     ["tach_100x120+boost_2x30*4", {
         freePermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 4}],
+        boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_2X30, streamlined: 4 }],
     }],
     ["tach_100x120+boost_5x60", {
         freePermit: true, proPermit: true,
         boosts: [{ id: T.Boost.TACHYON_100X120 }, { id: T.Boost.BOOST_5X60 }],
     }],
+
     ["tach_100x120x2", {
         default: true,
         freePermit: true, proPermit: true,
@@ -247,15 +255,26 @@ export const boostSets = new Map<string, {
     }],
     ["tach_100x120x2+boost_2x30x2", {
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30, amount: 2}],
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30, amount: 2 }],
     }],
     ["tach_100x120x2+boost_2x30x3", {
         proPermit: true,
-        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30, amount: 3}],
+        boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_2X30, amount: 3 }],
     }],
     ["tach_100x120x2+boost_5x60", {
         proPermit: true,
         boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_5X60 }],
     }],
+
+    // Expensive boosts
+    ["tach_1000x60x3+boost_50x10x2", {
+        proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60, amount: 3 }, { id: T.Boost.BOOST_50X10, amount: 2 }],
+    }],
+    ["tach_1000x60+boost_50x10*6", {
+        freePermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X60 }, { id: T.Boost.BOOST_50X10, streamlined: 6 }],
+    }],
+
 ]);
 

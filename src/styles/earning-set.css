@@ -1,52 +1,20 @@
 
 
-section.inputs {
+#inputs {
     display: flex;
     flex-flow: row wrap;
     gap: 1em 3em;
     font-size: 0.8rem;
+    font-weight: bold;
     align-items: center;
 }
 
-
-.main-sets {
+#main-sets {
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;
     align-items: flex-start;
     gap: 2em;
-    text-align: center;
-}
-
-.main-set-frame {
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    gap: calc(2px + 0.2vw);
-    padding: calc(3px + 0.3vw);
-    background-color: #333333;
-    border-radius: 1em;
-    font-size: 11pt;
-}
-
-.main-set-frame h1 {
-    font-size: 12pt;
-    margin: 0;
-}
-
-.main-set-frame .frame {
-    width: min(20em, 90vw);
-}
-
-.main-set-frame .highlighted {
-    color: color-mix(in srgb, var(--active-color) 75%, white);
-}
-
-.main-research {
-    display: flex;
-    flex-direction: column;
-    align-content: flex-start;
-    align-items: center;
     text-align: center;
 }
 

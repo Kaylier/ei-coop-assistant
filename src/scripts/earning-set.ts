@@ -31,6 +31,7 @@ export function searchEBSet(items: T.Item[],
         'running_chicken_bonus',
         'away_earning_bonus',
         'research_cost_bonus',
+        'team_earning_bonus',
     ]);
 
     function scoreFn(effects: EffectMap): number[] {
@@ -42,8 +43,12 @@ export function searchEBSet(items: T.Item[],
                     * (online ? baseRCBonus + effects.get('running_chicken_bonus') : effects.get('away_earning_bonus'))
                     / (countCube ? effects.get('research_cost_bonus') : 1);
 
-        //return [ eb, 1/effects.get('research_cost_bonus') ];
-        return [ eb, (1 + eb)*bonus, 1/effects.get('research_cost_bonus') ];
+        return [
+            eb,
+            effects.get('team_earning_bonus'),
+            (1 + eb)*bonus,
+            1/effects.get('research_cost_bonus')
+        ];
     }
 
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
@@ -77,6 +82,7 @@ export function searchEarningSet(items: T.Item[],
         'running_chicken_bonus',
         'away_earning_bonus',
         'research_cost_bonus',
+        'team_earning_bonus',
     ]);
 
     function scoreFn(effects: EffectMap): number[] {
@@ -88,7 +94,11 @@ export function searchEarningSet(items: T.Item[],
                     * (online ? baseRCBonus + effects.get('running_chicken_bonus') : effects.get('away_earning_bonus'))
                     / (countCube ? effects.get('research_cost_bonus') : 1);
 
-        return [ (1 + eb)*bonus, 1/effects.get('research_cost_bonus') ];
+        return [
+            (1 + eb)*bonus,
+            effects.get('team_earning_bonus'),
+            1/effects.get('research_cost_bonus')
+        ];
     }
 
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
