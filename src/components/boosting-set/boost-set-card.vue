@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import * as T from '@/scripts/types.ts';
 import { ref, computed, onUnmounted } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import { formatNumber, formatTime } from '@/scripts/utils.ts';
 import type { Ref } from 'vue';
 
@@ -256,6 +257,17 @@ onUnmounted(() => {
     if (timer.intervalId != null) {
         clearInterval(timer.intervalId);
     }
+});
+
+onBeforeRouteLeave((to, from , next) => {
+    if (timer.isRunning.value) {
+        // If a timer is running, ask confirmation
+        if (!window.confirm("Do you really want to leave? A timer is running!")) {
+            next(false);
+            return false;
+        }
+    }
+    next();
 });
 
 function timerToggle() {
