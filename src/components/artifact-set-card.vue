@@ -82,7 +82,7 @@ const entries = computed(() => {
     });
 
     ret.set('away', {
-        text: "away earnings",
+        text: "earnings (away)",
         valueUpd: `×${formatNumber(awayEarningMultiplier.value)}`,
         relevant: awayEarningMultiplier.value > 1080 && awayEarningMultiplier.value > earningMultiplier.value,
     });

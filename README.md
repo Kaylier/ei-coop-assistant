@@ -52,6 +52,7 @@ For easier usage, coop organizers can prefill input fields for their members wit
 #### Settings
 - **Including** a deflector and/or ship in a bottle in your IHR sets. IHR is prefered in your IHR set and team bonus is prefered in Slow-boost set
 - **Reslotting** allows moving stones around in your inventory
+- **Gusset swapping** finds best IHR sets at different gusset levels to benefit from higher IHR at lower population
 - **Gusset** forces a specific gusset in IHR and Slow-boost sets. Choose *any* to disable
 - **Offline** mode enables Internal Hatchery Calm
 - **Hab capacity** can be forced to a desired value. If left empty, uses the highest possible capacity with your IHR set.

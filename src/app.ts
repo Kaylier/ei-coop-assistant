@@ -5,6 +5,52 @@ import * as T from '@/scripts/types.ts';
 import App from '@/app.vue';
 
 
+// TODO: delete this vv
+// Temporary transition of local storage key name pattern
+const keyMap = new Map<string, string[]>([
+    ['player-eid', ['player-eid']],
+    ['user-data', ['user-data']],
+
+    ['allow-reslotting', ['earning-reslotting', 'boosting-reslotting', 'laying-reslotting', 'optimal-reslotting']],
+
+    ['swap-cube', ['earning-cube-swap']],
+    ['online', ['earning-online']],
+    ['egg-value', ['earning-egg-value']],
+    ['mirror', ['earning-mirror']],
+    ['misc-bonus', ['earning-misc-bonus']],
+
+    ['boosting-includes', ['boosting-including']],
+    ['gusset-swapping', ['boosting-gusset-swap']],
+    ['allowed-gusset', ['boosting-gusset-target']],
+    ['ihc-enabled', ['boosting-offline']],
+    ['pinned-boost-sets', ['boosting-favourite-boost-sets']],
+
+    ['deflector-mode', ['laying-deflector-mode']],
+    ['allowed-gusset', ['laying-gusset-target']],
+    ['allow-variants', ['laying-variants']],
+    ['base-laying-rate', ['laying-base-laying-rate']],
+    ['base-shipping-rate', ['laying-base-shipping-rate']],
+
+]);
+for (var i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i)!;
+    const value = localStorage.getItem(key)!;
+    if ([...keyMap.values()].some(x => x.includes(key))) {
+        // Recent entry, do not touch
+    } else if (keyMap.has(key)) {
+        for (const dest of keyMap.get(key)!) {
+            if (!localStorage.getItem(dest)) {
+                // If no recent entry exists, move old entry
+                localStorage.setItem(dest, value);
+            }
+        }
+        localStorage.removeItem(key);
+    } else {
+        localStorage.removeItem(key);
+    }
+}
+// TODO: delete this ^^
+
 
 const app = createApp(App);
 

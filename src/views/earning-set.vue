@@ -147,33 +147,33 @@ Can you
 
 // Settings variables
 const swapCubeSetting = createSetting<boolean>({
-    localStorageKey: 'swap-cube',
+    localStorageKey: 'earning-cube-swap',
     defaultValue: false,
 });
 const reslottingSetting = createSetting<boolean>({
-    localStorageKey: 'allow-reslotting',
+    localStorageKey: 'earning-reslotting',
     defaultValue: false,
 });
 const onlineSetting = createSetting<boolean>({
-    localStorageKey: 'online',
+    localStorageKey: 'earning-online',
     defaultValue: true,
 });
 const eggValueSetting = createTextInputSetting<number>({
-    localStorageKey: 'egg-value',
+    localStorageKey: 'earning-egg-value',
     queryParamKey: 'egg_value',
     defaultValue: DEFAULT_EGG_VALUE,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_EGG_VALUE,
     formatter: formatNumber,
 });
 const mirrorSetting = createTextInputSetting<number>({
-    localStorageKey: 'mirror',
+    localStorageKey: 'earning-mirror',
     queryParamKey: 'mirror',
     defaultValue: DEFAULT_MIRROR_VALUE,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_MIRROR_VALUE,
     formatter: formatNumber,
 });
 const miscBonusSetting = createTextInputSetting<number>({
-    localStorageKey: 'misc-bonus',
+    localStorageKey: 'earning-misc-bonus',
     queryParamKey: 'misc_bonus',
     defaultValue: DEFAULT_MISC_VALUE,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_MISC_VALUE,

@@ -16,7 +16,7 @@
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
-    <section v-if="!errorMessage" class="main-sets">
+    <section v-if="!errorMessage" id="main-sets">
 
         <template v-if="userData" v-for="entry of sets">
             <artifact-set-card v-if="entry.solution"
@@ -30,7 +30,16 @@
     </section>
 </template>
 
-<style scoped src="@/styles/earning-set.css"></style>
+<style scoped>
+#main-sets {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    align-items: flex-start;
+    gap: 2em;
+    text-align: center;
+}
+</style>
 
 <script setup lang="ts">
 import { ref, shallowRef, triggerRef, watch } from 'vue';
@@ -49,7 +58,7 @@ type SetEntry = {
 };
 
 const reslottingSetting = createSetting<boolean>({
-    localStorageKey: 'allow-reslotting',
+    localStorageKey: 'optimal-reslotting',
     defaultValue: false,
 });
 

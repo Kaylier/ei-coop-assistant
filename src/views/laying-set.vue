@@ -183,29 +183,29 @@ const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 // Settings variables
 const deflectorModeSetting = createSetting<T.DeflectorMode>({
-    localStorageKey: 'deflector-mode',
+    localStorageKey: 'laying-deflector-mode',
     defaultValue: T.DeflectorMode.TEAMWORK,
 });
 const reslottingSetting = createSetting<boolean>({
-    localStorageKey: 'allow-reslotting',
+    localStorageKey: 'laying-reslotting',
     defaultValue: false,
 });
 const showVariantsSetting = createSetting<boolean>({
-    localStorageKey: 'allow-variants',
+    localStorageKey: 'laying-variants',
     defaultValue: false,
 });
 const allowedGussetSetting = createSetting<T.AllowedGusset>({
-    localStorageKey: 'allowed-gusset',
+    localStorageKey: 'laying-gusset-target',
     defaultValue: T.AllowedGusset.ANY,
 });
 const baseLayingRateSetting = createTextInputSetting<number|null>({
-    localStorageKey: 'base-laying-rate',
+    localStorageKey: 'laying-base-laying-rate',
     defaultValue: DEFAULT_BASE_LAYING_RATE,
     parser: (s: string) => s ? parseRate(s) : null,
     formatter: (x: number|null): string => formatRate(x ?? baseLayingRate.value),
 });
 const baseShippingRateSetting = createTextInputSetting<number|null>({
-    localStorageKey: 'base-shipping-rate',
+    localStorageKey: 'laying-base-shipping-rate',
     defaultValue: DEFAULT_BASE_SHIPPING_RATE,
     parser: (s: string) => s ? parseRate(s) : null,
     formatter: (x: number|null): string => formatRate(x ?? baseShippingRate.value),

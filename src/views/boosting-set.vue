@@ -100,6 +100,11 @@
                 <span class="highlighted">{{ formatTime(time) }}</span>
             </span>
         </artifact-set-card>
+        <span v-else class="invalid-text">
+            You don't have enough artifacts<br/>
+            to build a Slow-boost set<br/>
+            with the selected constraints
+        </span>
         <artifact-set-card v-for="set, i of setIHR"
             title="IHR set"
             description="Equip when boosting</br>with tachyon prisms."
@@ -119,6 +124,11 @@
             </span>
             </template>
         </artifact-set-card>
+        <span v-if="setIHR.length === 0" class="invalid-text">
+            You don't have enough artifacts<br/>
+            to build an IHR set<br/>
+            with the selected constraints
+        </span>
 
     </section>
 
@@ -154,27 +164,27 @@ import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
 
 const includesSetting = createSetting<string[]>({
-    localStorageKey: 'boosting-includes',
+    localStorageKey: 'boosting-including',
     defaultValue: [],
 });
 const reslottingSetting = createSetting<boolean>({
-    localStorageKey: 'allow-reslotting',
+    localStorageKey: 'boosting-reslotting',
     defaultValue: false,
 });
 const swappingSetting = createSetting<boolean>({
-    localStorageKey: 'gusset-swapping',
+    localStorageKey: 'boosting-gusset-swap',
     defaultValue: false,
 });
 const allowedGussetSetting = createSetting<T.AllowedGusset>({
-    localStorageKey: 'allowed-gusset',
+    localStorageKey: 'boosting-gusset-target',
     defaultValue: T.AllowedGusset.ANY,
 });
 const ihcSetting = createSetting<boolean>({
-    localStorageKey: 'ihc-enabled',
+    localStorageKey: 'boosting-offline',
     defaultValue: true,
 });
 const pinnedBoostSetting = createSetting<Set<string>>({
-    localStorageKey: 'pinned-boost-sets',
+    localStorageKey: 'boosting-favourite-boost-sets',
     defaultValue: new Set([...boostSets.entries()].filter(([,x]) => x.default).map(([k,]) => k)),
     parser: (s: string) => new Set(JSON.parse(s)),
     formatter: (x: Set<string>) => JSON.stringify([...x]),
