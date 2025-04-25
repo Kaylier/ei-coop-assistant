@@ -245,6 +245,8 @@ const timerData = computed(() => {
     return ret.sort((a,b) => a.time - b.time);
 });
 
+const canNotify = 'Notification' in window;
+
 const timer: {
     elapsed: Ref<number>,
     isRunning: Ref<boolean>,
@@ -281,7 +283,7 @@ function timerToggle() {
         }
     } else {
         // start timer
-        if (Notification.permission === 'default') {
+        if (canNotify && Notification.permission === 'default') {
             Notification.requestPermission();
         }
 
@@ -299,7 +301,7 @@ function timerToggle() {
 function timerUpdate() {
     timer.elapsed.value = (Date.now() - timer.startTimestamp)/1000;
     if (timer.elapsed.value >= timer.notifications[0]?.time) {
-        if (Notification.permission === 'granted') {
+        if (canNotify && Notification.permission === 'granted') {
             const { title, msg } = timer.notifications[0];
             new Notification(title || "⏱️ eica", { body: msg, });
         }
