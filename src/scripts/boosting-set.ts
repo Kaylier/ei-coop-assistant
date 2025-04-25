@@ -79,8 +79,17 @@ export function searchIHRSets(items: T.Item[],
         ];
     }
 
-    // No restriction on deflector/ship, prefer the one that maximizes IHR
-    // ie T3R with life stone will be prefered over T4C
+    // Restrict to the highest deflector and ship bonus
+    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.get('team_laying_bonus')), 0);
+    const bestDeflectors = deflectors.filter(x => isclose(x.effects.get('team_laying_bonus'), bestLayingBonus));
+    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.get('team_earning_bonus')), 0);
+    const bestShips = ships.filter(x => isclose(x.effects.get('team_earning_bonus'), bestEarningBonus));
+    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+
 
     const requiredFamilies: T.ArtifactFamily[] = [];
     if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
