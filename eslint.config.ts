@@ -24,6 +24,7 @@ export default defineConfigWithVueTs(
     rules: {
       'vue/require-v-for-key': 'off',
       'vue/no-use-v-if-with-v-for': 'off',
+      'vue/no-unused-vars': [ 'error', { ignorePattern: '^_' } ]
     },
   }
 )

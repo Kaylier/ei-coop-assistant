@@ -217,16 +217,16 @@ const IHRMilestones = computed(() => {
     const ihrbonus = (setIHR.value?.at(0)?.effects.get('internal_hatchery_bonus') ?? 1)*
                      (setIHR.value?.at(0)?.effects.get('boost_bonus') ?? 1);
     return [
-        { population: baseIHR.value*ihrbonus*60*10*diliBonus.value, time: 60*10*diliBonus.value },
-        { population: baseIHR.value*ihrbonus*60*240*diliBonus.value, time: 60*240*diliBonus.value },
+        { population: baseIHR.value*ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
+        { population: baseIHR.value*ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
     ];
 });
 const slowIHRMilestones = computed(() => {
     const ihrbonus = (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
                      (setSlow.value?.effects.get('boost_bonus') ?? 1);
     return [
-        { population: baseIHR.value*ihrbonus*60*10*diliBonus.value, time: 60*10*diliBonus.value },
-        { population: baseIHR.value*ihrbonus*60*240*diliBonus.value, time: 60*240*diliBonus.value },
+        { population: baseIHR.value*ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
+        { population: baseIHR.value*ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
     ];
 });
 
