@@ -1,5 +1,7 @@
 <template>
-    <div id="card-frame">
+    <div id="card-frame" tabindex="0"
+         @focusin="collapsed = false"
+         @focusout="collapsed = true">
         <div id="header-frame">
             <button v-if="pinned !== undefined" id="pin"
                     title="Mark as favourite"
@@ -23,28 +25,64 @@
                 </div>
             </div>
         </div>
-        <div id="bar-frame">
-            <div id="bar">
-                <div v-for="{ style, speed, tag} in barData" class="bar-fill" :class="speed" :style="style">
-                    <span v-if="tag" class="time-tag" v-html="tag"/>
-                </div>
-            </div>
-            <button v-if="timerData.length" class="timer-button" @click="timerToggle">
-                {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
-            </button>
+        <div v-if="!collapsed" class="tag-container tag-container-population">
+            <span v-for="(segment, i) in segments"
+                  class="time-tag"
+                  :class="{ focused: focusedSegment === i }"
+                  :style="{ right: `${100-segment.population1*100}%` }"
+                  v-html="formatNumber(segment.population)"
+                  />
         </div>
-        <div id="details-frame">
-            <span v-for="{ population, time, type } in milestones">
-                <span v-if="type === 'filled'">Habs filled</span>
-                <span v-if="type === 'artiswap'">Swap artifacts</span>
-                <span v-if="type === 'boostswap'">Swap boosts</span>
-                <span v-if="type === 'boostend'">Boosts end</span>
-                after
-                <span class="highlighted">{{ formatTime(time, 'm') }}</span>
-                at
-                <span class="highlighted">{{ formatNumber(population) }}</span>
-                chickens
-            </span>
+        <div id="details-frame" :class="{ collapsed: collapsed }">
+            <svg width="100%" :viewBox="`0 0 100 ${DETAIL_GRAPH_RATIO*100}`">
+                <g>
+                <template v-for="(segment, i) in segments">
+                <g class="details-graph-segment"
+                   :class="{ hidden: collapsed }"
+                   @mouseenter="focusedSegment = i"
+                   @touchstart="focusedSegment = i"
+                   @mouseleave="focusedSegment = undefined"
+                   @touchend="focusedSegment = undefined"
+                   >
+                    <polygon :class="segment.speed"
+                             :points="`${segment.time1*100-1},${DETAIL_GRAPH_RATIO*100-2}
+                                       ${segment.population1*100-1},2
+                                       ${segment.population0*100-1},2
+                                       ${segment.time0*100-1},${DETAIL_GRAPH_RATIO*100-2}`"
+                             />
+                </g>
+                </template>
+                </g>
+                <g>
+                    <rect v-for="segment in segments" class="details-graph-popbar" :class="segment.speed"
+                          x="0"
+                          y="0"
+                          :width="segment.population1*100"
+                          height="3"
+                          rx="1.5"
+                          ry="1.5"
+                          />
+                </g>
+                <g>
+                    <rect v-for="segment in segments" class="details-graph-popbar" :class="segment.speed"
+                          x="0"
+                          :y="DETAIL_GRAPH_RATIO*100-3"
+                          :width="segment.time1*100"
+                          height="3"
+                          rx="1.5"
+                          ry="1.5"
+                          />
+                </g>
+            </svg>
+        </div>
+        <div class="tag-container">
+            <span v-for="(segment, i) in segments"
+                  class="time-tag"
+                  :class="{ focused: focusedSegment === i }"
+                  :style="{ right: collapsed ? `${100-segment.population1*100}%`
+                                             : `${100-segment.time1*100}%`}"
+                  v-html="formatTime(segment.time, 'm')"
+                  />
         </div>
     </div>
 </template>
@@ -55,6 +93,9 @@ import { ref, computed, onUnmounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { formatNumber, formatTime } from '@/scripts/utils.ts';
 import type { Ref } from 'vue';
+
+
+const DETAIL_GRAPH_RATIO = .25;
 
 
 const props = defineProps<{
@@ -68,6 +109,12 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'changed', value: boolean): void
 }>();
+
+
+const collapsed = ref<boolean>(true);
+
+const focusedSegment = ref<number>();
+
 
 enum BoostType {
     TACHYON,
@@ -116,8 +163,6 @@ const geCost = computed(() => {
     }
     return tot;
 });
-
-const maxCapacity = computed(() => props.stats.at(-1)?.habCapacity ?? 11340000000);
 
 const milestones = computed(() => {
     // Find the times when the boost state changes
@@ -170,7 +215,7 @@ const milestones = computed(() => {
             const type = nextStatIdx == props.stats.length ? 'filled' : 'artiswap';
             ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type });
 
-            if (nextStatIdx >= props.stats.length) break;
+            if (nextStatIdx >= props.stats.length) return ret;
             ihr = props.stats[nextStatIdx].ihr;
             habCapacity = props.stats[nextStatIdx].habCapacity;
             filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
@@ -187,38 +232,34 @@ const milestones = computed(() => {
     return ret;
 });
 
-const barData = computed(() => {
-    const ret = [];
+const segments = computed(() => {
+    const ret: {
+    population0: number, population1: number, population: number,
+    time0: number, time1: number, time: number,
+    speed: string,
+    }[] = [];
+    if (milestones.value.length === 0) return ret;
 
-    const startPopulation = props.startPopulation ?? 0;
-    if ((startPopulation ?? 0) > 0) {
-        // Start at non-empty habs
+    const maxTime = milestones.value.at(-1)!.time;
+    const maxPopulation = milestones.value.at(-1)!.population;
+
+    let prevTime = 0, prevPopulation = 0;
+    for (const { time, population, speed } of milestones.value) {
         ret.push({
-            style: { width: `${100*startPopulation/maxCapacity.value}%` },
-            //speed: speed,
-            //tag: formatTime(time, 'm'),
+            population0: prevPopulation/maxPopulation,
+            population1: population/maxPopulation,
+            time0: prevTime/maxTime,
+            time1: time/maxTime,
+            population,
+            time,
+            speed,
         });
+        prevTime = time;
+        prevPopulation = population;
     }
-
-    for (const { population, time, speed } of milestones.value) {
-        if (population < maxCapacity.value) {
-            ret.push({
-                style: { width: `${100*population/maxCapacity.value}%` },
-                speed: speed,
-                tag: formatTime(time, 'm'),
-            });
-        } else {
-            ret.push({
-                style: { width: `100%` },
-                speed: speed,
-                tag: formatTime(time, 'm'),
-            });
-            break;
-        }
-    }
-
     return ret.reverse();
 });
+
 
 const timerData = computed(() => {
     const ret = [];
@@ -323,17 +364,13 @@ function timerUpdate() {
     align-items: center;
     border-radius: 1em;
     font: 1.1em always-together;
+    outline: none;
 }
 
-#header-frame:hover ~ #details-frame,
-#header-frame:active ~ #details-frame,
-#header-frame:focus ~ #details-frame,
-#bar-frame:hover ~ #details-frame,
-#bar-frame:active ~ #details-frame,
-#bar-frame:focus ~ #details-frame,
-#bar-frame:focus-within ~ #details-frame {
-    display: flex;
+#card-frame:focus-within #header-frame {
+    outline: auto;
 }
+
 
 #header-frame {
     position: relative;
@@ -347,15 +384,19 @@ function timerUpdate() {
 }
 
 #details-frame {
-    position: absolute;
-    top: 100%;
-    display: none;
-    flex-flow: column nowrap;
-    padding: 0.5em 1em 0.2em 1em;
-    background-color: #333333;
-    border-radius: 0 0 1em 1em;
-    z-index: 1;
-    box-shadow: 0 0 .5em var(--bg-hover-color) inset;
+    position: relative;
+    width: 16em;
+    border: 1px var(--bg-alt-color) solid;
+    border-radius: 0.48em;
+    padding: 0.16em;
+    background: var(--bg-color);
+    height: calc(16em * v-bind(DETAIL_GRAPH_RATIO));
+    overflow: clip;
+    transition: height 0.3s;
+}
+
+#details-frame.collapsed {
+    height: 0.48em;
 }
 
 #pin {
@@ -370,9 +411,7 @@ function timerUpdate() {
     cursor: pointer;
 }
 
-#pin:hover,
-#pin:focus:hover {
-    outline: none;
+#pin:hover {
     color: var(--valid-hover-color);
 }
 
@@ -441,27 +480,66 @@ function timerUpdate() {
     background: linear-gradient(to right, #3b665d, #387);
 }
 
+.details-graph-popbar,
+.details-graph-segment {
+    stroke: var(--bg-color);
+    stroke-width: 0.1;
+}
+
+.details-graph-popbar:not(:first-child),
+.details-graph-segment:not(:first-child) {
+    filter: drop-shadow(1px 0 0.5px #0004);
+}
+
+.details-graph-segment {
+    opacity: 1;
+    transition: opacity .2s;
+}
+.details-graph-segment.hidden {
+    opacity: 0;
+}
+
+.details-graph-segment       .fast { fill: #3848; }
+.details-graph-segment:hover .fast { fill: #384; }
+.details-graph-segment       .slow { fill: #3878; }
+.details-graph-segment:hover .slow { fill: #387; }
+
+.details-graph-popbar.fast       { fill: #384; }
+.details-graph-popbar.slow       { fill: #387; }
+
 img {
     height: 0.75em;
     transform: scale(1.5);
 }
 
+.tag-container {
+    position: relative;
+    width: 16em;
+}
+
+.tag-container-population {
+    z-index: 1;
+    top: 0.8em;
+}
+
 .time-tag {
     position: absolute;
     padding: .25em .5em 0 .5em;
-    right: 0;
-    top: calc(100% + .2em);
     border-radius: .5em 0 .5em .5em;
     box-shadow: .0em 0 .4em #0008;
     background: var(--bg-alt-color);
     opacity: 0.9;
     text-wrap: nowrap;
+    transition: right 0.3s;
 }
 
 .time-tag:hover,
 .time-tag:active,
-.time-tag:focus {
+.time-tag:focus,
+.time-tag.focused {
     z-index: 1;
+    opacity: 1;
+    box-shadow: .0em 0 .6em #000;
 }
 
 .highlighted {
