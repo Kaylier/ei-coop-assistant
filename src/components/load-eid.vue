@@ -1,9 +1,9 @@
 <template>
-    <section class="loading">
+    <section class="loading" @focusin="focused = true" @focusout="focused = false">
         <form action="javascript:void(0);" id="eid">
             <input type="text"
                    placeholder="EIxxxxxxxxxxxxxxxx"
-                   :class="{ invalid: !checkEID(eid) }"
+                   :class="{ invalid: !checkEID(eid), concealed: !focused }"
                    v-model="eid"
                    />
             <button :disabled="!checkEID(eid) || isLoadingEID"
@@ -52,6 +52,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'onloaded', userData: T.UserData): void
 }>();
+
+const focused = ref<boolean>(false);
 
 const eid = ref<string>("");
 const isLoadingEID = ref<boolean>(false);
@@ -133,6 +135,12 @@ async function load(eid: string) {
 
 #eid input {
     border-radius: 10px 0 0 10px;
+}
+
+#eid input.concealed:not(:placeholder-shown) {
+    color: transparent;
+    text-shadow: 0 0 .5em var(--text-color);
+    text-align: center;
 }
 
 #eid button {
