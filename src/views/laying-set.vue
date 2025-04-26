@@ -155,7 +155,7 @@
 <style scoped src="@/styles/laying-set.css"></style>
 
 <script setup lang="ts">
-import { onMounted, ref, shallowRef, computed, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';

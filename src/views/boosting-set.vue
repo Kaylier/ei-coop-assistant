@@ -159,7 +159,7 @@
 <style scoped src="@/styles/boosting-set.css"></style>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch, onMounted } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseNumber, formatNumber, formatTime } from '@/scripts/utils.ts';
 import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';

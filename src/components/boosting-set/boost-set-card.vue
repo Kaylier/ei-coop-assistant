@@ -1,7 +1,7 @@
 <template>
     <div id="card-frame" tabindex="0"
-         @focusin="collapsed = false"
-         @focusout="collapsed = true">
+         @focusin="onfocusin"
+         @focusout="onfocusout">
         <div id="header-frame">
             <button v-if="pinned !== undefined" id="pin"
                     title="Mark as favourite"
@@ -21,11 +21,11 @@
             <div id="boost-info">
                 <div v-for="boost in props.boosts" class="boost">
                     <img v-for="_ in (boost.amount ?? 1)*(boost.streamlined ?? 1)" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
-                    {{ boostMetadata[boost.id].text ?? 'unknown boost' }}
+                    {{ Boost.getDescription(boost.id) }}
                 </div>
             </div>
         </div>
-        <div v-if="!collapsed" class="tag-container tag-container-population">
+        <div v-if="!collapsed" class="tag-container-population">
             <span v-for="(segment, i) in segments"
                   class="time-tag"
                   :class="{ focused: focusedSegment === i }"
@@ -54,29 +54,30 @@
                 </template>
                 </g>
                 <g>
-                    <rect v-for="segment in segments" class="details-graph-popbar" :class="segment.speed"
-                          x="0"
-                          y="0"
+                    <rect v-for="segment in segments"
+                          class="details-graph-bar" :class="segment.speed"
+                          x="0" y="0" height="3" rx="1.5" ry="1.5"
                           :width="segment.population1*100"
-                          height="3"
-                          rx="1.5"
-                          ry="1.5"
                           />
                 </g>
                 <g>
-                    <rect v-for="segment in segments" class="details-graph-popbar" :class="segment.speed"
-                          x="0"
+                    <rect v-for="segment in segments"
+                          class="details-graph-bar" :class="segment.speed"
+                          x="0" height="3" rx="1.5" ry="1.5"
                           :y="DETAIL_GRAPH_RATIO*100-3"
                           :width="segment.time1*100"
-                          height="3"
-                          rx="1.5"
-                          ry="1.5"
                           />
                 </g>
             </svg>
+            <button v-if="timerData.length"
+                    id="timer-button"
+                    :class="{ hidden: collapsed }"
+                    @click="timerToggle">
+                {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
+            </button>
         </div>
-        <div class="tag-container">
-            <span v-for="(segment, i) in segments"
+        <div class="tag-container-time">
+            <span v-for="(segment, i) in segments.filter(x => x.time)"
                   class="time-tag"
                   :class="{ focused: focusedSegment === i }"
                   :style="{ right: collapsed ? `${100-segment.population1*100}%`
@@ -91,11 +92,12 @@
 import * as T from '@/scripts/types.ts';
 import { ref, computed, onUnmounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { formatNumber, formatTime } from '@/scripts/utils.ts';
+import { formatNumber, formatTime, clamp } from '@/scripts/utils.ts';
+import * as Boost from '@/scripts/boosts.ts';
 import type { Ref } from 'vue';
 
 
-const DETAIL_GRAPH_RATIO = .25;
+const DETAIL_GRAPH_RATIO = .30;
 
 
 const props = defineProps<{
@@ -111,47 +113,24 @@ const emit = defineEmits<{
 }>();
 
 
-const collapsed = ref<boolean>(true);
+const focused = ref<boolean>(false);
+let debounceTimer: ReturnType<typeof setTimeout>;
+function onfocusin() {
+    clearTimeout(debounceTimer);
+    focused.value = true;
+}
+function onfocusout() {
+    debounceTimer = setTimeout(() => focused.value = false, 100);
+}
+const collapsed = computed(() => !focused.value && !timer.isRunning.value);
 
 const focusedSegment = ref<number>();
 
 
-enum BoostType {
-    TACHYON,
-    BOOST,
-};
-
-const boostMetadata = {
-    [T.Boost.TACHYON_10X30  ]: {
-        type: BoostType.TACHYON, value:   10, duration:  30, tokens: 1, ge:   200, text: "10× for 30min" },
-    [T.Boost.TACHYON_10X10  ]: {
-        type: BoostType.TACHYON, value:   10, duration:  10, tokens: 0, ge:    50, text: "10× for 10min" },
-    [T.Boost.TACHYON_10X240 ]: {
-        type: BoostType.TACHYON, value:   10, duration: 240, tokens: 0, ge:   500, text: "10× for 4hr" },
-    [T.Boost.TACHYON_100X20 ]: {
-        type: BoostType.TACHYON, value:  100, duration:  20, tokens: 3, ge:  1000, text: "100× for 20min" },
-    [T.Boost.TACHYON_100X10 ]: {
-        type: BoostType.TACHYON, value:  100, duration:  10, tokens: 2, ge:  1000, text: "100× for 10min" },
-    [T.Boost.TACHYON_100X120]: {
-        type: BoostType.TACHYON, value:  100, duration: 120, tokens: 2, ge:  5000, text: "100× for 2hr" },
-    [T.Boost.TACHYON_1000X10]: {
-        type: BoostType.TACHYON, value: 1000, duration:  10, tokens: 4, ge: 12000, text: "1000× for 10min" },
-    [T.Boost.TACHYON_1000X60]: {
-        type: BoostType.TACHYON, value: 1000, duration:  60, tokens: 4, ge: 25000, text: "1000× for 1hr" },
-    [T.Boost.BOOST_2X30     ]: {
-        type: BoostType.BOOST  , value:    2, duration:  30, tokens: 1, ge:  1000, text: "2× for 30min" },
-    [T.Boost.BOOST_10X10    ]: {
-        type: BoostType.BOOST  , value:   10, duration:  10, tokens: 4, ge:  8000, text: "10× for 10min" },
-    [T.Boost.BOOST_5X60     ]: {
-        type: BoostType.BOOST  , value:    5, duration:  60, tokens: 3, ge: 15000, text: "5× for 1hr" },
-    [T.Boost.BOOST_50X10    ]: {
-        type: BoostType.BOOST  , value:   50, duration:  10, tokens: 8, ge: 50000, text: "50× for 10min" },
-};
-
 const tokenCost = computed(() => {
     let tot = 0;
     for (const b of props.boosts) {
-        tot += boostMetadata[b.id].tokens*(b.amount ?? 1)*(b.streamlined ?? 1);
+        tot += Boost.getTokenCost(b.id)*(b.amount ?? 1)*(b.streamlined ?? 1);
     }
     return tot;
 });
@@ -159,17 +138,24 @@ const tokenCost = computed(() => {
 const geCost = computed(() => {
     let tot = 0;
     for (const b of props.boosts) {
-        tot += boostMetadata[b.id].ge*(b.amount ?? 1)*(b.streamlined ?? 1);
+        tot += Boost.getGECost(b.id)*(b.amount ?? 1)*(b.streamlined ?? 1);
     }
     return tot;
 });
 
-const milestones = computed(() => {
+type Milestone = {
+    time: number,
+    population: number,
+    speed: 'fast'|'slow',
+    type: 'artiswap'|'boostswap'|'boostend'|'filled',
+};
+
+const milestones = computed<Milestone[]>(() => {
     // Find the times when the boost state changes
     const times: number[] = [];
     const startTimes: number[] = [];
     for (const boost of props.boosts) {
-        const duration = boostMetadata[boost.id].duration;
+        const duration = Boost.getDuration(boost.id);
         for (let i = 1; i <= (boost.streamlined ?? 1); i++) {
             if (!times.includes(duration*i)) times.push(duration*i);
         }
@@ -179,27 +165,32 @@ const milestones = computed(() => {
     }
     times.sort((a,b) => a-b);
 
-    const ret = [];
+    const ret: Milestone[] = [];
 
-    let nextStatIdx = 1;
-    let ihr = props.stats[0].ihr;
-    let habCapacity = props.stats[0].habCapacity;
+    let nextStatIdx = 0;
+    let ihr = 0, habCapacity = 0;
 
     // At each time threshold, calculate the increased population
-    let population = (props.startPopulation ?? 0), prevTime = 0;
+    let population = Math.max(props.startPopulation ?? 0, 0), prevTime = 0;
+
+    while (population >= habCapacity) {
+        if (nextStatIdx === props.stats.length) return ret;
+        ihr = props.stats[nextStatIdx].ihr;
+        habCapacity = props.stats[nextStatIdx].habCapacity;
+        nextStatIdx++;
+    }
 
     for (const time of times) {
         // step between prevTime and time
         let totalTachyon = 0;
         let totalBoost = 0;
         for (const boost of props.boosts) {
-            const boostData = boostMetadata[boost.id];
-            if (boostData.duration*(boost.streamlined ?? 1) < time) continue;
+            if (Boost.getDuration(boost.id)*(boost.streamlined ?? 1) < time) continue;
 
-            if (boostData.type === BoostType.TACHYON) {
-                totalTachyon += boostData.value*(boost.amount ?? 1);
-            } else if (boostData.type === BoostType.BOOST) {
-                totalBoost += boostData.value*(boost.amount ?? 1);
+            if (Boost.isTachyon(boost.id)) {
+                totalTachyon += Boost.getMultiplier(boost.id)*(boost.amount ?? 1);
+            } else if (Boost.isBoostBeacon(boost.id)) {
+                totalBoost += Boost.getMultiplier(boost.id)*(boost.amount ?? 1);
             }
         }
         // no more tachyons? we're done.
@@ -207,24 +198,32 @@ const milestones = computed(() => {
         const boostBonus = (totalTachyon || 1)*(totalBoost || 1);
         const speed = totalBoost ? 'fast' : 'slow';
 
-        let filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
-        while (population < habCapacity && filledTime < time) {
-            // Milestone: Hab capacity reached + potential artifact swap
-            population += boostBonus*ihr*(filledTime - prevTime)*props.dili;
-            prevTime = filledTime;
-            const type = nextStatIdx == props.stats.length ? 'filled' : 'artiswap';
-            ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type });
 
-            if (nextStatIdx >= props.stats.length) return ret;
+        while (true) {
+            const filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
+            if (filledTime >= time) break;
+
+            // Milestone: Hab capacity reached + potential artifact swap
+            population = habCapacity;
+            prevTime = filledTime;
+
+            if (nextStatIdx === props.stats.length) {
+                // Milestone: We're out of IHR sets, we're done
+                ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type: 'filled' });
+                return ret;
+            }
+
+            // Milestone: Move to next IHR set
+            ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type: 'artiswap' });
             ihr = props.stats[nextStatIdx].ihr;
             habCapacity = props.stats[nextStatIdx].habCapacity;
-            filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
             nextStatIdx++;
         }
 
         // Milestone: boost state change
         population += boostBonus*ihr*(time - prevTime)*props.dili;
         prevTime = time;
+
         const type = startTimes.includes(time) ? 'boostswap' : 'boostend';
         ret.push({ population, time: time*props.dili, speed, type });
     }
@@ -232,18 +231,35 @@ const milestones = computed(() => {
     return ret;
 });
 
-const segments = computed(() => {
-    const ret: {
-    population0: number, population1: number, population: number,
-    time0: number, time1: number, time: number,
-    speed: string,
-    }[] = [];
+type Segment = {
+    population0: number, population1: number, // population ratio on the graph
+    population: number, // actual population
+    time0: number, time1: number, // time ratio on the graph
+    time: number, // actual time
+    speed: ''|'fast'|'slow',
+};
+
+const segments = computed<Segment[]>(() => {
+    const ret: Segment[] = [];
     if (milestones.value.length === 0) return ret;
 
     const maxTime = milestones.value.at(-1)!.time;
-    const maxPopulation = milestones.value.at(-1)!.population;
+    const maxPopulation = props.stats.at(-1)!.habCapacity; // stats not empty when milestones not empty
 
-    let prevTime = 0, prevPopulation = 0;
+    let prevTime = 0, prevPopulation = clamp(props.startPopulation ?? 0, 0, maxPopulation);
+
+    if (prevPopulation > 0) {
+        ret.push({
+            population0: 0,
+            population1: prevPopulation/maxPopulation,
+            time0: 0,
+            time1: 0,
+            population: prevPopulation,
+            time: 0,
+            speed: '',
+        });
+    }
+
     for (const { time, population, speed } of milestones.value) {
         ret.push({
             population0: prevPopulation/maxPopulation,
@@ -371,7 +387,6 @@ function timerUpdate() {
     outline: auto;
 }
 
-
 #header-frame {
     position: relative;
     display: flex;
@@ -381,6 +396,11 @@ function timerUpdate() {
     background-color: #333333;
     border-radius: 2em 2em 0 0;
     box-shadow: 0 0 .5em var(--bg-hover-color) inset;
+}
+
+img {
+    height: 0.75em;
+    transform: scale(1.5);
 }
 
 #details-frame {
@@ -445,48 +465,13 @@ function timerUpdate() {
     border-radius: 0.5em;
 }
 
-#timer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    aspect-ratio: 1;
-    border-radius: 0.45em;
-    background: var(--bg-alt-color);
-}
-
-#bar {
-    position: relative;
-    width: 16em;
-    height: .5em;
-    margin: 0.2em;
-    border-radius: .25em;
-    background: #b434;
-}
-
-.bar-fill {
-    position: absolute;
-    background: linear-gradient(to right, #444, #888);
-    height: 100%;
-    border-radius: .5em;
-    box-shadow: .2em 0 .4em #0008;
-}
-
-.bar-fill.fast {
-    background: linear-gradient(to right, #3b6644, #384);
-}
-
-.bar-fill.slow {
-    background: linear-gradient(to right, #3b665d, #387);
-}
-
-.details-graph-popbar,
+.details-graph-bar,
 .details-graph-segment {
     stroke: var(--bg-color);
     stroke-width: 0.1;
 }
 
-.details-graph-popbar:not(:first-child),
+.details-graph-bar:not(:first-child),
 .details-graph-segment:not(:first-child) {
     filter: drop-shadow(1px 0 0.5px #0004);
 }
@@ -499,25 +484,25 @@ function timerUpdate() {
     opacity: 0;
 }
 
+.details-graph-segment             { fill: #8888; }
+.details-graph-segment:hover       { fill: #888; }
 .details-graph-segment       .fast { fill: #3848; }
 .details-graph-segment:hover .fast { fill: #384; }
 .details-graph-segment       .slow { fill: #3878; }
 .details-graph-segment:hover .slow { fill: #387; }
 
-.details-graph-popbar.fast       { fill: #384; }
-.details-graph-popbar.slow       { fill: #387; }
+.details-graph-bar      { fill: #888; }
+.details-graph-bar.fast { fill: #384; }
+.details-graph-bar.slow { fill: #387; }
 
-img {
-    height: 0.75em;
-    transform: scale(1.5);
-}
-
-.tag-container {
+.tag-container-time {
     position: relative;
     width: 16em;
 }
 
 .tag-container-population {
+    position: relative;
+    width: 16em;
     z-index: 1;
     top: 0.8em;
 }
@@ -537,31 +522,26 @@ img {
 .time-tag:active,
 .time-tag:focus,
 .time-tag.focused {
-    z-index: 1;
+    z-index: 2;
     opacity: 1;
     box-shadow: .0em 0 .6em #000;
 }
 
-.highlighted {
-    color: color-mix(in srgb, var(--active-color) 75%, white);
-    font-kerning: none;
-}
-
-.timer-button {
+#timer-button {
     position: absolute;
-    top: 50%;
-    left: 0.45em;
-    padding: 0.2em 0.4em 0 .4em;
+    bottom: 0;
+    left: 0;
+    padding: 0.16em 0.4em 0 .4em;
     height: 1.2em;
     min-width: 1.2em;
-    transform: translate(-50%, -50%);
-    border-radius: 1em;
+    border-radius: 0 0.4em;
     font: inherit;
+    opacity: 1;
     transition: all .15s;
 }
 
-.timer-button:hover {
-    min-width: 1.5em;
+#timer-button.hidden {
+    opacity: 0;
 }
 
 </style>
