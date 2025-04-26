@@ -21,12 +21,11 @@ const keyMap = new Map<string, string[]>([
 
     ['boosting-includes', ['boosting-including']],
     ['gusset-swapping', ['boosting-gusset-swap']],
-    ['allowed-gusset', ['boosting-gusset-target']],
+    ['allowed-gusset', ['boosting-gusset-target', 'laying-gusset-target']],
     ['ihc-enabled', ['boosting-offline']],
     ['pinned-boost-sets', ['boosting-favourite-boost-sets']],
 
     ['deflector-mode', ['laying-deflector-mode']],
-    ['allowed-gusset', ['laying-gusset-target']],
     ['allow-variants', ['laying-variants']],
     ['base-laying-rate', ['laying-base-laying-rate']],
     ['base-shipping-rate', ['laying-base-shipping-rate']],

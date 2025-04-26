@@ -7,6 +7,7 @@ import type { Ref, Reactive } from 'vue';
 
 export type Setting<T> = {
     value: Ref<T>,
+    defaultValue: T,
 };
 
 /*
@@ -52,7 +53,8 @@ export function createSetting<T>(options: {
     });
 
     return reactive<Setting<T>>({
-        value
+        value,
+        defaultValue,
     });
 }
 
@@ -62,6 +64,7 @@ export type TextInputSetting<T> = {
     isValid: Ref<boolean>,
     value: Ref<T>,
     placeholder: Ref<string>,
+    defaultValue: T,
 };
 
 /*
@@ -132,6 +135,7 @@ export function createTextInputSetting<T>(options: {
         isValid,
         value,
         placeholder,
+        defaultValue,
   });
 }
 

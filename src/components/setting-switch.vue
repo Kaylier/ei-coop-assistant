@@ -1,5 +1,8 @@
 <template>
-    <span class="setting-entry">
+    <span class="setting-entry"
+          :class="{ hidden: hide && setting.value === setting.defaultValue && !focused  }"
+          @focusin="onfocusin" @focusout="onfocusout"
+          >
         <label v-if="label || tooltip">
             <span v-if="tooltip" tabindex="0" class="tooltip-icon">
                 ⓘ
@@ -26,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import type { Setting } from '@/scripts/settings.ts';
 
 const setting = defineModel<Setting<unknown>>({ required: true });
@@ -36,7 +40,22 @@ defineProps<{
     tooltip?: string,
     options: Array<{ value: unknown, label: string }>,
     type?: 'radio'|'checkbox',
+    hide?: boolean,
 }>();
+
+// When changing from default option to non-default one, the focus flickering hides the setting
+// We need debouncing to mitigate this
+const focused = ref<boolean>(false);
+let debounceTimer: ReturnType<typeof setTimeout>;
+
+function onfocusin() {
+    clearTimeout(debounceTimer);
+    focused.value = true;
+}
+
+function onfocusout() {
+    debounceTimer = setTimeout(() => focused.value = false, 100);
+}
 
 </script>
 
@@ -47,6 +66,10 @@ defineProps<{
     flex-flow: row nowrap;
     align-items: center;
     gap: 0.2em;
+}
+
+.setting-entry.hidden:not(:focus-within) {
+    display: none;
 }
 
 .switch {

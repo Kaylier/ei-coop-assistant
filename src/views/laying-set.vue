@@ -45,7 +45,7 @@
                 </button>
             </template>
         </setting-switch>
-        <setting-switch v-if="showExtraSettings || showExtraSettingVariant"
+        <setting-switch :hide="!showExtraSettings"
                         id="show-variants"
                         v-model="showVariantsSetting"
                         label="Show variants"
@@ -56,13 +56,13 @@
                                   { value: false, label: 'no' },
                                   { value: true, label: 'yes' },
                                   ]"/>
-        <setting-text v-if="showExtraSettings || showExtraSettingLaying"
+        <setting-text :hide="!showExtraSettings"
                       id="base-laying-rate"
                       v-model="baseLayingRateSetting"
                       label="Base laying rate"
                       tooltip="Maximum laying rate with full habs<br/>
                                without any artifact equipped."/>
-        <setting-text v-if="showExtraSettings || showExtraSettingShipping"
+        <setting-text :hide="!showExtraSettings"
                       id="base-shipping-rate"
                       v-model="baseShippingRateSetting"
                       label="Base shipping rate"
@@ -200,13 +200,13 @@ const allowedGussetSetting = createSetting<T.AllowedGusset>({
 });
 const baseLayingRateSetting = createTextInputSetting<number|null>({
     localStorageKey: 'laying-base-laying-rate',
-    defaultValue: DEFAULT_BASE_LAYING_RATE,
+    defaultValue: null,
     parser: (s: string) => s ? parseRate(s) : null,
     formatter: (x: number|null): string => formatRate(x ?? baseLayingRate.value),
 });
 const baseShippingRateSetting = createTextInputSetting<number|null>({
     localStorageKey: 'laying-base-shipping-rate',
-    defaultValue: DEFAULT_BASE_SHIPPING_RATE,
+    defaultValue: null,
     parser: (s: string) => s ? parseRate(s) : null,
     formatter: (x: number|null): string => formatRate(x ?? baseShippingRate.value),
 });
@@ -214,9 +214,6 @@ const baseShippingRateSetting = createTextInputSetting<number|null>({
 
 // State variables
 const showExtraSettings = ref<boolean>(false);
-const showExtraSettingVariant = ref<boolean>(false);
-const showExtraSettingLaying = ref<boolean>(false);
-const showExtraSettingShipping = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const baseLayingRate = computed<number>(() =>
@@ -228,14 +225,6 @@ const baseShippingRate = computed<number>(() =>
 // Data variables
 const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
 const entries = shallowRef<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
-
-
-onMounted(async () => {
-    // On startup, show extra settings that have been modified
-    showExtraSettingVariant.value = showVariantsSetting.value !== false;
-    showExtraSettingLaying.value = !!baseLayingRateSetting.text;
-    showExtraSettingShipping.value = !!baseShippingRateSetting.text;
-});
 
 
 // Watchers for synchronisation between setting variables, local storage and state variables

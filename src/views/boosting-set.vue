@@ -33,7 +33,7 @@
                                   { value: false, label: 'no' },
                                   { value: true, label: 'yes' },
                                   ]"/>
-        <setting-switch v-if="showExtraSettings || showExtraSettingGusset"
+        <setting-switch :hide="!showExtraSettings"
                         id="gusset"
                         v-model="allowedGussetSetting"
                         label="Gusset"
@@ -56,7 +56,7 @@
                 </button>
             </template>
         </setting-switch>
-        <setting-switch v-if="showExtraSettings || showExtraSettingOnline"
+        <setting-switch :hide="!showExtraSettings"
                         id="online"
                         v-model="ihcSetting"
                         tooltip="Offline enables Internal Hatchery Calm"
@@ -202,8 +202,6 @@ function changePin(id: string, checked: boolean) {
 
 
 const showExtraSettings = ref<boolean>(false);
-const showExtraSettingGusset = ref<boolean>(false);
-const showExtraSettingOnline = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_bonus') ?? 1);
@@ -257,12 +255,6 @@ const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
 const setDili = shallowRef<T.ArtifactSet|null>();
 const setIHR  = shallowRef<T.ArtifactSet[]>([]);
 const setSlow = shallowRef<T.ArtifactSet|null>();
-
-
-onMounted(async () => {
-    showExtraSettingGusset.value = allowedGussetSetting.value !== T.AllowedGusset.ANY;
-    showExtraSettingOnline.value = ihcSetting.value !== true;
-});
 
 
 watch(userData, () => {

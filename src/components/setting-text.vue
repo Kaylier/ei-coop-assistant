@@ -1,5 +1,5 @@
 <template>
-    <span class="setting-entry">
+    <span class="setting-entry" :class="{ hidden: hide && setting.value === setting.defaultValue }">
         <label>
             <span v-if="tooltip" tabindex="0" class="tooltip-icon">
                 ⓘ
@@ -10,7 +10,7 @@
         <input type="text" :id="id"
                :class="{ invalid: !unref(setting.isValid) }"
                v-model="setting.text"
-               :placeholder="unref(setting.placeholder)"/>
+               :placeholder="unref(setting.placeholder)">
     </span>
 </template>
 
@@ -24,6 +24,7 @@ defineProps<{
     id: string,
     label: string,
     tooltip?: string,
+    hide?: boolean,
 }>();
 
 </script>
@@ -35,6 +36,10 @@ defineProps<{
     flex-flow: row nowrap;
     align-items: center;
     gap: 0.2em;
+}
+
+.hidden:not(:focus-within) {
+    display: none;
 }
 
 .setting-entry input {
