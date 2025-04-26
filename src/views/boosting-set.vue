@@ -64,6 +64,10 @@
                                   { value: true, label: 'offline' },
                                   { value: false, label: 'online' },
                                   ]"/>
+        <setting-text :hide="!showExtraSettings"
+                      id="starting-population"
+                      v-model="startingPopulationSetting"
+                      label="Starting population"/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
@@ -139,6 +143,7 @@
                         :boosts="boosts"
                         :dili="diliBonus"
                         :stats="boostSetCardStats"
+                        :startPopulation="startingPopulationSetting.value"
                         :pinned="showAllBoostSets ? pinnedBoostSetting.value.has(id) : undefined"
                         @changed="changePin(id, $event)"
                         />
@@ -156,8 +161,8 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { formatNumber, formatTime } from '@/scripts/utils.ts';
-import { createSetting } from '@/scripts/settings.ts';
+import { parseNumber, formatNumber, formatTime } from '@/scripts/utils.ts';
+import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
 import { boostSets, searchDiliSet, searchIHRSets, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
@@ -182,6 +187,12 @@ const allowedGussetSetting = createSetting<T.AllowedGusset>({
 const ihcSetting = createSetting<boolean>({
     localStorageKey: 'boosting-offline',
     defaultValue: true,
+});
+const startingPopulationSetting = createTextInputSetting<number>({
+    localStorageKey: 'boosting-starting-population',
+    defaultValue: 0,
+    parser: (s: string) => s ? parseNumber(s) : 0,
+    formatter: formatNumber,
 });
 const pinnedBoostSetting = createSetting<Set<string>>({
     localStorageKey: 'boosting-favourite-boost-sets',

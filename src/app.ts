@@ -23,6 +23,7 @@ const keyMap = new Map<string, string[]>([
     ['gusset-swapping', ['boosting-gusset-swap']],
     ['allowed-gusset', ['boosting-gusset-target', 'laying-gusset-target']],
     ['ihc-enabled', ['boosting-offline']],
+    ['boosting-starting-population', ['boosting-starting-population']],
     ['pinned-boost-sets', ['boosting-favourite-boost-sets']],
 
     ['deflector-mode', ['laying-deflector-mode']],

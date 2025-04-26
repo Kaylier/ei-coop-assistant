@@ -26,7 +26,7 @@
         <div id="bar-frame">
             <div id="bar">
                 <div v-for="{ style, speed, tag} in barData" class="bar-fill" :class="speed" :style="style">
-                    <span class="time-tag" v-html="tag"/>
+                    <span v-if="tag" class="time-tag" v-html="tag"/>
                 </div>
             </div>
         </div>
@@ -56,6 +56,7 @@ const props = defineProps<{
     boosts: { id: T.Boost, amount?: number, streamlined?: number }[],
     stats: { ihr: number, habCapacity: number }[],
     dili: number,
+    startPopulation?: number,
     pinned?: boolean, // not shown if undefined
 }>();
 
@@ -135,7 +136,8 @@ const milestones = computed(() => {
     let habCapacity = props.stats[0].habCapacity;
 
     // At each time threshold, calculate the increased population
-    let population = 0, prevTime = 0;
+    let population = (props.startPopulation ?? 0), prevTime = 0;
+
     for (const time of times) {
         // step between prevTime and time
         let totalTachyon = 0;
@@ -183,19 +185,29 @@ const milestones = computed(() => {
 const barData = computed(() => {
     const ret = [];
 
+    const startPopulation = props.startPopulation ?? 0;
+    if ((startPopulation ?? 0) > 0) {
+        // Start at non-empty habs
+        ret.push({
+            style: { width: `${100*startPopulation/maxCapacity.value}%` },
+            //speed: speed,
+            //tag: formatTime(time, 'm'),
+        });
+    }
+
     for (const { population, time, speed } of milestones.value) {
         if (population < maxCapacity.value) {
             ret.push({
                 style: { width: `${100*population/maxCapacity.value}%` },
                 speed: speed,
                 tag: formatTime(time, 'm'),
-                });
+            });
         } else {
             ret.push({
                 style: { width: `100%` },
                 speed: speed,
                 tag: formatTime(time, 'm'),
-                });
+            });
             break;
         }
     }
