@@ -3,10 +3,10 @@
          @focusin="onfocusin"
          @focusout="onfocusout">
         <div id="header-frame">
-            <button v-if="pinned !== undefined" id="pin"
+            <button v-if="pinned !== undefined || frozenProps" id="pin"
                     title="Mark as favourite"
-                    @click="(e: Event) => emit('changed', !pinned)">
-                {{ pinned ? '★' : '☆' }}
+                    @click="(e: Event) => emit('changed', !!frozenProps || !pinned)">
+                {{ frozenProps ? '🔒' : pinned ? '★' : '☆' }}
             </button>
             <div id="cost-info">
                 <div>
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <div id="boost-info">
-                <div v-for="boost in props.boosts" class="boost">
+                <div v-for="boost in boosts" class="boost">
                     <img v-for="_ in (boost.amount ?? 1)*(boost.streamlined ?? 1)" :src="`/img/boosts/${boost.id}.png`" :alt="boost.id[0].toUpperCase()"/>
                     {{ Boost.getDescription(boost.id) }}
                 </div>
@@ -97,7 +97,13 @@ import * as Boost from '@/scripts/boosts.ts';
 import type { Ref } from 'vue';
 
 
+// Aspect ratio of detailed graph
 const DETAIL_GRAPH_RATIO = .30;
+
+
+const emit = defineEmits<{
+    (e: 'changed', value: boolean): void
+}>();
 
 
 const props = defineProps<{
@@ -108,9 +114,19 @@ const props = defineProps<{
     pinned?: boolean, // not shown if undefined
 }>();
 
-const emit = defineEmits<{
-    (e: 'changed', value: boolean): void
-}>();
+const frozenProps = ref<null | {
+    boosts: typeof props.boosts;
+    stats: typeof props.stats;
+    dili: number;
+    startPopulation?: number;
+    pinned?: boolean;
+}>(null);
+
+const boosts = computed(() => (frozenProps.value ? frozenProps.value : props).boosts);
+const stats  = computed(() => (frozenProps.value ? frozenProps.value : props).stats);
+const dili   = computed(() => (frozenProps.value ? frozenProps.value : props).dili);
+const startPopulation = computed(() => (frozenProps.value ? frozenProps.value : props).startPopulation);
+const pinned = computed(() => (frozenProps.value ? frozenProps.value : props).pinned);
 
 
 const focused = ref<boolean>(false);
@@ -129,7 +145,7 @@ const focusedSegment = ref<number>();
 
 const tokenCost = computed(() => {
     let tot = 0;
-    for (const b of props.boosts) {
+    for (const b of boosts.value) {
         tot += Boost.getTokenCost(b.id)*(b.amount ?? 1)*(b.streamlined ?? 1);
     }
     return tot;
@@ -137,7 +153,7 @@ const tokenCost = computed(() => {
 
 const geCost = computed(() => {
     let tot = 0;
-    for (const b of props.boosts) {
+    for (const b of boosts.value) {
         tot += Boost.getGECost(b.id)*(b.amount ?? 1)*(b.streamlined ?? 1);
     }
     return tot;
@@ -154,7 +170,7 @@ const milestones = computed<Milestone[]>(() => {
     // Find the times when the boost state changes
     const times: number[] = [];
     const startTimes: number[] = [];
-    for (const boost of props.boosts) {
+    for (const boost of boosts.value) {
         const duration = Boost.getDuration(boost.id);
         for (let i = 1; i <= (boost.streamlined ?? 1); i++) {
             if (!times.includes(duration*i)) times.push(duration*i);
@@ -171,12 +187,12 @@ const milestones = computed<Milestone[]>(() => {
     let ihr = 0, habCapacity = 0;
 
     // At each time threshold, calculate the increased population
-    let population = Math.max(props.startPopulation ?? 0, 0), prevTime = 0;
+    let population = Math.max(startPopulation.value ?? 0, 0), prevTime = 0;
 
     while (population >= habCapacity) {
-        if (nextStatIdx === props.stats.length) return ret;
-        ihr = props.stats[nextStatIdx].ihr;
-        habCapacity = props.stats[nextStatIdx].habCapacity;
+        if (nextStatIdx === stats.value.length) return ret;
+        ihr = stats.value[nextStatIdx].ihr;
+        habCapacity = stats.value[nextStatIdx].habCapacity;
         nextStatIdx++;
     }
 
@@ -184,7 +200,7 @@ const milestones = computed<Milestone[]>(() => {
         // step between prevTime and time
         let totalTachyon = 0;
         let totalBoost = 0;
-        for (const boost of props.boosts) {
+        for (const boost of boosts.value) {
             if (Boost.getDuration(boost.id)*(boost.streamlined ?? 1) < time) continue;
 
             if (Boost.isTachyon(boost.id)) {
@@ -200,32 +216,32 @@ const milestones = computed<Milestone[]>(() => {
 
 
         while (true) {
-            const filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*props.dili);
+            const filledTime = prevTime + (habCapacity - population)/(boostBonus*ihr*dili.value);
             if (filledTime >= time) break;
 
             // Milestone: Hab capacity reached + potential artifact swap
             population = habCapacity;
             prevTime = filledTime;
 
-            if (nextStatIdx === props.stats.length) {
+            if (nextStatIdx === stats.value.length) {
                 // Milestone: We're out of IHR sets, we're done
-                ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type: 'filled' });
+                ret.push({ population: habCapacity, time: filledTime*dili.value, speed, type: 'filled' });
                 return ret;
             }
 
             // Milestone: Move to next IHR set
-            ret.push({ population: habCapacity, time: filledTime*props.dili, speed, type: 'artiswap' });
-            ihr = props.stats[nextStatIdx].ihr;
-            habCapacity = props.stats[nextStatIdx].habCapacity;
+            ret.push({ population: habCapacity, time: filledTime*dili.value, speed, type: 'artiswap' });
+            ihr = stats.value[nextStatIdx].ihr;
+            habCapacity = stats.value[nextStatIdx].habCapacity;
             nextStatIdx++;
         }
 
         // Milestone: boost state change
-        population += boostBonus*ihr*(time - prevTime)*props.dili;
+        population += boostBonus*ihr*(time - prevTime)*dili.value;
         prevTime = time;
 
         const type = startTimes.includes(time) ? 'boostswap' : 'boostend';
-        ret.push({ population, time: time*props.dili, speed, type });
+        ret.push({ population, time: time*dili.value, speed, type });
     }
 
     return ret;
@@ -244,9 +260,9 @@ const segments = computed<Segment[]>(() => {
     if (milestones.value.length === 0) return ret;
 
     const maxTime = milestones.value.at(-1)!.time;
-    const maxPopulation = props.stats.at(-1)!.habCapacity; // stats not empty when milestones not empty
+    const maxPopulation = stats.value.at(-1)!.habCapacity; // stats not empty when milestones not empty
 
-    let prevTime = 0, prevPopulation = clamp(props.startPopulation ?? 0, 0, maxPopulation);
+    let prevTime = 0, prevPopulation = clamp(startPopulation.value ?? 0, 0, maxPopulation);
 
     if (prevPopulation > 0) {
         ret.push({
@@ -338,6 +354,7 @@ function timerToggle() {
         // stop timer
         console.log("Stop timer");
         timer.isRunning.value = false;
+        frozenProps.value = null;
         if (timer.intervalId != null) {
             clearInterval(timer.intervalId);
             timer.intervalId = null;
@@ -353,6 +370,14 @@ function timerToggle() {
 
         console.log("Start timer", timer.notifications);
         timer.isRunning.value = true;
+        frozenProps.value = {
+            boosts: props.boosts.map(b => ({ ...b })),
+            stats:  props.stats.map(s => ({ ...s })),
+            dili: props.dili,
+            startPopulation: props.startPopulation,
+            pinned: true,
+        };
+        emit('changed', true);
         timer.elapsed.value = 0;
         timer.startTimestamp = Date.now();
         timer.intervalId = window.setInterval(timerUpdate, 1000);
