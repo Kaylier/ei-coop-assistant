@@ -401,9 +401,10 @@ function timerUpdate() {
 
     timer.pTime = elapsed/(milestones.value.at(-1)?.time ?? 0)/60;
     for (const segment of segments.value) {
-        if (timer.pTime >= segment.time1) continue;
+        if (timer.pTime < segment.time0) continue;
         const p = (timer.pTime - segment.time0)/(segment.time1 - segment.time0);
         timer.pPopulation = p*(segment.population1 - segment.population0) + segment.population0;
+        console.log(timer.pTime, segment);
         break;
     }
 
