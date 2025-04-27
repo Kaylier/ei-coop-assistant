@@ -35,32 +35,36 @@
         </div>
         <div id="details-frame" :class="{ collapsed: collapsed }">
             <svg width="100%" :viewBox="`0 0 100 ${DETAIL_GRAPH_RATIO*100}`">
-                <g>
-                <template v-for="(segment, i) in segments">
-                <g class="details-graph-segment"
-                   :class="{ hidden: collapsed }"
-                   @mouseenter="focusedSegment = i"
-                   @touchstart="focusedSegment = i"
-                   @mouseleave="focusedSegment = undefined"
-                   @touchend="focusedSegment = undefined"
-                   >
-                    <polygon :class="segment.speed"
+                <g> <!-- Middle segments -->
+                    <polygon v-for="(segment, i) in segments"
+                             class="details-graph-segment"
+                             :class="[collapsed ? 'hide' : '', segment.speed]"
                              :points="`${segment.time1*100-1},${DETAIL_GRAPH_RATIO*100-2}
                                        ${segment.population1*100-1},2
                                        ${segment.population0*100-1},2
                                        ${segment.time0*100-1},${DETAIL_GRAPH_RATIO*100-2}`"
+                             @mouseenter="focusedSegment = i"
+                             @touchstart="focusedSegment = i"
+                             @mouseleave="focusedSegment = undefined"
+                             @touchend="focusedSegment = undefined"
                              />
                 </g>
-                </template>
+                <g v-if="timer.isRunning.value"> <!-- Progress segment -->
+                    <polygon class="details-graph-progress-segment"
+                             :points="`${timer.pTime*100-1},${DETAIL_GRAPH_RATIO*100-2}
+                                       ${timer.pPopulation*100-1},2
+                                       ${0},2
+                                       ${0},${DETAIL_GRAPH_RATIO*100-2}`"
+                             />
                 </g>
-                <g>
+                <g> <!-- Population bar -->
                     <rect v-for="segment in segments"
                           class="details-graph-bar" :class="segment.speed"
                           x="0" y="0" height="3" rx="1.5" ry="1.5"
                           :width="segment.population1*100"
                           />
                 </g>
-                <g>
+                <g> <!-- Time bar -->
                     <rect v-for="segment in segments"
                           class="details-graph-bar" :class="segment.speed"
                           x="0" height="3" rx="1.5" ry="1.5"
@@ -71,7 +75,7 @@
             </svg>
             <button v-if="timerData.length"
                     id="timer-button"
-                    :class="{ hidden: collapsed }"
+                    :class="{ hide: collapsed }"
                     @click="timerToggle">
                 {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
             </button>
@@ -296,7 +300,7 @@ const segments = computed<Segment[]>(() => {
 const timerData = computed(() => {
     const ret = [];
 
-    for (const { time, type } of milestones.value) {
+    for (let { time, type } of milestones.value) {
         let title, msg;
         switch (type) {
             case 'filled':
@@ -304,6 +308,7 @@ const timerData = computed(() => {
                 break;
             case 'artiswap':
                 // remove 5s to give some margin
+                time -= 5/60;
                 title = "⏱️ eica - Time to swap artifacts";
                 break;
             case 'boostswap':
@@ -330,7 +335,10 @@ const timer: {
     intervalId: number|null,
     startTimestamp: number,
     notifications: { time: number, title?: string, msg?: string }[],
-} = { elapsed: ref(0), isRunning: ref(false), intervalId: null, startTimestamp: 0, notifications: [] };
+    pPopulation: number, // proportion of total population reached
+    pTime: number, // proportion of total time reached
+} = { elapsed: ref(0), isRunning: ref(false), intervalId: null, startTimestamp: 0, notifications: [], pPopulation: 0,
+pTime: 0 };
 
 onUnmounted(() => {
     if (timer.intervalId != null) {
@@ -359,6 +367,8 @@ function timerToggle() {
             clearInterval(timer.intervalId);
             timer.intervalId = null;
         }
+        timer.pTime = 0;
+        timer.pPopulation = 0;
     } else {
         // start timer
         if (canNotify && Notification.permission === 'default') {
@@ -381,11 +391,22 @@ function timerToggle() {
         timer.elapsed.value = 0;
         timer.startTimestamp = Date.now();
         timer.intervalId = window.setInterval(timerUpdate, 1000);
+        timerUpdate();
     }
 }
 
 function timerUpdate() {
-    timer.elapsed.value = (Date.now() - timer.startTimestamp)/1000;
+    const elapsed = (Date.now() - timer.startTimestamp)/1000;
+    timer.elapsed.value = elapsed;
+
+    timer.pTime = elapsed/(milestones.value.at(-1)?.time ?? 0)/60;
+    for (const segment of segments.value) {
+        if (timer.pTime >= segment.time1) continue;
+        const p = (timer.pTime - segment.time0)/(segment.time1 - segment.time0);
+        timer.pPopulation = p*(segment.population1 - segment.population0) + segment.population0;
+        break;
+    }
+
     if (timer.elapsed.value >= timer.notifications[0]?.time) {
         if (canNotify && Notification.permission === 'granted') {
             const { title, msg } = timer.notifications[0];
@@ -509,16 +530,23 @@ img {
     opacity: 1;
     transition: opacity .2s;
 }
-.details-graph-segment.hidden {
+.details-graph-segment.hide {
     opacity: 0;
 }
 
-.details-graph-segment             { fill: #8888; }
-.details-graph-segment:hover       { fill: #888; }
-.details-graph-segment       .fast { fill: #3848; }
-.details-graph-segment:hover .fast { fill: #384; }
-.details-graph-segment       .slow { fill: #3878; }
-.details-graph-segment:hover .slow { fill: #387; }
+.details-graph-segment            { fill: #8888; }
+.details-graph-segment:hover      { fill: #888; }
+.details-graph-segment.fast       { fill: #3848; }
+.details-graph-segment.fast:hover { fill: #384; }
+.details-graph-segment.slow       { fill: #3878; }
+.details-graph-segment.slow:hover { fill: #387; }
+
+.details-graph-progress-segment {
+    fill: #8884;
+    stroke: var(--valid-color);
+    stroke-width: 0.5;
+    pointer-events: none;
+}
 
 .details-graph-bar      { fill: #888; }
 .details-graph-bar.fast { fill: #384; }
@@ -569,7 +597,7 @@ img {
     transition: all .15s;
 }
 
-#timer-button.hidden {
+#timer-button.hide {
     opacity: 0;
 }
 
