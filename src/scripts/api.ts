@@ -401,7 +401,8 @@ export async function getUserData(eid: string): Promise<T.UserData> {
         baseIHRate, awayIHBonus,
         baseEarningRate, awayEarningBonus, mrcbEarningBonus,
         prophecyEggBonus, soulEggBonus,
-        date: new Date(backup.approxTime*1000)
+        date: new Date(backup.approxTime*1000),
+        ephemeral: checkSID(eid),
     };
 }
 

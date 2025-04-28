@@ -1,9 +1,9 @@
 <template>
-    <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x" />
+    <load-eid v-model="userData"/>
 
     <a class="quick-link smartphone-only" href="#artifacts">go to artifacts</a>
 
-    <section class="main">
+    <section v-if="userData" class="main">
         <div v-if="sets.length" class="sets" id="sets">
             <inventory-frame v-for="set in sets"
                              :key="JSON.stringify(set)"
@@ -24,24 +24,18 @@
 <style scoped src="@/styles/hoa.css"></style>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { shallowRef, ref, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 
 
 // Template variables declarations and default values
-const userData = ref<T.UserData>(null);
+const userData = shallowRef<T.UserData>();
 const grid     = ref<(T.Item | null)[]>([]);
 const sets     = ref<(T.Item | null)[][]>([]);
 const column   = ref<number>(16);
 
 
-
-// Save to local storage
-watch(userData, () => {
-    if (!userData.value) return;
-    localStorage.setItem('user-data', JSON.stringify(userData.value));
-    updateView();
-});
+watch(userData, updateView);
 
 
 
@@ -76,9 +70,8 @@ function countStones(item: T.Item): number {
  * Update the view through grid and sets variables
  */
 function updateView() {
-    if (!userData.value) return;
 
-    const items: T.Item[] = [...userData.value.items].sort((a, b) =>
+    const items: T.Item[] = [...userData.value?.items ?? []].sort((a, b) =>
            a.category - b.category
         || a.family - b.family
         || b.tier - a.tier
@@ -113,7 +106,7 @@ function updateView() {
         }
     }
 
-    sets.value = userData.value.sets;
+    sets.value = userData.value?.sets ?? [];
 }
 
 </script>

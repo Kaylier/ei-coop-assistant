@@ -1,5 +1,6 @@
 <template>
-    <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
+    <load-eid v-model="userData"/>
+
     <section class="settings">
         <setting-switch id="deflector-mode"
                         v-model="deflectorModeSetting"
@@ -29,7 +30,7 @@
                                  Only your best gussets are shown.<br/>
                                  Disabled on 'any'."
                         :options="allowedGussetOptions">
-            <template #option="{ value: gusset, label, img, cls }">
+            <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
             </template>
@@ -245,15 +246,9 @@ const baseShippingRate = computed<number>(() =>
 
 
 // Data variables
-const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const userData = shallowRef<T.UserData>(); // loaded via load-eid component
 const entries = shallowRef<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
 
-
-// Watchers for synchronisation between setting variables, local storage and state variables
-watch(userData, () => {
-    if (!userData.value) return;
-    localStorage.setItem('user-data', JSON.stringify(userData.value));
-});
 
 
 // Watchers for triggering recomputations
@@ -271,7 +266,6 @@ watch(baseShippingRate, updateThresholds);
  */
 function updateEntries() {
     console.log("Update entries");
-    if (!userData.value) return [];
 
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
     let sets: ArtifactSet<T.Artifact | null>[][];

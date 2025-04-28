@@ -40,18 +40,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { checkEID, checkSID } from '@/scripts/utils.ts';
 import { getUserData } from '@/scripts/api.ts';
 
-const props = defineProps<{
-    userData: T.UserData,
-}>();
-
-const emit = defineEmits<{
-    (e: 'onloaded', userData: T.UserData): void
-}>();
+const userData = defineModel<T.UserData>({ required: true });
 
 const focused = ref<boolean>(false);
 
@@ -60,7 +54,7 @@ const isLoadingEID = ref<boolean>(false);
 const errorMsg = ref<string>("");
 
 const itemCount = computed((): number => {
-  return props.userData?.items?.reduce((tot: number, cur: T.Item) => tot + (cur.quantity ??
+  return userData.value?.items?.reduce((tot: number, cur: T.Item) => tot + (cur.quantity ??
   1), 0) ?? 0;
 });
 
@@ -74,7 +68,7 @@ onMounted(async () => {
         const saved = JSON.parse(savedStr);
         if (saved && saved['date'])
             saved['date'] = new Date(saved['date']);
-        emit('onloaded', saved);
+        userData.value = saved;
     } else if (checkEID(eid.value)) {
         load(eid.value);
     }
@@ -91,10 +85,8 @@ async function load(eid: string) {
 
     console.log("Loading from EID", eid);
 
-    let userData = null;
-
     try {
-        userData = await getUserData(eid);
+        userData.value = await getUserData(eid);
         isLoadingEID.value = false;
     } catch (e) {
         console.error("Error loading user data:", e);
@@ -106,9 +98,13 @@ async function load(eid: string) {
     if (!checkSID(eid)) {
         localStorage.setItem('player-eid', eid);
     }
-
-    emit('onloaded', userData);
 }
+
+watch(userData, () => {
+    if (!userData.value) return;
+    if (userData.value.ephemeral) return;
+    localStorage.setItem('user-data', JSON.stringify(userData.value));
+});
 
 </script>
 

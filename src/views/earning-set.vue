@@ -1,5 +1,5 @@
 <template>
-    <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
+    <load-eid v-model="userData"/>
     <section class="settings">
         <setting-switch id="swap-cube"
                         v-model="swapCubeSetting"
@@ -51,7 +51,7 @@
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
-    <section v-if="!errorMessage" id="main-sets">
+    <section v-if="!errorMessage && userData" id="main-sets">
 
         <template v-if="mergeEBEarningSets">
         <artifact-set-card v-if="optimalEBSet"
@@ -191,7 +191,7 @@ const mirrorMult = computed(() => Math.max(1, mirrorSetting.value/100/userEB.val
 
 
 // Data variables
-const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const userData = shallowRef<T.UserData>(); // loaded via load-eid component
 const optimalEBSet = shallowRef<T.ArtifactSet|null>(null);
 const optimalEarningSet = shallowRef<T.ArtifactSet|null>(null);
 const optimalMirrorSet = shallowRef<T.ArtifactSet|null>(null);
@@ -199,14 +199,6 @@ const optimalCube = shallowRef<T.Artifact|null>(null);
 const optimalCubeBonus = ref<number>(1);
 const mergeEBEarningSets = ref<boolean>(false);
 
-
-
-// Watchers for synchronisation between setting variables, local storage and state variables
-
-watch(userData, () => {
-    if (!userData.value) return;
-    localStorage.setItem('user-data', JSON.stringify(userData.value));
-});
 
 
 // Watchers for triggering recomputations
@@ -220,7 +212,6 @@ watch(onlineSetting, updateSet);
  * Find the optimal sets and populate view entries
  */
 function updateSet() {
-    if (!userData.value) return [];
     console.log("Update sets");
 
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;

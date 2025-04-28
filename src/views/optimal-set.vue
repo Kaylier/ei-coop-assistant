@@ -1,5 +1,5 @@
 <template>
-    <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
+    <load-eid v-model="userData"/>
 
     <section class="settings">
         <setting-switch id="reslotting"
@@ -16,9 +16,9 @@
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
-    <section v-if="!errorMessage" id="main-sets">
+    <section v-if="!errorMessage && userData" id="main-sets">
 
-        <template v-if="userData" v-for="entry of sets">
+        <template v-for="entry of sets">
             <artifact-set-card v-if="entry.solution" :key="entry.solution"
                 :title="entry.title"
                 :description="entry.description"
@@ -64,7 +64,7 @@ const reslottingSetting = createSetting<boolean>({
 
 const errorMessage = ref<string>("");
 
-const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const userData = shallowRef<T.UserData>(); // loaded via load-eid component
 const sets = shallowRef<SetEntry[]>([
     {
         title: "Preloaded RCB Prestige",
@@ -272,10 +272,6 @@ const sets = shallowRef<SetEntry[]>([
 ]);
 
 
-watch(userData, () => {
-    if (!userData.value) return;
-    localStorage.setItem('user-data', JSON.stringify(userData.value));
-});
 watch(userData, updateSets);
 watch(reslottingSetting, updateSets);
 
@@ -288,7 +284,6 @@ function updateSets() {
 }
 
 function updateSet(setEntry: SetEntry) {
-    if (!userData.value) return;
     console.log("Solve set", setEntry.title);
 
     try {

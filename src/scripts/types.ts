@@ -120,6 +120,7 @@ export type UserData = null | {
     prophecyEggBonus: number,
     soulEggBonus: number,
     date: Date,
+    ephemeral?: boolean,
 };
 
 

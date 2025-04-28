@@ -1,5 +1,5 @@
 <template>
-    <load-eid :userData="userData" @onloaded="(x: T.UserData) => userData = x"></load-eid>
+    <load-eid v-model="userData"/>
     <section class="settings">
         <setting-switch id="includes"
                         v-model="includesSetting"
@@ -37,7 +37,7 @@
                         tooltip="Force to use a specific gusset in your IHR sets<br/>
                                  Disabled on 'any'"
                         :options="allowedGussetOptions">
-            <template #option="{ value: gusset, label, img, cls }">
+            <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
             </template>
@@ -71,7 +71,7 @@
 
     <a class="quick-link smartphone-only" href="#boost-sets">go to boost sets</a>
 
-    <section v-if="!errorMessage" id="main-sets">
+    <section v-if="!errorMessage && userData" id="main-sets">
 
         <artifact-set-card v-if="setDili"
             title="Dilithium set"
@@ -302,16 +302,10 @@ const shownBoostSets = computed(() => {
 });
 
 
-const userData = shallowRef<T.UserData>(null); // loaded via load-eid component
+const userData = shallowRef<T.UserData>(); // loaded via load-eid component
 const setDili = shallowRef<T.ArtifactSet|null>();
 const setIHR  = shallowRef<T.ArtifactSet[]>([]);
 const setSlow = shallowRef<T.ArtifactSet|null>();
-
-
-watch(userData, () => {
-    if (!userData.value) return;
-    localStorage.setItem('user-data', JSON.stringify(userData.value));
-});
 
 
 watch(userData, updateSet);
@@ -326,7 +320,6 @@ watch(ihcSetting, updateSet);
  * Find the optimal sets and populate view entries
  */
 function updateSet() {
-    if (!userData.value) return [];
     console.log("Update sets");
 
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
