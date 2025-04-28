@@ -1,8 +1,10 @@
 <template>
-    <div id="card-frame" tabindex="0"
+    <div id="card-frame"
          @focusin="onfocusin"
          @focusout="onfocusout">
-        <div id="header-frame">
+        <div id="header-frame"
+             @mousedown="focused = !focused"
+             @touchstart="focused = !focused">
             <button v-if="pinned !== undefined || frozenProps" id="pin"
                     title="Mark as favourite"
                     @click="(e: Event) => emit('changed', !!frozenProps || !pinned)">
@@ -447,6 +449,7 @@ function timerUpdate() {
     background-color: #333333;
     border-radius: 2em 2em 0 0;
     box-shadow: 0 0 .5em var(--bg-hover-color) inset;
+    cursor: pointer;
 }
 
 img {
