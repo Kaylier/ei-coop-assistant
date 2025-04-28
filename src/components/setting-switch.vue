@@ -58,7 +58,7 @@ function onfocusin() {
 }
 
 function onfocusout() {
-    debounceTimer = setTimeout(() => focused.value = false, 100);
+    debounceTimer = setTimeout(() => focused.value = false, 200);
 }
 
 </script>

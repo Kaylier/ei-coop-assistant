@@ -29,7 +29,9 @@
                         tooltip="Force to use a specific gusset.<br/>
                                  Only your best gussets are shown.<br/>
                                  Disabled on 'any'."
-                        :options="allowedGussetOptions">
+                        :options="allowedGussetOptions"
+                        @focusin="allowedGussetOnFocusIn"
+                        @focusout="allowedGussetOnFocusOut">
             <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
@@ -213,6 +215,11 @@ const baseShippingRateSetting = createTextInputSetting<number|null>({
 
 // When true, show every possible gussets
 const allowedGussetOptionsAll = ref<boolean>(false);
+let allowedGussetFocusTimer: ReturnType<typeof setTimeout>;
+function allowedGussetOnFocusIn() { clearTimeout(allowedGussetFocusTimer); }
+function allowedGussetOnFocusOut() {
+    allowedGussetFocusTimer = setTimeout(() => allowedGussetOptionsAll.value = false, 200);
+}
 const allowedGussetOptions = computed(() => {
     const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
         [
@@ -270,8 +277,6 @@ function updateEntries() {
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
     let sets: ArtifactSet<T.Artifact | null>[][];
     try {
-        allowedGussetOptionsAll.value = false;
-
         errorMessage.value = "";
         sets = reslottingSetting.value ?
                computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorModeSetting.value, maxSlot,

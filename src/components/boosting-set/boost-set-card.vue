@@ -140,7 +140,7 @@ function onfocusin() {
     focused.value = true;
 }
 function onfocusout() {
-    debounceTimer = setTimeout(() => focused.value = false, 100);
+    debounceTimer = setTimeout(() => focused.value = false, 200);
 }
 const collapsed = computed(() => !focused.value && !timer.isRunning.value);
 

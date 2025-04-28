@@ -36,7 +36,9 @@
                         label="Gusset"
                         tooltip="Force to use a specific gusset in your IHR sets<br/>
                                  Disabled on 'any'"
-                        :options="allowedGussetOptions">
+                        :options="allowedGussetOptions"
+                        @focusin="allowedGussetOnFocusIn"
+                        @focusout="allowedGussetOnFocusOut">
             <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
@@ -220,6 +222,12 @@ const swappingOptions = computed(() => {
 
 // When true, show every possible gussets
 const allowedGussetOptionsAll = ref<boolean>(false);
+// Debouncer for gusset setting focus
+let allowedGussetFocusTimer: ReturnType<typeof setTimeout>;
+function allowedGussetOnFocusIn() { clearTimeout(allowedGussetFocusTimer); }
+function allowedGussetOnFocusOut() {
+    allowedGussetFocusTimer = setTimeout(() => allowedGussetOptionsAll.value = false, 200);
+}
 const allowedGussetOptions = computed(() => {
     const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
         [
@@ -326,7 +334,6 @@ function updateSet() {
 
     try {
         errorMessage.value = "";
-        allowedGussetOptionsAll.value = false;
 
         setDili.value = searchDiliSet(userData.value?.items ?? [],
                                       maxSlot,
