@@ -59,16 +59,32 @@ const itemCount = computed((): number => {
 });
 
 onMounted(async () => {
-    eid.value = (new URLSearchParams(window.location.search)).get('eid') ??
-                localStorage.getItem('player-eid') ??
-                eid.value;
+    const queryEID = (new URLSearchParams(window.location.search)).get('eid');
+    const storedEID = localStorage.getItem('player-eid');
 
-    const savedStr = localStorage.getItem('user-data');
-    if (savedStr) {
-        const saved = JSON.parse(savedStr);
-        if (saved && saved['date'])
-            saved['date'] = new Date(saved['date']);
-        userData.value = saved;
+    if (queryEID && checkEID(queryEID)) {
+        eid.value = queryEID;
+    } else if (storedEID && checkEID(storedEID)) {
+        eid.value = storedEID;
+    }
+
+    const saved = localStorage.getItem('user-data');
+    let loaded: T.UserData|null = null;
+    if (saved) {
+        try {
+            loaded = JSON.parse(saved);
+            if (loaded && loaded['date'])
+                loaded['date'] = new Date(loaded['date']);
+        } catch (err) {
+            console.warn('Clearing invalid JSON from user-data:', err);
+            localStorage.removeItem('user-data');
+            loaded = null;
+        }
+    }
+
+    if (loaded) {
+        // User data found in localStorage, use it
+        userData.value = loaded;
     } else if (checkEID(eid.value)) {
         load(eid.value);
     }
