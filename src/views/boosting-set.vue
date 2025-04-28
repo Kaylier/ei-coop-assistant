@@ -36,19 +36,16 @@
                         label="Gusset"
                         tooltip="Force to use a specific gusset in your IHR sets<br/>
                                  Disabled on 'any'"
-                        :options="allowedGussetChoices.map(x => ({ value: x}))">
-            <template #option="{ value: gusset }">
-                <span v-if="gusset === T.AllowedGusset.ANY">any</span>
-                <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
-                <img v-else :src="getGussetImage(gusset)"
-                            :alt="getGussetName(gusset)"
-                            :class="getGussetClass(gusset)"/>
+                        :options="allowedGussetOptions">
+            <template #option="{ value: gusset, label, img, cls }">
+                <img v-if="img" :src="img" :alt="label" :class="cls"/>
+                <span v-else v-html="label"/>
             </template>
             <template #extra>
-                <button v-if="allowedGussetChoices.length < 10"
+                <button v-if="allowedGussetOptions.length < 10"
                    href="#"
                    class="switch-option extra-gusset-button"
-                   @click="allowedGussetChoices = Object.values(T.AllowedGusset)">
+                   @click="allowedGussetOptionsAll = true">
                     …
                 </button>
             </template>
@@ -221,6 +218,30 @@ const swappingOptions = computed(() => {
     return ret;
 });
 
+// When true, show every possible gussets
+const allowedGussetOptionsAll = ref<boolean>(false);
+const allowedGussetOptions = computed(() => {
+    const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
+        [
+            T.AllowedGusset.ANY,
+            T.AllowedGusset.NONE,
+            ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)
+        ];
+
+    // Force selected option to show up
+    if (!choices.includes(allowedGussetSetting.value)) {
+        choices.push(allowedGussetSetting.value);
+    }
+
+    const ret = choices.sort().map(x => {
+        if (x === T.AllowedGusset.ANY)  return { value: x, label: "any" };
+        if (x === T.AllowedGusset.NONE) return { value: x, label: "Ø" };
+        return { value: x, label: getGussetName(x), img: getGussetImage(x), cls: getGussetClass(x) };
+    });
+    return ret;
+});
+
+
 function changePin(id: string, checked: boolean) {
     if (checked) {
         pinnedBoostSetting.value.add(id);
@@ -234,7 +255,6 @@ function changePin(id: string, checked: boolean) {
 
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
-const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_bonus') ?? 1);
 const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440*4)*
                                (ihcSetting.value ? userData.value?.awayIHBonus ?? 3 : 1));
@@ -303,19 +323,6 @@ watch(ihcSetting, updateSet);
 
 
 /**
- * Update default gussets shown to the user
- */
-function updateAllowedGussets() {
-    const choices = [T.AllowedGusset.ANY, T.AllowedGusset.NONE,
-                     ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)];
-    if (!choices.includes(allowedGussetSetting.value)) {
-        choices.push(allowedGussetSetting.value);
-    }
-    allowedGussetChoices.value = choices.sort();
-}
-
-
-/**
  * Find the optimal sets and populate view entries
  */
 function updateSet() {
@@ -326,7 +333,7 @@ function updateSet() {
 
     try {
         errorMessage.value = "";
-        updateAllowedGussets();
+        allowedGussetOptionsAll.value = false;
 
         setDili.value = searchDiliSet(userData.value?.items ?? [],
                                       maxSlot,
@@ -338,7 +345,8 @@ function updateSet() {
 
         // If swapping is enabled, target the highest available gusset, unless one is already forced
         const targetGusset = swappingSetting.value !== false && allowedGussetSetting.value === T.AllowedGusset.ANY ?
-                             allowedGussetChoices.value.at(-1) ?? T.AllowedGusset.NONE : allowedGussetSetting.value;
+                             allowedGussetOptions.value.at(-1)?.value ?? T.AllowedGusset.NONE :
+                             allowedGussetSetting.value;
         setIHR.value = searchIHRSets(userData.value?.items ?? [],
                                      maxSlot,
                                      includesSetting.value.includes('Deflector'),

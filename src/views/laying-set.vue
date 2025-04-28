@@ -28,19 +28,16 @@
                         tooltip="Force to use a specific gusset.<br/>
                                  Only your best gussets are shown.<br/>
                                  Disabled on 'any'."
-                        :options="allowedGussetChoices.map(x => ({ value: x}))">
-            <template #option="{ value: gusset }">
-                <span v-if="gusset === T.AllowedGusset.ANY">any</span>
-                <span v-else-if="gusset === T.AllowedGusset.NONE">Ø</span>
-                <img v-else :src="getGussetImage(gusset)"
-                            :alt="getGussetName(gusset)"
-                            :class="getGussetClass(gusset)"/>
+                        :options="allowedGussetOptions">
+            <template #option="{ value: gusset, label, img, cls }">
+                <img v-if="img" :src="img" :alt="label" :class="cls"/>
+                <span v-else v-html="label"/>
             </template>
             <template #extra>
-                <button v-if="allowedGussetChoices.length < 10"
+                <button v-if="allowedGussetOptions.length < 10"
                    href="#"
                    class="switch-option extra-gusset-button"
-                   @click="allowedGussetChoices = Object.values(T.AllowedGusset)">
+                   @click="allowedGussetOptionsAll = true">
                     …
                 </button>
             </template>
@@ -213,10 +210,34 @@ const baseShippingRateSetting = createTextInputSetting<number|null>({
 });
 
 
+// When true, show every possible gussets
+const allowedGussetOptionsAll = ref<boolean>(false);
+const allowedGussetOptions = computed(() => {
+    const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
+        [
+            T.AllowedGusset.ANY,
+            T.AllowedGusset.NONE,
+            ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)
+        ];
+
+    // Force selected option to show up
+    if (!choices.includes(allowedGussetSetting.value)) {
+        choices.push(allowedGussetSetting.value);
+    }
+
+    const ret = choices.sort().map(x => {
+        if (x === T.AllowedGusset.ANY)  return { value: x, label: "any" };
+        if (x === T.AllowedGusset.NONE) return { value: x, label: "Ø" };
+        return { value: x, label: getGussetName(x), img: getGussetImage(x), cls: getGussetClass(x) };
+    });
+    return ret;
+});
+
+
+
 // State variables
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
-const allowedGussetChoices = ref<T.AllowedGusset[]>([T.AllowedGusset.ANY]);
 const baseLayingRate = computed<number>(() =>
     baseLayingRateSetting.value ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE);
 const baseShippingRate = computed<number>(() =>
@@ -241,22 +262,8 @@ watch(deflectorModeSetting, updateEntries);
 watch(reslottingSetting, updateEntries);
 watch(allowedGussetSetting, updateEntries);
 
-watch(entries, updateAllowedGussets);
 watch(baseLayingRate, updateThresholds);
 watch(baseShippingRate, updateThresholds);
-
-
-/**
- * Update default gussets shown to the user
- */
-function updateAllowedGussets() {
-    const choices = [T.AllowedGusset.ANY, T.AllowedGusset.NONE,
-                     ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)];
-    if (!choices.includes(allowedGussetSetting.value)) {
-        choices.push(allowedGussetSetting.value);
-    }
-    allowedGussetChoices.value = choices.sort();
-}
 
 
 /**
@@ -269,6 +276,8 @@ function updateEntries() {
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
     let sets: ArtifactSet<T.Artifact | null>[][];
     try {
+        allowedGussetOptionsAll.value = false;
+
         errorMessage.value = "";
         sets = reslottingSetting.value ?
                computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorModeSetting.value, maxSlot,
