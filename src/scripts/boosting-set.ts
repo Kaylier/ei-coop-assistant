@@ -52,7 +52,9 @@ export function searchDiliSet(items: T.Item[],
 export function searchIHRSets(items: T.Item[],
                               maxSlot: number,
                               includeDeflector: boolean,
+                              relaxDeflector: boolean, // relax the deflector contraint for 2nd to last sets
                               includeShip: boolean,
+                              relaxShip: boolean,
                               reslotting: boolean,
                               targetGusset: T.AllowedGusset
                              ): T.ArtifactSet[] {
@@ -91,7 +93,7 @@ export function searchIHRSets(items: T.Item[],
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
 
-    const requiredFamilies: T.ArtifactFamily[] = [];
+    let requiredFamilies: T.ArtifactFamily[] = [];
     if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
     if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
 
@@ -101,6 +103,12 @@ export function searchIHRSets(items: T.Item[],
         optionalFamilies: [...artifacts.keys()].filter(x => !requiredFamilies.includes(x)),
     });
 
+    if (relaxDeflector) {
+        requiredFamilies = requiredFamilies.filter(x => x !== T.ArtifactFamily.TACHYON_DEFLECTOR);
+    }
+    if (relaxShip) {
+        requiredFamilies = requiredFamilies.filter(x => x !== T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    }
     if (targetGusset !== T.AllowedGusset.ANY && targetGusset !== T.AllowedGusset.NONE) {
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }

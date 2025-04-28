@@ -19,7 +19,7 @@
     <section v-if="!errorMessage" id="main-sets">
 
         <template v-if="userData" v-for="entry of sets">
-            <artifact-set-card v-if="entry.solution"
+            <artifact-set-card v-if="entry.solution" :key="entry.solution"
                 :title="entry.title"
                 :description="entry.description"
                 :set="entry.solution"

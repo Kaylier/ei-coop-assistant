@@ -113,6 +113,7 @@
                                      :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
                                      />
                     <inventory-frame v-if="showVariantsSetting.value" v-for="subentry in entry.variants"
+                                     :key="JSON.stringify(subentry)"
                                      :artifacts="subentry"
                                      :isSet="true"
                                      :deflectorBonus="entry.optiThreshold"

@@ -6,6 +6,7 @@
     <section class="main">
         <div v-if="sets.length" class="sets" id="sets">
             <inventory-frame v-for="set in sets"
+                             :key="JSON.stringify(set)"
                              :artifacts="set"
                              :isSet="true"
                              :userData="userData"

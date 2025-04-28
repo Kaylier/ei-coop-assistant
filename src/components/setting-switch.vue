@@ -1,6 +1,6 @@
 <template>
     <span class="setting-entry"
-          :class="{ hidden: hide && setting.value === setting.defaultValue && !focused  }"
+          :class="{ hidden: hide && unref(setting.value) === setting.defaultValue && !focused  }"
           @focusin="onfocusin" @focusout="onfocusout"
           >
         <label v-if="label || tooltip">
@@ -12,15 +12,17 @@
         </label>
         <div class="switch">
             <label v-for="option in options"
+                   :key="option.value"
                    class="switch-option"
-                   :for="`${id}-${option.value}`">
+                   :for="`${id}-${String(option.value)}`">
                 <input :type="type ?? 'radio'"
                        :name="id"
-                       :id="`${id}-${option.value}`"
+                       :id="`${id}-${String(option.value)}`"
                        :value="option.value"
                        v-model="setting.value"/>
                 <slot name="option" v-bind="option">
-                    <span v-html="option.label"/>
+                    <img v-if="option.img" :src="option.img" :alt="option.label"/>
+                    <span v-else v-html="option.label"/>
                 </slot>
             </label>
             <slot name="extra"/>
@@ -29,16 +31,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, unref } from 'vue';
 import type { Setting } from '@/scripts/settings.ts';
 
-const setting = defineModel<Setting<unknown>>({ required: true });
+type KeyType = string | number | symbol;
+
+const setting = defineModel<Setting<KeyType>>({ required: true });
 
 defineProps<{
     id: string,
     label?: string,
     tooltip?: string,
-    options: Array<{ value: unknown, label: string }>,
+    options: Array<{ value: KeyType, label: string, img?: string }>,
     type?: 'radio'|'checkbox',
     hide?: boolean,
 }>();

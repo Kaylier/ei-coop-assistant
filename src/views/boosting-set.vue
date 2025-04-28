@@ -7,13 +7,11 @@
                         tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
                         type="checkbox"
                         :options="[
-                                  { value: 'Deflector', img: '/img/items/artifact-tachyon_deflector-3.png' },
-                                  { value: 'SiaB', img: '/img/items/artifact-ship_in_a_bottle-3.png' },
-                                  ]">
-            <template #option="{ value, img }">
-                <img :src="img" :alt="value"/>
-            </template>
-        </setting-switch>
+                                  { value: 'Deflector', label: 'Deflector',
+                                    img: '/img/items/artifact-tachyon_deflector-3.png' },
+                                  { value: 'SiaB', label: 'Ship in a Bottle',
+                                    img: '/img/items/artifact-ship_in_a_bottle-3.png' },
+                                  ]"/>
         <setting-switch id="reslotting"
                         v-model="reslottingSetting"
                         label="Reslotting"
@@ -28,11 +26,10 @@
                         v-model="swappingSetting"
                         label="Gusset swapping"
                         tooltip="Allow swapping gusset mid-boost<br/>
-                                 for a higher IHR at lower population"
-                        :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
-                                  ]"/>
+                                 for a higher IHR at lower population<br/>
+                                 Select deflector or ship in a bottle<br/>
+                                 to allow them to be replaced."
+                        :options="swappingOptions"/>
         <setting-switch :hide="!showExtraSettings"
                         id="gusset"
                         v-model="allowedGussetSetting"
@@ -109,7 +106,7 @@
             to build a Slow-boost set<br/>
             with the selected constraints
         </span>
-        <artifact-set-card v-for="set, i of setIHR"
+        <artifact-set-card v-for="set, i of setIHR" :key="JSON.stringify(set)"
             title="IHR set"
             description="Equip when boosting</br>with tachyon prisms."
             :set="set"
@@ -168,7 +165,7 @@ import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
 
 
-const includesSetting = createSetting<string[]>({
+const includesSetting = createSetting<('Deflector'|'SiaB')[]>({
     localStorageKey: 'boosting-including',
     defaultValue: [],
 });
@@ -176,7 +173,7 @@ const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'boosting-reslotting',
     defaultValue: false,
 });
-const swappingSetting = createSetting<boolean>({
+const swappingSetting = createSetting<false|true|'Deflector'|'SiaB'>({
     localStorageKey: 'boosting-gusset-swap',
     defaultValue: false,
 });
@@ -199,6 +196,29 @@ const pinnedBoostSetting = createSetting<Set<string>>({
     defaultValue: new Set([...boostSets.entries()].filter(([,x]) => x.default).map(([k,]) => k)),
     parser: (s: string) => new Set(JSON.parse(s)),
     formatter: (x: Set<string>) => JSON.stringify([...x]),
+});
+
+
+const swappingOptions = computed(() => {
+    const ret: { value: false|true|'Deflector'|'SiaB', label: string, img?: string }[] = [
+        { value: false, label: 'no' },
+        { value: true, label: 'yes' },
+    ]
+    if (includesSetting.value.includes('Deflector') || swappingSetting.value === 'Deflector') {
+        ret.push({
+            value: 'Deflector',
+            label: 'Deflector',
+            img: '/img/items/artifact-tachyon_deflector-3.png'
+        });
+    }
+    if (includesSetting.value.includes('SiaB') || swappingSetting.value === 'SiaB') {
+        ret.push({
+            value: 'SiaB',
+            label: 'Ship in a Bottle',
+            img: '/img/items/artifact-ship_in_a_bottle-3.png'
+        });
+    }
+    return ret;
 });
 
 function changePin(id: string, checked: boolean) {
@@ -315,18 +335,24 @@ function updateSet() {
                                       reslottingSetting.value,
                                       T.AllowedGusset.ANY);
         console.log("Dili set:", setDili.value);
-        const targetGusset = swappingSetting.value && allowedGussetSetting.value === T.AllowedGusset.ANY ?
+
+        // If swapping is enabled, target the highest available gusset, unless one is already forced
+        const targetGusset = swappingSetting.value !== false && allowedGussetSetting.value === T.AllowedGusset.ANY ?
                              allowedGussetChoices.value.at(-1) ?? T.AllowedGusset.NONE : allowedGussetSetting.value;
         setIHR.value = searchIHRSets(userData.value?.items ?? [],
                                      maxSlot,
                                      includesSetting.value.includes('Deflector'),
+                                     swappingSetting.value === 'Deflector',
                                      includesSetting.value.includes('SiaB'),
+                                     swappingSetting.value === 'SiaB',
                                      reslottingSetting.value,
                                      targetGusset);
+        // We always solve for swapping, and discard undesired sets when swapping is off
         if (swappingSetting.value === false) {
             setIHR.value = setIHR.value.slice(-1);
         }
         console.log("IHR sets:", ...setIHR.value);
+
         setSlow.value = searchSlowIHRSet(userData.value?.items ?? [],
                                          maxSlot,
                                          includesSetting.value.includes('Deflector'),

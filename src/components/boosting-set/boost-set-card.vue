@@ -300,9 +300,9 @@ const segments = computed<Segment[]>(() => {
 const timerData = computed(() => {
     const ret = [];
 
-    for (let { time, type } of milestones.value) {
-        let title, msg;
-        switch (type) {
+    for (const milestone of milestones.value) {
+        let time = milestone.time, title, msg;
+        switch (milestone.type) {
             case 'filled':
                 title = "⏱️ eica - Habs filled";
                 break;
