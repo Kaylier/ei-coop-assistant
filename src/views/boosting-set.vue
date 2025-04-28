@@ -106,7 +106,7 @@
             with the selected constraints
         </span>
         <artifact-set-card v-for="set, i of setIHR" :key="JSON.stringify(set)"
-            title="IHR set"
+            :title="setIHR.length > 1 ? `IHR set ${i+1}/${setIHR.length}` : 'IHR set'"
             description="Equip when boosting</br>with tachyon prisms."
             :set="set"
             :userData="userData"
