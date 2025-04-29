@@ -49,6 +49,17 @@
                              @touchend="focusedSegment = undefined"
                              />
                 </g>
+                <g> <!-- Images -->
+                <template v-for="(segment, i) in segments">
+                    <image v-if="segment.img"
+                           :class="{ focused: focusedSegment === i }"
+                           :href="segment.img"
+                           :x="segment.time1*90 + segment.population1*10 - 4"
+                           :y="DETAIL_GRAPH_RATIO*80 - 2.5"
+                           height="5" width="5"
+                           />
+                </template>
+                </g>
                 <g v-if="timer.isRunning.value"> <!-- Progress segment -->
                     <polygon class="details-graph-progress-segment"
                              :points="`${timer.pTime*100-1},${DETAIL_GRAPH_RATIO*100-2}
@@ -254,6 +265,7 @@ type Segment = {
     time0: number, time1: number, // time ratio on the graph
     time: number, // actual time
     speed: ''|'fast'|'slow',
+    img?: string,
 };
 
 const segments = computed<Segment[]>(() => {
@@ -277,7 +289,7 @@ const segments = computed<Segment[]>(() => {
         });
     }
 
-    for (const { time, population, speed } of milestones.value) {
+    for (const { time, population, speed, type } of milestones.value) {
         ret.push({
             population0: prevPopulation/maxPopulation,
             population1: population/maxPopulation,
@@ -286,6 +298,9 @@ const segments = computed<Segment[]>(() => {
             population,
             time,
             speed,
+            img: type === 'artiswap'  ? '/img/icons/gusset-swap.png' :
+                 type === 'boostswap' ? '/img/icons/boost-swap.png' :
+                 undefined,
         });
         prevTime = time;
         prevPopulation = population;
@@ -549,6 +564,15 @@ img {
 .details-graph-bar      { fill: #888; }
 .details-graph-bar.fast { fill: #384; }
 .details-graph-bar.slow { fill: #387; }
+
+svg image {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+svg image.focused {
+    opacity: 1;
+}
 
 .tag-container-time {
     position: relative;
