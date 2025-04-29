@@ -34,7 +34,8 @@
                         id="gusset"
                         v-model="allowedGussetSetting"
                         label="Gusset"
-                        tooltip="Force to use a specific gusset in your IHR sets<br/>
+                        tooltip="Target a specific gusset with your IHR sets<br/>
+                                 If swapping is enabled, this is the highest gusset<br/>
                                  Disabled on 'any'"
                         :options="allowedGussetOptions"
                         @focusin="allowedGussetOnFocusIn"

@@ -1,10 +1,8 @@
 <template>
-    <div id="card-frame"
-         @focusin="onfocusin"
-         @focusout="onfocusout">
+    <div id="card-frame" @focusin="debounceFocus(true)" @focusout="debounceFocus(false)">
         <div id="header-frame"
-             @mousedown="focused = !focused"
-             @touchstart="focused = !focused">
+             @mousedown="expanded = timer.isRunning.value || !expanded"
+             @touchstart="expanded = timer.isRunning.value || !expanded">
             <button v-if="pinned !== undefined || frozenProps" id="pin"
                     title="Mark as favourite"
                     @click="(e: Event) => emit('changed', !!frozenProps || !pinned)">
@@ -75,13 +73,12 @@
                           />
                 </g>
             </svg>
-            <button v-if="timerData.length"
-                    id="timer-button"
-                    :class="{ hide: collapsed }"
-                    @click="timerToggle">
-                {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
-            </button>
         </div>
+        <button v-if="timerData.length"
+                id="timer-button"
+                @click="timerToggle">
+            {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
+        </button>
         <div class="tag-container-time">
             <span v-for="(segment, i) in segments.filter(x => x.time)"
                   class="time-tag"
@@ -135,16 +132,14 @@ const startPopulation = computed(() => (frozenProps.value ? frozenProps.value : 
 const pinned = computed(() => (frozenProps.value ? frozenProps.value : props).pinned);
 
 
+const expanded = ref<boolean>(false);
 const focused = ref<boolean>(false);
 let debounceTimer: ReturnType<typeof setTimeout>;
-function onfocusin() {
+function debounceFocus(value: boolean) {
     clearTimeout(debounceTimer);
-    focused.value = true;
+    debounceTimer = setTimeout(() => focused.value = value, 200);
 }
-function onfocusout() {
-    debounceTimer = setTimeout(() => focused.value = false, 200);
-}
-const collapsed = computed(() => !focused.value && !timer.isRunning.value);
+const collapsed = computed<boolean>(() => !expanded.value && !focused.value && !timer.isRunning.value);
 
 const focusedSegment = ref<number>();
 
@@ -406,7 +401,6 @@ function timerUpdate() {
         if (timer.pTime < segment.time0) continue;
         const p = (timer.pTime - segment.time0)/(segment.time1 - segment.time0);
         timer.pPopulation = p*(segment.population1 - segment.population0) + segment.population0;
-        console.log(timer.pTime, segment);
         break;
     }
 
@@ -595,7 +589,7 @@ img {
     padding: 0.16em 0.4em 0 .4em;
     height: 1.2em;
     min-width: 1.2em;
-    border-radius: 0 0.4em;
+    border-radius: v-bind(collapsed ? '0.4em' : '0') 0.4em 0 0.4em;
     font: inherit;
     opacity: 1;
     transition: all .15s;
