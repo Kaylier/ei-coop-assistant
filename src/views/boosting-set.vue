@@ -96,7 +96,7 @@
                 <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
             </span>
             <span v-for="{ population, time } in slowIHRMilestones">
-                <span class="highlighted">{{ formatNumber(population) }}</span>
+                <span class="highlighted">+{{ formatNumber(population) }}</span>
                 chickens after
                 <span class="highlighted">{{ formatTime(time) }}</span>
             </span>
@@ -119,7 +119,7 @@
                 <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
             </span>
             <span v-for="{ population, time } in IHRMilestones">
-                <span class="highlighted">{{ formatNumber(population) }}</span>
+                <span class="highlighted">+{{ formatNumber(population) }}</span>
                 chickens after
                 <span class="highlighted">{{ formatTime(time) }}</span>
             </span>

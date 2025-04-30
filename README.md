@@ -52,15 +52,23 @@ For easier usage, coop organizers can prefill input fields for their members wit
 #### Settings
 - **Including** a deflector and/or ship in a bottle in your IHR sets. IHR is prefered in your IHR set and team bonus is prefered in Slow-boost set
 - **Reslotting** allows moving stones around in your inventory
-- **Gusset swapping** finds best IHR sets at different gusset levels to benefit from higher IHR at lower population
+- **Gusset swapping** finds best IHR sets at different gusset levels to benefit from higher IHR at lower population. You can allow the deflector or the ship in a bottle to be replaced if they are included in the first IHR set.
 - **Gusset** forces a specific gusset in IHR and Slow-boost sets. Choose *any* to disable
 - **Offline** mode enables Internal Hatchery Calm
-- **Hab capacity** can be forced to a desired value. If left empty, uses the highest possible capacity with your IHR set.
+- **Starting population** can be set to a desired value
 #### Boost combos overview
 Selection of common boost combos with an overview of how much they fill your habs with your artifacts (dili and IHR set).\
 You can personalize the combos you want to show.\
-The green bar shows the contribution of the bulk of your boosts, the blue bar shows the extra contribution from left-over boosts (after boost beacons have expired for example), and the red bar is unfilled capacity.\
-On hover, extra details are shown on various milestones (boost expire, hab capacity reached, artifact change)
+The color code is:\
+Grey for already filled (cf. starting population setting)\
+Green for a tachyon boosted by a beacon\
+Blue for a non-boosted tachyon\
+Red for unfilled capacity\
+
+You can tap the boost cards to expand the view. The top represents population while the bottom represents time.
+### Timer
+A button *start* starts a timer for the duration of the boosts, or until habs are filled.\
+On compatible browsers, you will receive a notification when it's time to swap your gusset or renew your boosts, and once your habs are filled. On browsers that throttle background processes (mostly smartphones), notifications may not be reliable.
 
 ### Laying (`/laying-set`)
 Determine optimal artifact sets and the tipping points between them, balancing egg laying and shipping rates based on deflector bonuses.\

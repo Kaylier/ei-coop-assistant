@@ -45,6 +45,10 @@
     src: url('/fonts/Always Together.otf') format("opentype");
 }
 
+* {
+    font-variant-ligatures: none;
+}
+
 html, body, #app {
     background-color: var(--bg-color);
     color: var(--text-color);
