@@ -1,8 +1,6 @@
 <template>
     <div id="card-frame" @focusin="debounceFocus(true)" @focusout="debounceFocus(false)">
-        <div id="header-frame"
-             @mousedown="expanded = timer.isRunning.value || !expanded"
-             @touchstart="expanded = timer.isRunning.value || !expanded">
+        <div id="header-frame" @mousedown="expanded = timer.isRunning.value || !expanded">
             <button v-if="pinned !== undefined || frozenProps" id="pin"
                     title="Mark as favourite"
                     @click="(e: Event) => emit('changed', !!frozenProps || !pinned)">
