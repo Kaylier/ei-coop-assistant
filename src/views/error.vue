@@ -11,8 +11,8 @@
 
 <script setup lang="ts">
 defineProps<{
-    code: number,
-    message: string
+    code?: number,
+    message?: string
 }>();
 </script>
 

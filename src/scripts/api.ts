@@ -6,6 +6,7 @@ import protobuf from 'protobufjs';
 import * as T from '@/scripts/types.ts';
 import { getSortId, getSlotCount } from '@/scripts/artifacts.ts';
 import { checkSID, formatNumber } from '@/scripts/utils.ts';
+import { Effects } from '@/scripts/effects.ts';
 
 import eiProto from '@/assets/proto/ei.proto?raw';
 import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
@@ -322,77 +323,165 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const protoBuffDimension = proto.lookupEnum('GameModifier.GameDimension');
     const colleggtibleBuffs = getColleggtibleBuffs(proto, backup);
 
-    const soulEggs = backup.game?.soulEggsD ?? 0;
-    const prophecyEggs = backup.game?.eggsOfProphecy ?? 0;
-    const soulEggBonus = 0.1 + (epicResearches.get('soul_eggs') ?? 0)*0.01;
-    const prophecyEggBonus = 1.05 + (epicResearches.get('prophecy_bonus') ?? 0)*0.01;
 
     /*
-     * Base egg laying rate is calculated from:
-     *  - Base rate: 2 egg/chicken/min
-     *  - Chicken population: 11.34e9 with all common research
-     *  - Common researches: x1386
-     *  - Epic research: up to x2 (read from backup data)
-     *  - Colleggtibles (read from backup data)
+     * User permanent effects, includes:
+     * - permit
+     * - mystical eggs
+     * - epic research
+     * - colleggtibles
      */
-    let baseLayingRate = 523908000000; // in egg/second
-    baseLayingRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
-    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimension.values.EGG_LAYING_RATE) ?? 1;
-    baseLayingRate *= colleggtibleBuffs.get(protoBuffDimension.values.HAB_CAPACITY) ?? 1;
+    const userEffects = new Effects();
 
     /*
-     * Base egg shipping rate is calculated from:
-     *  - Hyperloops: 50e6 x 17 x 10 or Quantum transporters: 50e6 x 17 egg/min
-     *  - Common researches: x5606.3232421875
-     *  - Epic research: x2.5 (read from backup data)
-     *  - Colleggtibles (read from backup data)
+     * Permit
      */
-    let baseShippingRate = 79422912597.65625; // in egg/second
-    baseShippingRate *= backup.game?.hyperloopStation ? 10 : 1;
-    baseShippingRate *= 1 + 0.05*(epicResearches.get("transportation_lobbyist") ?? 0);
-    baseShippingRate *= colleggtibleBuffs.get(protoBuffDimension.values.SHIPPING_CAPACITY) ?? 1;
+    userEffects.set('earning_mult', (proPermit ? 1 : 0.5));
+    //userEffects.set(''             , (proPermit ? 10 : 2)); // silo amount
 
     /*
-     * Base earning rate is calculated from:
-     *  - Base laying rate: 2 egg/chicken/min
-     *  - Free Permit penalty: ×0.5 (read from backup data)
-     *  - Epic research: ×2 (read from backup data)
-     *  - Colleggtibles (read from backup data)
-     *  - User naked EB
-     * Common research cost reductions are factored in:
-     *  - Epic research: ×0.5 (read from backup data)
-     *  - Colleggtibles (read from backup data)
-     * Not counted in:
-     *  - Away earning bonuses
-     *  - Running Chicken Bonus
+     * Mystical Eggs
      */
-    let baseEarningRate = 2/60; // in bocks/eggvalue/chicken/second
-    baseEarningRate *= (proPermit ? 1 : 0.5);
-    baseEarningRate *= 1 + 0.05*(epicResearches.get("epic_egg_laying") ?? 0);
-    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimension.values.EGG_LAYING_RATE) ?? 1;
-    baseEarningRate *= colleggtibleBuffs.get(protoBuffDimension.values.EARNINGS) ?? 1;
-    baseEarningRate *= 1 + soulEggs*soulEggBonus*Math.pow(prophecyEggBonus, prophecyEggs);
-    baseEarningRate /= 1 - 0.05*(epicResearches.get("cheaper_research") ?? 0);
-    baseEarningRate /= colleggtibleBuffs.get(protoBuffDimension.values.RESEARCH_COST) ?? 1;
-
-    const awayEarningBonus = colleggtibleBuffs.get(protoBuffDimension.values.AWAY_EARNINGS) ?? 1;
-    const mrcbEarningBonus = 340 + 2*(epicResearches.get('epic_multiplier') ?? 0);
+    userEffects.set('prophecy_eggs', backup.game?.eggsOfProphecy ?? 0);
+    userEffects.set('soul_eggs', backup.game?.soulEggsD ?? 0);
 
     /*
-     * Base Internal Hatchery Rate is calculated from:
-     *  - Common researches: 3720 chicken/hab/min
-     *  - Hab count: ×4 (assumes IHR not decreased by filled habs)
-     *  - Epic research: ×2 (read from backup data)
-     *  - Colleggtibles (read from backup data)
-     * Not counted in:
-     *  - Away IHR bonuses
+     * Epic researches
      */
-    let baseIHRate = 14880;
-    baseIHRate *= 1 + 0.05*(epicResearches.get("epic_internal_incubators") ?? 0);
-    baseIHRate *= colleggtibleBuffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1;
+    userEffects.apply('hatching_rate'     ,     2   *(epicResearches.get('hold_to_hatch'           ) ?? 0));
+    //userEffects.apply(''                , 1 + 0.10*(epicResearches.get('epic_hatchery'           ) ?? 0));
+    userEffects.apply('ihr_mult'          , 1 + 0.05*(epicResearches.get('epic_internal_incubators') ?? 0));
+    //userEffects.apply(''                ,    30   *(epicResearches.get('video_doubler_time'      ) ?? 0));
+    //userEffects.apply(''                ,    0.001*(epicResearches.get('epic_clucking'           ) ?? 0));
+    userEffects.apply('earning_mrcb_mult' ,     2   *(epicResearches.get('epic_multiplier'         ) ?? 0));
+    userEffects.apply('hab_cost_mult'     , 1 - 0.05*(epicResearches.get('cheaper_contractors'     ) ?? 0));
+    userEffects.apply('vehicle_cost_mult' , 1 - 0.05*(epicResearches.get('bust_unions'             ) ?? 0));
+    userEffects.apply('research_cost_mult', 1 - 0.05*(epicResearches.get('cheaper_research'        ) ?? 0));
+    //userEffects.apply(''                ,     6   *(epicResearches.get('silo_capacity'           ) ?? 0));
+    //userEffects.apply(''                ,     0.10*(epicResearches.get('int_hatch_sharing'       ) ?? 0));
+    userEffects.apply('ihr_away_mult'     , 1 + 0.10*(epicResearches.get('int_hatch_calm'          ) ?? 0));
+    userEffects.apply('farm_value_mult'   , 1 + 0.05*(epicResearches.get('accounting_tricks'       ) ?? 0));
+    userEffects.apply('soul_egg_bonus'    ,     0.01*(epicResearches.get('soul_eggs'               ) ?? 0));
+    userEffects.apply('prestige_mult'     , 1 + 0.10*(epicResearches.get('prestige_bonus'          ) ?? 0));
+    //userEffects.apply(''                , 2 + 0.10*(epicResearches.get('drone_rewards'           ) ?? 0));
+    userEffects.apply('laying_rate'       , 1 + 0.05*(epicResearches.get('epic_egg_laying'         ) ?? 0));
+    userEffects.apply('shipping_mult'     , 1 + 0.05*(epicResearches.get('transportation_lobbyist' ) ?? 0));
+    userEffects.apply('prophecy_egg_bonus',     0.01*(epicResearches.get('prophecy_bonus'          ) ?? 0));
+    //userEffects.apply(''                ,     0.00*(epicResearches.get('hold_to_research'        ) ?? 0));
+    //userEffects.apply(''                ,     0.00*(epicResearches.get('afx_mission_time'        ) ?? 0));
+    //userEffects.apply(''                ,     0.00*(epicResearches.get('afx_mission_capacity'    ) ?? 0));
 
-    const awayIHBonus = 1 + 0.1*(epicResearches.get("int_hatch_calm") ?? 0);
+    /*
+     * Colleggtibles
+     */
+    userEffects.apply('earning_mult'      , colleggtibleBuffs.get(protoBuffDimension.values.EARNINGS              ) ?? 1);
+    userEffects.apply('earning_away_mult' , colleggtibleBuffs.get(protoBuffDimension.values.AWAY_EARNINGS         ) ?? 1);
+    userEffects.apply('ihr_mult'          , colleggtibleBuffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1);
+    userEffects.apply('laying_rate'       , colleggtibleBuffs.get(protoBuffDimension.values.EGG_LAYING_RATE       ) ?? 1);
+    userEffects.apply('shipping_mult'     , colleggtibleBuffs.get(protoBuffDimension.values.SHIPPING_CAPACITY     ) ?? 1);
+    userEffects.apply('hab_capacity_mult' , colleggtibleBuffs.get(protoBuffDimension.values.HAB_CAPACITY          ) ?? 1);
+    userEffects.apply('vehicle_cost_mult' , colleggtibleBuffs.get(protoBuffDimension.values.VEHICLE_COST          ) ?? 1);
+    userEffects.apply('hab_cost_mult'     , colleggtibleBuffs.get(protoBuffDimension.values.HAB_COST              ) ?? 1);
+    userEffects.apply('research_cost_mult', colleggtibleBuffs.get(protoBuffDimension.values.RESEARCH_COST         ) ?? 1);
 
+
+
+    /*
+     * Maxed Farm effects, includes:
+     * - habs
+     * - vehicles
+     * - silos
+     * - common researches
+     */
+    const farmEffects: Effects = new Effects();
+
+    /*
+     * farmEffects Habs, vehicles, silos
+     */
+    farmEffects.set('hab_capacity_base', 600_000_000*4);
+    farmEffects.set('shipping_base', 50_000_000/60*17*(backup.game?.hyperloopStation ? 10 : 1));
+    //userEffects.set('', 3600); // silo capacity
+
+    /*
+     * farmEffects Common researches
+     */
+    farmEffects.apply('laying_rate'            , 1 + 0.1  *50 ); // Comfortable Nests
+    farmEffects.apply('egg_value_mult'         , 1 + 0.25 *40 ); // Nutritional Supplements
+  //farmEffects.apply('hatchery_refill_mult'   , 1 + 0.1  *15 ); // Better Incubators
+  //farmEffects.apply('running_chicken_mult'   ,     0.001*25 ); // Excitable Chickens
+    farmEffects.apply('hab_capacity_mult'      , 1 + 0.05 *8  ); // Hen House Remodel
+    farmEffects.apply('ihr_base'               ,     2    *10 ); // Internal Hatcheries
+    farmEffects.apply('egg_value_mult'         , 1 + 0.25 *30 ); // Padded Packaging
+  //farmEffects.apply('hatchery_capacity'      ,       10 *10 ); // Hatchery Expansion
+    farmEffects.apply('egg_value_mult'         ,     2   **1  ); // Bigger Eggs
+    farmEffects.apply('ihr_base'               ,     5    *10 ); // Internal Hatchery Upgrades
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *30 ); // Improved Leafsprings
+  //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Vehicle Reliability
+  //farmEffects.apply('hatchery_refill_mult'   , 1 + 0.05 *25 ); // Rooster Booster
+    farmEffects.apply('earning_mrcb_mult'      ,     0.2  *50 ); // Coordinated Clucking
+  //farmEffects.apply('hatchery_capacity'      ,    50    *1  ); // Hatchery Rebuild
+    farmEffects.apply('egg_value_mult'         ,     3   **1  ); // USDE Prime Certification
+    farmEffects.apply('laying_rate'            , 1 + 0.05 *50 ); // Hen House A/C
+    farmEffects.apply('egg_value_mult'         , 1 + 0.25 *35 ); // Super-Feed™ Diet
+    farmEffects.apply('hab_capacity_mult'      , 1 + 0.05 *10 ); // Microlux™ Chicken Suites
+  //farmEffects.apply('hatchery_capacity'      ,    10    *10 ); // Compact Incubators
+    farmEffects.apply('shipping_mult'          , 1 + 0.1  *40 ); // Lightweight Boxes
+  //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Depot Worker Exoskeletons
+    farmEffects.apply('ihr_base'               ,    10    *15 ); // Internal Hatchery Expansion
+    farmEffects.apply('laying_rate'            , 1 + 0.15 *30 ); // Improved Genetics
+    farmEffects.apply('egg_value_mult'         , 1 + 0.15 *30 ); // Improved Genetics
+  //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Traffic Management
+    farmEffects.apply('earning_mrcb_mult'      ,     0.5  *50 ); // Motivational Clucking
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *30 ); // Driver Training
+    farmEffects.apply('egg_value_mult'         , 1 + 0.15 *60 ); // Shell Fortification
+  //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Egg Loading Bots
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *50 ); // Super Alloy Frames
+    farmEffects.apply('egg_value_mult'         ,     2   **5  ); // Even Bigger Eggs
+    farmEffects.apply('ihr_base'               ,    25    *30 ); // Internal Hatchery Expansion
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *20 ); // Quantum Egg Storage
+    farmEffects.apply('egg_value_mult'         , 1 + 0.1  *100); // Genetic Purification
+    farmEffects.apply('ihr_base'               ,     5    *250); // Machine Learning Incubators
+    farmEffects.apply('laying_rate'            , 1 + 0.1  *20 ); // Time Compression
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *25 ); // Hover Upgrades
+    farmEffects.apply('egg_value_mult'         ,     2   **7  ); // Graviton Coating
+    farmEffects.apply('hab_capacity_mult'      , 1 + 0.02 *25 ); // Grav Plating
+    farmEffects.apply('egg_value_mult'         , 1 + 0.25 *100); // Crystalline Shelling
+  //farmEffects.apply('vehicle_count_max'      ,     1    *5  ); // Autonomous Vehicles
+    farmEffects.apply('ihr_base'               ,    50    *30 ); // Neural Linking
+    farmEffects.apply('egg_value_mult'         , 1 + 0.25 *50 ); // Telepathic Will
+    farmEffects.apply('earning_mrcb_mult'      ,     2    *150); // Enlightened Chickens
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *25 ); // Dark Containment
+    farmEffects.apply('egg_value_mult'         , 1 + 0.1  *50 ); // Atomic Purification
+    farmEffects.apply('egg_value_mult'         ,    10   **3  ); // Multiversal Layering
+    farmEffects.apply('laying_rate'            , 1 + 0.02 *50 ); // Timeline Diversion
+    farmEffects.apply('hab_capacity_mult'      , 1 + 0.02 *25 ); // Wormhole Dampening
+    farmEffects.apply('egg_value_mult'         , 1 + 0.05 *100); // Eggsistor Miniaturization
+  //farmEffects.apply('hyperloop_size_max'     ,     1    *5  ); // Graviton Coupling
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *25 ); // Neural Net Refinement
+    farmEffects.apply('egg_value_mult'         , 1 + 0.01 *500); // Matter Reconfiguration
+    farmEffects.apply('egg_value_mult'         ,    10   **1  ); // Timeline Splicing
+    farmEffects.apply('shipping_mult'          , 1 + 0.05 *25 ); // Hyper Portalling
+    farmEffects.apply('laying_rate'            , 1 + 0.1  *10 ); // Relativity Optimization
+
+
+    const baseEffects = new Effects(Effects.initial, userEffects);
+    const maxedEffects = new Effects(baseEffects, farmEffects);
+
+    // TODO: remove this after transition is done
+    console.log("base effects", baseEffects);
+    console.log("maxed effects", maxedEffects);
+    const prophecyEggs = maxedEffects.prophecy_eggs;
+    const soulEggs = maxedEffects.soul_eggs;
+    const baseLayingRate = maxedEffects.laying_rate * maxedEffects.hab_capacity;
+    const baseShippingRate = maxedEffects.shipping_rate;
+    const baseIHRate = maxedEffects.ihr;
+    const awayIHBonus = maxedEffects.ihr_away_mult;
+    const mrcbEarningBonus = maxedEffects.earning_mrcb_mult;
+    const baseEarningRate = baseEffects.laying_rate * baseEffects.earning_mult * baseEffects.eb / baseEffects.research_cost_mult;
+    const awayEarningBonus = baseEffects.earning_away_mult;
+    const prophecyEggBonus = baseEffects.prophecy_egg_bonus;
+    const soulEggBonus = baseEffects.soul_egg_bonus;
+    // TODO
 
     return {
         items, sets,
@@ -401,6 +490,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
         baseIHRate, awayIHBonus,
         baseEarningRate, awayEarningBonus, mrcbEarningBonus,
         prophecyEggBonus, soulEggBonus,
+        baseEffects, maxedEffects,
         date: new Date(backup.approxTime*1000),
         ephemeral: checkSID(eid),
     };

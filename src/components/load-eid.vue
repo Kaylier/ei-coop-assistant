@@ -44,6 +44,7 @@ import { onMounted, ref, computed } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { checkEID, checkSID } from '@/scripts/utils.ts';
 import { getUserData } from '@/scripts/api.ts';
+import { Effects } from '@/scripts/effects.ts';
 
 const userData = defineModel<T.UserData>({ required: true });
 
@@ -75,8 +76,12 @@ onMounted(async () => {
     if (!reload && saved) {
         try {
             loaded = JSON.parse(saved);
-            if (loaded && loaded['date'])
-                loaded['date'] = new Date(loaded['date']);
+            if (loaded && loaded.date)
+                loaded.date = new Date(loaded.date);
+            if (loaded && loaded.baseEffects)
+                loaded.baseEffects = Effects.fromJSON(loaded.baseEffects);
+            if (loaded && loaded.maxedEffects)
+                loaded.maxedEffects = Effects.fromJSON(loaded.maxedEffects);
         } catch (err) {
             console.warn('Clearing invalid JSON from user-data:', err);
             localStorage.removeItem('user-data');
