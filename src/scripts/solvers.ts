@@ -5,18 +5,20 @@
  */
 import * as T from '@/scripts/types.ts';
 import { arrayCompare, extractParetoFrontier, product } from '@/scripts/utils.ts';
-import { EffectMap, getEffects, copyItem } from '@/scripts/artifacts.ts';
+import { getEffects, copyItem } from '@/scripts/artifacts.ts';
+import { Effects } from '@/scripts/effects.ts';
+import type { EffectKey } from '@/scripts/effects.ts';
 
 
 type AnnotatedArtifact = {
     artifacts: T.Artifact[],
-    effects: EffectMap,
+    effects: Effects,
     stoneSlot: number, // amount of available stone slot, set to 0 when reslotting is disabled
 };
 
 type AnnotatedStone = {
     stone: T.Stone,
-    effects: EffectMap,
+    effects: Effects,
 };
 
 
@@ -36,7 +38,7 @@ type AnnotatedStone = {
 export function prepareItems(items: T.Item[],
                              unslot: boolean,
                              slot: boolean,
-                             filteredEffects?: string[]
+                             filteredEffects?: EffectKey[]
                             ): {
                                 artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                                 stones: Map<T.StoneFamily, AnnotatedStone[]>,
@@ -47,10 +49,10 @@ export function prepareItems(items: T.Item[],
     function addArtifact(artifact: T.Artifact) {
         const family = artifact.family;
         const stoneSlot = slot ? unslot ? artifact.stones.length : artifact.stones.filter(x => x === null).length : 0;
-        const effects = getEffects(artifact, !unslot, filteredEffects);
+        const effects = getEffects(artifact, { recursive: !unslot, targets: filteredEffects });
 
         // If no effect detected and there's no potential through stones, skip
-        if (stoneSlot == 0 && effects.size == 0) return;
+        if (stoneSlot == 0 && effects.isDefault()) return;
 
         if (!artifacts.has(family)) {
             artifacts.set(family, []);
@@ -61,9 +63,9 @@ export function prepareItems(items: T.Item[],
 
     function addStone(stone: T.Stone) {
         const family = stone.family;
-        const effects = getEffects(stone, !unslot, filteredEffects);
+        const effects = getEffects(stone, { recursive: !unslot, targets: filteredEffects });
 
-        if (effects.size == 0) return;
+        if (effects.isDefault()) return;
 
         if (!stones.has(family)) {
             stones.set(family, []);
@@ -123,7 +125,7 @@ export function prepareItems(items: T.Item[],
 export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                           stones: Map<T.StoneFamily, AnnotatedStone[]>,
                           maxSlot: number,
-                          scoreFn: (effect: EffectMap) => number[],
+                          scoreFn: (effect: Effects) => number[],
                           options?: {
                               requiredFamilies?: T.ArtifactFamily[],
                               optionalFamilies?: T.ArtifactFamily[],
@@ -133,7 +135,7 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
     let { requiredFamilies, optionalFamilies, stoneFamilies } = options ?? {};
     const { minimumScore } = options ?? {};
 
-    function itemCompare<A extends { effects: EffectMap }>(a: A, b: A) {
+    function itemCompare<A extends { effects: Effects }>(a: A, b: A) {
         return arrayCompare(scoreFn(a.effects), scoreFn(b.effects));
     }
 
@@ -175,7 +177,7 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
     function rec(current: AnnotatedArtifact[] = [], idx: number = 0): number {
         let callCount = 1;
 
-        const baseEffects = new EffectMap(...current.map(x => x.effects));
+        const baseEffects = new Effects(...current.map(x => x.effects));
         const stoneCount = current.reduce((tot,cur) => tot + cur.stoneSlot, 0);
 
         // evaluate current (only if all required families have been added)
@@ -217,9 +219,9 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
     }
 
     // Find best stones to put in, using effects as base
-    function findStones(baseEffects: EffectMap, stoneCount: number)  {
+    function findStones(baseEffects: Effects, stoneCount: number)  {
         // Warning: this approach is vulnerable to local minima
-        const effects = new EffectMap(baseEffects);
+        const effects = new Effects(baseEffects);
 
         const currentStones: AnnotatedStone[] = [];
         const stonesIndices = new Map<T.StoneFamily, number>();
@@ -235,7 +237,7 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                 const stoneQueue = stones.get(family) ?? [];
                 if (index >= stoneQueue.length) continue;
 
-                const familyScore = scoreFn(new EffectMap(effects, stoneQueue[index].effects));
+                const familyScore = scoreFn(new Effects(effects, stoneQueue[index].effects));
                 if (arrayCompare(familyScore, bestScore) > 0) {
                     bestScore = familyScore;
                     bestFamily = family;
@@ -265,35 +267,35 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
 
     return {
         set: set,
-        effects: new EffectMap(...set.map(x => getEffects(x, true))),
+        effects: new Effects(...set.map(x => getEffects(x))),
     };
 }
 
 
 /**
- * Return an upperbound EffectMap of missing artifacts
+ * Return an upperbound Effects of missing artifacts
  * consider artifactSlot amount of artifacts in families, and stoneSlot stones added in current artifacts
  */
-function getUpperBound(artifactSlot: number, families: T.ArtifactFamily[]): EffectMap {
-    const ret = new EffectMap();
+function getUpperBound(artifactSlot: number, families: T.ArtifactFamily[]): Effects {
+    const ret = new Effects();
 
     if (artifactSlot > 0) {
-        if (families.includes(T.ArtifactFamily.BOOK_OF_BASAN))        ret.update('prophecy_egg_bonus', 0.012);
-        if (families.includes(T.ArtifactFamily.TACHYON_DEFLECTOR))    ret.update('team_laying_bonus', 0.2);
-        if (families.includes(T.ArtifactFamily.SHIP_IN_A_BOTTLE))     ret.update('team_earning_bonus', 1.0);
-        if (families.includes(T.ArtifactFamily.TITANIUM_ACTUATOR))    ret.update('hold_to_hatch_bonus', 15);
-        if (families.includes(T.ArtifactFamily.DILITHIUM_MONOCLE))    ret.update('boost_bonus', 1.3);
-        if (families.includes(T.ArtifactFamily.QUANTUM_METRONOME))    ret.update('laying_bonus', 1.35);
-        if (families.includes(T.ArtifactFamily.PHOENIX_FEATHER))      ret.update('soul_egg_collection_bonus', 15);
-        if (families.includes(T.ArtifactFamily.CHALICE))              ret.update('internal_hatchery_bonus', 1.4);
-        if (families.includes(T.ArtifactFamily.INTERSTELLAR_COMPASS)) ret.update('shipping_bonus', 1.5);
-        if (families.includes(T.ArtifactFamily.MERCURYS_LENS))        ret.update('farm_value_bonus', 3);
-        if (families.includes(T.ArtifactFamily.GUSSET))               ret.update('hab_capacity_bonus', 1.25);
-        if (families.includes(T.ArtifactFamily.TUNGSTEN_ANKH))        ret.update('egg_value_bonus', 2.5);
-        if (families.includes(T.ArtifactFamily.DEMETERS_NECKLACE))    ret.update('egg_value_bonus', 3);
-        if (families.includes(T.ArtifactFamily.VIAL_OF_MARTIAN_DUST)) ret.update('running_chicken_bonus', 500);
-        if (families.includes(T.ArtifactFamily.LUNAR_TOTEM))          ret.update('away_earning_bonus', 200);
-        if (families.includes(T.ArtifactFamily.PUZZLE_CUBE))          ret.update('research_cost_bonus', 0.4);
+        if (families.includes(T.ArtifactFamily.BOOK_OF_BASAN))        ret.apply('prophecy_egg_bonus', 0.012);
+        if (families.includes(T.ArtifactFamily.TACHYON_DEFLECTOR))    ret.apply('team_laying_bonus', 0.2);
+        if (families.includes(T.ArtifactFamily.SHIP_IN_A_BOTTLE))     ret.apply('team_earning_bonus', 1.0);
+        if (families.includes(T.ArtifactFamily.TITANIUM_ACTUATOR))    ret.apply('hatching_rate', 15);
+        if (families.includes(T.ArtifactFamily.DILITHIUM_MONOCLE))    ret.apply('boost_mult', 1.3);
+        if (families.includes(T.ArtifactFamily.QUANTUM_METRONOME))    ret.apply('laying_rate', 1.35);
+        if (families.includes(T.ArtifactFamily.PHOENIX_FEATHER))      ret.apply('prestige_earning_mult', 15);
+        if (families.includes(T.ArtifactFamily.CHALICE))              ret.apply('ihr_mult', 1.4);
+        if (families.includes(T.ArtifactFamily.INTERSTELLAR_COMPASS)) ret.apply('shipping_mult', 1.5);
+        if (families.includes(T.ArtifactFamily.MERCURYS_LENS))        ret.apply('farm_value_mult', 3);
+        if (families.includes(T.ArtifactFamily.GUSSET))               ret.apply('hab_capacity_mult', 1.25);
+        if (families.includes(T.ArtifactFamily.TUNGSTEN_ANKH))        ret.apply('egg_value_mult', 2.5);
+        if (families.includes(T.ArtifactFamily.DEMETERS_NECKLACE))    ret.apply('egg_value_mult', 3);
+        if (families.includes(T.ArtifactFamily.VIAL_OF_MARTIAN_DUST)) ret.apply('earning_mrcb_mult', 500);
+        if (families.includes(T.ArtifactFamily.LUNAR_TOTEM))          ret.apply('earning_away_mult', 200);
+        if (families.includes(T.ArtifactFamily.PUZZLE_CUBE))          ret.apply('research_cost_mult', 0.4);
     }
 
     return ret;

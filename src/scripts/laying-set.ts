@@ -1,6 +1,7 @@
 import { isclose, extractParetoFrontier, combinations, product } from '@/scripts/utils.ts';
 import * as T from '@/scripts/types.ts';
 import { getEffects, copyItem } from '@/scripts/artifacts.ts';
+import { Effects } from '@/scripts/effects.ts';
 
 
 type AnnotatedArtifact = {
@@ -42,11 +43,11 @@ export function getOptimalGussets(items: T.Item[], includeStones: boolean = true
         if (item.category !== T.ItemCategory.ARTIFACT) return;
         if (item.family !== T.ArtifactFamily.GUSSET) return;
 
-        const effects = getEffects(item, includeStones);
+        const effects = getEffects(item, { recursive: includeStones });
 
         gussets.push([[
-            effects.get('laying_bonus')*effects.get('hab_capacity_bonus'),
-            effects.get('shipping_bonus')],
+            effects.get('laying_rate')*effects.get('hab_capacity_mult'),
+            effects.get('shipping_mult')],
             `artifact-gusset-${item.tier}-${item.rarity}` as T.AllowedGusset]);
     });
 
@@ -224,13 +225,13 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     const tachyonBonus: number[] = [1];
     cumul = 1;
     for (const stone of tachyonQueue) {
-        cumul *= getEffects(stone).get('laying_bonus');
+        cumul *= getEffects(stone).get('laying_rate');
         tachyonBonus.push(cumul);
     }
     const quantumBonus: number[] = [1];
     cumul = 1;
     for (const stone of quantumQueue) {
-        cumul *= getEffects(stone).get('shipping_bonus');
+        cumul *= getEffects(stone).get('shipping_mult');
         quantumBonus.push(cumul);
     }
 
@@ -469,13 +470,13 @@ function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.Art
         if (item.category !== T.ItemCategory.ARTIFACT) return;
         const artifact = copyItem(item) as T.Artifact;
 
-        const effects = getEffects(artifact, includeStones);
+        const effects = getEffects(artifact, { recursive: includeStones });
 
         const annotatedArtifact: AnnotatedArtifact = {
             artifact,
-            layingBonus: effects.get('laying_bonus'),
-            habCapacityBonus: effects.get('hab_capacity_bonus'),
-            shippingBonus: effects.get('shipping_bonus'),
+            layingBonus: effects.get('laying_rate'),
+            habCapacityBonus: effects.get('hab_capacity_mult'),
+            shippingBonus: effects.get('shipping_mult'),
             deflectorBonus: effects.get('team_laying_bonus'),
             stoneSlotAmount: artifact.stones?.length ?? 0,
         };

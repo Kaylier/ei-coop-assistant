@@ -264,15 +264,15 @@ function changePin(id: string, checked: boolean) {
 
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
-const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_bonus') ?? 1);
+const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_mult') ?? 1);
 const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440*4)*
                                (ihcSetting.value ? userData.value?.awayIHBonus ?? 3 : 1));
 const baseHabCapacity = computed(() => 11340000000); // TODO: read from userData
 const boostSetCardStats = computed(() => {
     const ret = [];
     for (const set of setIHR.value) {
-        const ihr = baseIHR.value*set.effects.get('internal_hatchery_bonus')*set.effects.get('boost_bonus');
-        const habCapacity = baseHabCapacity.value*set.effects.get('hab_capacity_bonus');
+        const ihr = baseIHR.value*set.effects.get('ihr_mult')*set.effects.get('boost_mult');
+        const habCapacity = baseHabCapacity.value*set.effects.get('hab_capacity_mult');
         ret.push({ ihr, habCapacity });
     }
     if (ret.length === 0) {
@@ -282,16 +282,16 @@ const boostSetCardStats = computed(() => {
 });
 
 const IHRMilestones = computed(() => {
-    const ihrbonus = (setIHR.value?.at(0)?.effects.get('internal_hatchery_bonus') ?? 1)*
-                     (setIHR.value?.at(0)?.effects.get('boost_bonus') ?? 1);
+    const ihrbonus = (setIHR.value?.at(0)?.effects.get('ihr_mult') ?? 1)*
+                     (setIHR.value?.at(0)?.effects.get('boost_mult') ?? 1);
     return [
         { population: baseIHR.value*ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
         { population: baseIHR.value*ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
     ];
 });
 const slowIHRMilestones = computed(() => {
-    const ihrbonus = (setSlow.value?.effects.get('internal_hatchery_bonus') ?? 1)*
-                     (setSlow.value?.effects.get('boost_bonus') ?? 1);
+    const ihrbonus = (setSlow.value?.effects.get('ihr_mult') ?? 1)*
+                     (setSlow.value?.effects.get('boost_mult') ?? 1);
     return [
         { population: baseIHR.value*ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
         { population: baseIHR.value*ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },

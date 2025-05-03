@@ -45,6 +45,7 @@ import * as T from '@/scripts/types.ts';
 import { checkEID, checkSID } from '@/scripts/utils.ts';
 import { getUserData } from '@/scripts/api.ts';
 import { Effects } from '@/scripts/effects.ts';
+import type { EffectKey } from '@/scripts/effects.ts';
 
 const userData = defineModel<T.UserData>({ required: true });
 
@@ -72,16 +73,16 @@ onMounted(async () => {
     }
 
     const saved = localStorage.getItem('user-data');
-    let loaded: T.UserData|null = null;
+    let loaded = null;
     if (!reload && saved) {
         try {
             loaded = JSON.parse(saved);
             if (loaded && loaded.date)
                 loaded.date = new Date(loaded.date);
             if (loaded && loaded.baseEffects)
-                loaded.baseEffects = Effects.fromJSON(loaded.baseEffects);
+                loaded.baseEffects = Effects.fromJSON(loaded.baseEffects as Record<EffectKey, number>);
             if (loaded && loaded.maxedEffects)
-                loaded.maxedEffects = Effects.fromJSON(loaded.maxedEffects);
+                loaded.maxedEffects = Effects.fromJSON(loaded.maxedEffects as Record<EffectKey, number>);
         } catch (err) {
             console.warn('Clearing invalid JSON from user-data:', err);
             localStorage.removeItem('user-data');

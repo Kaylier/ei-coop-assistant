@@ -279,11 +279,11 @@ function getEBMultiplier(set: T.ArtifactSet|null): number {
 }
 
 function generateChartData(set: T.ArtifactSet, mirrorMult?: number) {
-    let artifactBonus: number = set.effects.get('egg_value_bonus')*set.effects.get('laying_bonus');
+    let artifactBonus: number = set.effects.get('egg_value_mult')*set.effects.get('laying_rate');
     if (onlineSetting.value) {
-        artifactBonus *= ((userData.value?.mrcbEarningBonus ?? 5) + set.effects.get('running_chicken_bonus'));
+        artifactBonus *= ((userData.value?.mrcbEarningBonus ?? 5) + set.effects.get('earning_mrcb_mult'));
     } else {
-        artifactBonus *= set.effects.get('away_earning_bonus');
+        artifactBonus *= set.effects.get('earning_away_mult');
     }
     if (!mirrorMult) {
         artifactBonus *= getEBMultiplier(set);
@@ -291,7 +291,7 @@ function generateChartData(set: T.ArtifactSet, mirrorMult?: number) {
     if (swapCubeSetting.value) {
         artifactBonus /= optimalCubeBonus.value;
     } else {
-        artifactBonus /= set.effects.get('research_cost_bonus');
+        artifactBonus /= set.effects.get('research_cost_mult');
     }
 
 

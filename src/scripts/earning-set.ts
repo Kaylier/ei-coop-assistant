@@ -1,6 +1,7 @@
 import * as T from '@/scripts/types.ts';
-import { EffectMap, getEffects } from '@/scripts/artifacts.ts';
+import { getEffects } from '@/scripts/artifacts.ts';
 import { prepareItems, searchSet } from '@/scripts/solvers.ts';
+import { Effects } from '@/scripts/effects.ts';
 
 
 
@@ -26,28 +27,28 @@ export function searchEBSet(items: T.Item[],
     const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
         'prophecy_egg_bonus',
         'soul_egg_bonus',
-        'laying_bonus',
-        'egg_value_bonus',
-        'running_chicken_bonus',
-        'away_earning_bonus',
-        'research_cost_bonus',
+        'laying_rate',
+        'egg_value_mult',
+        'earning_mrcb_mult',
+        'earning_away_mult',
+        'research_cost_mult',
         'team_earning_bonus',
     ]);
 
-    function scoreFn(effects: EffectMap): number[] {
+    function scoreFn(effects: Effects): number[] {
         const eb = SECount
                  * (baseSEBonus + effects.get('soul_egg_bonus'))
                  * Math.pow(basePEBonus + effects.get('prophecy_egg_bonus'), PECount);
 
-        const bonus = effects.get('egg_value_bonus') * effects.get('laying_bonus')
-                    * (online ? baseRCBonus + effects.get('running_chicken_bonus') : effects.get('away_earning_bonus'))
-                    / (countCube ? effects.get('research_cost_bonus') : 1);
+        const bonus = effects.get('egg_value_mult') * effects.get('laying_rate')
+                    * (online ? baseRCBonus + effects.get('earning_mrcb_mult') : effects.get('earning_away_mult'))
+                    / (countCube ? effects.get('research_cost_mult') : 1);
 
         return [
             eb,
             effects.get('team_earning_bonus'),
             (1 + eb)*bonus,
-            1/effects.get('research_cost_bonus')
+            1/effects.get('research_cost_mult')
         ];
     }
 
@@ -77,27 +78,27 @@ export function searchEarningSet(items: T.Item[],
     const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
         'prophecy_egg_bonus',
         'soul_egg_bonus',
-        'laying_bonus',
-        'egg_value_bonus',
-        'running_chicken_bonus',
-        'away_earning_bonus',
-        'research_cost_bonus',
+        'laying_rate',
+        'egg_value_mult',
+        'earning_mrcb_mult',
+        'earning_away_mult',
+        'research_cost_mult',
         'team_earning_bonus',
     ]);
 
-    function scoreFn(effects: EffectMap): number[] {
+    function scoreFn(effects: Effects): number[] {
         const eb = SECount
                  * (baseSEBonus + effects.get('soul_egg_bonus'))
                  * Math.pow(basePEBonus + effects.get('prophecy_egg_bonus'), PECount);
 
-        const bonus = effects.get('egg_value_bonus') * effects.get('laying_bonus')
-                    * (online ? baseRCBonus + effects.get('running_chicken_bonus') : effects.get('away_earning_bonus'))
-                    / (countCube ? effects.get('research_cost_bonus') : 1);
+        const bonus = effects.get('egg_value_mult') * effects.get('laying_rate')
+                    * (online ? baseRCBonus + effects.get('earning_mrcb_mult') : effects.get('earning_away_mult'))
+                    / (countCube ? effects.get('research_cost_mult') : 1);
 
         return [
             (1 + eb)*bonus,
             effects.get('team_earning_bonus'),
-            1/effects.get('research_cost_bonus')
+            1/effects.get('research_cost_mult')
         ];
     }
 
@@ -127,19 +128,19 @@ export function searchMirrorSet(items: T.Item[],
     const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
         'prophecy_egg_bonus',
         'soul_egg_bonus',
-        'laying_bonus',
-        'egg_value_bonus',
-        'running_chicken_bonus',
-        'away_earning_bonus',
-        'research_cost_bonus',
+        'laying_rate',
+        'egg_value_mult',
+        'earning_mrcb_mult',
+        'earning_away_mult',
+        'research_cost_mult',
     ]);
 
-    function scoreFn(effects: EffectMap): number[] {
-        const bonus = effects.get('egg_value_bonus') * effects.get('laying_bonus')
-                    * (online ? baseRCBonus + effects.get('running_chicken_bonus') : effects.get('away_earning_bonus'))
-                    / (countCube ? effects.get('research_cost_bonus') : 1);
+    function scoreFn(effects: Effects): number[] {
+        const bonus = effects.get('egg_value_mult') * effects.get('laying_rate')
+                    * (online ? baseRCBonus + effects.get('earning_mrcb_mult') : effects.get('earning_away_mult'))
+                    / (countCube ? effects.get('research_cost_mult') : 1);
 
-        return [ bonus, 1/effects.get('research_cost_bonus') ];
+        return [ bonus, 1/effects.get('research_cost_mult') ];
     }
 
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
@@ -159,7 +160,7 @@ export function searchMirrorSet(items: T.Item[],
 export function searchCube(items: T.Item[]): [T.Artifact | null, number] {
     return items.reduce<[T.Artifact | null, number]>((best, item) => {
         if (item.category !== T.ItemCategory.ARTIFACT) return best;
-        const bonus = getEffects(item, false)?.get('research_cost_bonus');
+        const bonus = getEffects(item).get('research_cost_mult');
         return bonus < best[1] ? [item, bonus] : best;
     }, [null, 1]);
 }

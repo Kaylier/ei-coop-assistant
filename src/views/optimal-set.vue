@@ -44,7 +44,8 @@
 <script setup lang="ts">
 import { ref, shallowRef, triggerRef, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { EffectMap } from '@/scripts/artifacts.ts';
+import type { EffectKey } from '@/scripts/effects.ts';
+import { Effects } from '@/scripts/effects.ts';
 import { createSetting } from '@/scripts/settings.ts';
 import { prepareItems, searchSet } from '@/scripts/solvers.ts';
 
@@ -53,8 +54,8 @@ type SetEntry = {
     title: string,
     description?: string,
     solution?: T.ArtifactSet|null,
-    effects: string[],
-    scoreFn: (effect: EffectMap) => number[];
+    effects: EffectKey[],
+    scoreFn: (effect: Effects) => number[];
 };
 
 const reslottingSetting = createSetting<boolean>({
@@ -70,25 +71,25 @@ const sets = shallowRef<SetEntry[]>([
         title: "Preloaded RCB Prestige",
         effects: [
             'prophecy_egg_bonus',
-            'boost_bonus',
-            'laying_bonus',
-            'soul_egg_collection_bonus',
-            'hab_capacity_bonus',
-            'egg_value_bonus',
-            'running_chicken_bonus',
+            'boost_mult',
+            'laying_rate',
+            'prestige_earning_mult',
+            'hab_capacity_mult',
+            'egg_value_mult',
+            'earning_mrcb_mult',
             'soul_egg_bonus',
         ],
         scoreFn: (e) => {
             let score = 1;
-            score *= e.get('hab_capacity_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('egg_value_bonus');
-            score *= (userData.value?.mrcbEarningBonus ?? 340) + e.get('running_chicken_bonus');
+            score *= e.get('hab_capacity_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('egg_value_mult');
+            score *= (userData.value?.mrcbEarningBonus ?? 340) + e.get('earning_mrcb_mult');
             score *= (userData.value?.soulEggBonus ?? 0) + e.get('soul_egg_bonus');
             score *= Math.pow((userData.value?.prophecyEggBonus ?? 1.05) + e.get('prophecy_egg_bonus'),
                               userData.value?.prophecyEggs ?? 0);
-            score *= e.get('boost_bonus')**2;
-            score *= e.get('soul_egg_collection_bonus');
+            score *= e.get('boost_mult')**2;
+            score *= e.get('prestige_earning_mult');
             return [ score ];
         },
     },
@@ -96,25 +97,25 @@ const sets = shallowRef<SetEntry[]>([
         title: "AIO RCB Prestige",
         effects: [
             'prophecy_egg_bonus',
-            'boost_bonus',
-            'laying_bonus',
-            'soul_egg_collection_bonus',
-            'internal_hatchery_bonus',
-            'egg_value_bonus',
-            'running_chicken_bonus',
+            'boost_mult',
+            'laying_rate',
+            'prestige_earning_mult',
+            'ihr_mult',
+            'egg_value_mult',
+            'earning_mrcb_mult',
             'soul_egg_bonus',
         ],
         scoreFn: (e) => {
             let score = 1;
-            score *= e.get('internal_hatchery_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('egg_value_bonus');
-            score *= (userData.value?.mrcbEarningBonus ?? 340) + e.get('running_chicken_bonus');
+            score *= e.get('ihr_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('egg_value_mult');
+            score *= (userData.value?.mrcbEarningBonus ?? 340) + e.get('earning_mrcb_mult');
             score *= (userData.value?.soulEggBonus ?? 0) + e.get('soul_egg_bonus');
             score *= Math.pow((userData.value?.prophecyEggBonus ?? 1.05) + e.get('prophecy_egg_bonus'),
                               userData.value?.prophecyEggs ?? 0);
-            score *= e.get('boost_bonus')**3;
-            score *= e.get('soul_egg_collection_bonus');
+            score *= e.get('boost_mult')**3;
+            score *= e.get('prestige_earning_mult');
             return [ score ];
         },
     },
@@ -122,25 +123,25 @@ const sets = shallowRef<SetEntry[]>([
         title: "Multi RCB Prestige",
         effects: [
             'prophecy_egg_bonus',
-            'boost_bonus',
-            'laying_bonus',
-            'soul_egg_collection_bonus',
-            'internal_hatchery_bonus',
-            'egg_value_bonus',
-            'running_chicken_bonus',
+            'boost_mult',
+            'laying_rate',
+            'prestige_earning_mult',
+            'ihr_mult',
+            'egg_value_mult',
+            'earning_mrcb_mult',
             'soul_egg_bonus',
         ],
         scoreFn: (e) => {
             let score = 1;
-            score *= e.get('internal_hatchery_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('egg_value_bonus');
-            score *= (userData.value?.mrcbEarningBonus ?? 340) + e.get('running_chicken_bonus');
+            score *= e.get('ihr_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('egg_value_mult');
+            score *= (userData.value?.mrcbEarningBonus ?? 340) + e.get('earning_mrcb_mult');
             score *= (userData.value?.soulEggBonus ?? 0) + e.get('soul_egg_bonus');
             score *= Math.pow((userData.value?.prophecyEggBonus ?? 1.05) + e.get('prophecy_egg_bonus'),
                               userData.value?.prophecyEggs ?? 0);
-            score *= e.get('boost_bonus')**3;
-            score *= e.get('soul_egg_collection_bonus');
+            score *= e.get('boost_mult')**3;
+            score *= e.get('prestige_earning_mult');
             return [ score ];
         },
     },
@@ -148,25 +149,25 @@ const sets = shallowRef<SetEntry[]>([
         title: "Preloaded Lunar Prestige",
         effects: [
             'prophecy_egg_bonus',
-            'boost_bonus',
-            'laying_bonus',
-            'soul_egg_collection_bonus',
-            'hab_capacity_bonus',
-            'egg_value_bonus',
-            'away_earning_bonus',
+            'boost_mult',
+            'laying_rate',
+            'prestige_earning_mult',
+            'hab_capacity_mult',
+            'egg_value_mult',
+            'earning_away_mult',
             'soul_egg_bonus',
         ],
         scoreFn: (e) => {
             let score = 1;
-            score *= e.get('hab_capacity_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('egg_value_bonus');
-            score *= e.get('away_earning_bonus');
+            score *= e.get('hab_capacity_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('egg_value_mult');
+            score *= e.get('earning_away_mult');
             score *= (userData.value?.soulEggBonus ?? 0) + e.get('soul_egg_bonus');
             score *= Math.pow((userData.value?.prophecyEggBonus ?? 1.05) + e.get('prophecy_egg_bonus'),
                               userData.value?.prophecyEggs ?? 0);
-            score *= e.get('boost_bonus')**2;
-            score *= e.get('soul_egg_collection_bonus');
+            score *= e.get('boost_mult')**2;
+            score *= e.get('prestige_earning_mult');
             return [ score ];
         },
     },
@@ -174,27 +175,27 @@ const sets = shallowRef<SetEntry[]>([
         title: "AIO Lunar Prestige",
         effects: [
             'prophecy_egg_bonus',
-            'boost_bonus',
-            'laying_bonus',
-            'soul_egg_collection_bonus',
-            'internal_hatchery_bonus',
-            'hab_capacity_bonus',
-            'egg_value_bonus',
-            'away_earning_bonus',
+            'boost_mult',
+            'laying_rate',
+            'prestige_earning_mult',
+            'ihr_mult',
+            'hab_capacity_mult',
+            'egg_value_mult',
+            'earning_away_mult',
             'soul_egg_bonus',
         ],
         scoreFn: (e) => {
             let score = 1;
-            //score *= e.get('internal_hatchery_bonus'); // only counted the first couple minutes, we ignore it
-            score *= e.get('hab_capacity_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('egg_value_bonus');
-            score *= e.get('away_earning_bonus');
+            //score *= e.get('ihr_mult'); // only counted the first couple minutes, we ignore it
+            score *= e.get('hab_capacity_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('egg_value_mult');
+            score *= e.get('earning_away_mult');
             score *= (userData.value?.soulEggBonus ?? 0) + e.get('soul_egg_bonus');
             score *= Math.pow((userData.value?.prophecyEggBonus ?? 1.05) + e.get('prophecy_egg_bonus'),
                               userData.value?.prophecyEggs ?? 0);
-            score *= e.get('boost_bonus')**2;
-            score *= e.get('soul_egg_collection_bonus');
+            score *= e.get('boost_mult')**2;
+            score *= e.get('prestige_earning_mult');
             return [ score ];
         },
     },
@@ -202,37 +203,37 @@ const sets = shallowRef<SetEntry[]>([
         title: "Multi Lunar Prestige",
         effects: [
             'prophecy_egg_bonus',
-            'boost_bonus',
-            'laying_bonus',
-            'soul_egg_collection_bonus',
-            'internal_hatchery_bonus',
-            'egg_value_bonus',
-            'away_earning_bonus',
+            'boost_mult',
+            'laying_rate',
+            'prestige_earning_mult',
+            'ihr_mult',
+            'egg_value_mult',
+            'earning_away_mult',
             'soul_egg_bonus',
         ],
         scoreFn: (e) => {
             let score = 1;
-            score *= e.get('internal_hatchery_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('egg_value_bonus');
-            score *= e.get('away_earning_bonus');
+            score *= e.get('ihr_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('egg_value_mult');
+            score *= e.get('earning_away_mult');
             score *= (userData.value?.soulEggBonus ?? 0) + e.get('soul_egg_bonus');
             score *= Math.pow((userData.value?.prophecyEggBonus ?? 1.05) + e.get('prophecy_egg_bonus'),
                               userData.value?.prophecyEggs ?? 0);
-            score *= e.get('boost_bonus')**3;
-            score *= e.get('soul_egg_collection_bonus');
+            score *= e.get('boost_mult')**3;
+            score *= e.get('prestige_earning_mult');
             return [ score ];
         },
     },
     {
         title: "Dilithium",
-        effects: ['boost_duration_bonus'],
-        scoreFn: (e) => [ e.get('boost_duration_bonus') ],
+        effects: ['boost_duration_mult'],
+        scoreFn: (e) => [ e.get('boost_duration_mult') ],
     },
     {
         title: "IHR",
-        effects: ['internal_hatchery_bonus', 'boost_bonus', 'hab_capacity_bonus'],
-        scoreFn: (e) => [ e.get('internal_hatchery_bonus')*e.get('boost_bonus'), e.get('hab_capacity_bonus') ],
+        effects: ['ihr_mult', 'boost_mult', 'hab_capacity_mult'],
+        scoreFn: (e) => [ e.get('ihr_mult')*e.get('boost_mult'), e.get('hab_capacity_mult') ],
     },
     {
         title: "EB",
@@ -244,30 +245,34 @@ const sets = shallowRef<SetEntry[]>([
     {
         title: "Refueling",
         effects: [
-            'laying_bonus',
-            'boost_bonus',
-            'internal_hatchery_bonus',
+            'laying_rate',
+            'boost_mult',
+            'ihr_mult',
         ],
         scoreFn: (e) => {
             let score = 1;
-            score *= e.get('internal_hatchery_bonus');
-            score *= e.get('laying_bonus');
-            score *= e.get('boost_bonus');
+            score *= e.get('ihr_mult');
+            score *= e.get('laying_rate');
+            score *= e.get('boost_mult');
             return [ score ];
         },
     },
     {
         title: "Drone (GE)",
-        effects: ['drone_gold_bonus', 'drone_frequency_bonus', 'drone_reward_bonus'],
-        scoreFn: (e) => [ Math.min(1, 0.3*e.get('drone_gold_bonus'))*e.get('drone_frequency_bonus')*e.get('drone_reward_bonus') ],
+        effects: ['drone_gold_mult', 'drone_frequency_mult', 'drone_reward_mult'],
+        scoreFn: (e) => [ Math.min(1, 0.3*e.get('drone_gold_mult'))*
+                          e.get('drone_frequency_mult')*
+                          e.get('drone_reward_mult') ],
     },
     {
         title: "Drone (Cash)",
-        effects: ['drone_cash_bonus', 'drone_frequency_bonus', 'drone_reward_bonus', 'running_chicken_bonus',
-        'farm_value_bonus'],
-        scoreFn: (e) => [ Math.min(1,
-        0.7*e.get('drone_cash_bonus'))*e.get('drone_frequency_bonus')*e.get('drone_reward_bonus')*Math.sqrt((userData.value?.mrcbEarningBonus
-        ?? 5) + e.get('running_chicken_bonus'))*e.get('farm_value_bonus') ],
+        effects: ['drone_cash_mult', 'drone_frequency_mult', 'drone_reward_mult', 'earning_mrcb_mult',
+        'farm_value_mult'],
+        scoreFn: (e) => [ Math.min(1, 0.7*e.get('drone_cash_mult'))*
+                          e.get('drone_frequency_mult')*
+                          e.get('drone_reward_mult')*
+                          Math.sqrt((userData.value?.mrcbEarningBonus ?? 5) + e.get('earning_mrcb_mult'))*
+                          e.get('farm_value_mult') ],
     },
 ]);
 

@@ -1,7 +1,6 @@
 /*
  * This file defines types and enums used in items, artifacts, stones and ingredients
  */
-import type { EffectMap } from '@/scripts/artifacts.ts';
 import type { Effects } from '@/scripts/effects.ts';
 
 export enum ItemCategory {
@@ -101,7 +100,7 @@ export type Item = Artifact | Stone | Ingredient;
 
 export type ArtifactSet = {
     set: (Artifact | null)[],
-    effects: EffectMap,
+    effects: Effects,
 };
 
 

@@ -32,7 +32,8 @@
 import { computed } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
-import { getImageSource, getEffectDescription, getEffects } from '@/scripts/artifacts.ts';
+import { getImageSource, getEffects } from '@/scripts/artifacts.ts';
+import { getEffectText } from '@/scripts/effects.ts';
 
 type Entry = {
     img?: string,
@@ -59,13 +60,15 @@ const props = defineProps<{
 const entries = computed(() => {
     const ret = new Map<string, Entry>();
 
+    const userEB = props.userData?.maxedEffects.eb ?? 1;
+    //const maxedEffects = new Effects(props.userData.maxedEffects, props.set.effects);
 
     ret.set('eb', {
         img: props.mirror ? "/img/icons/mirror.png" : undefined,
         valueUpd: `×${formatNumber(props.mirror ?? ebMultiplier.value)}`,
         text: "EB",
-        valueOld: `${formatNumber(userEB.value*100)}%`,
-        valueNew: `${formatNumber(userEB.value*(props.mirror ?? ebMultiplier.value)*100)}%`,
+        valueOld: `${formatNumber(userEB*100)}%`,
+        valueNew: `${formatNumber(userEB*(props.mirror ?? ebMultiplier.value)*100)}%`,
         relevant: (props.mirror ?? ebMultiplier.value) >= 2,
     });
 
@@ -94,56 +97,49 @@ const entries = computed(() => {
     });
 
     ret.set('cr', {
-        img: props.externalCube && externalCubeMult.value < props.set.effects.get('research_cost_bonus') ?
+        img: props.externalCube && externalCubeMult.value < props.set.effects.get('research_cost_mult') ?
         getImageSource(props.externalCube): undefined,
-        text: getEffectDescription('research_cost_bonus'),
-        valueUpd: `-${formatNumber((1 - Math.min(externalCubeMult.value, props.set.effects.get('research_cost_bonus')))*100)}%`,
-        relevant: externalCubeMult.value < 1 || props.set.effects.get('research_cost_bonus') < 1,
+        text: getEffectText('research_cost_mult'),
+        valueUpd: `-${formatNumber((1 - Math.min(externalCubeMult.value, props.set.effects.get('research_cost_mult')))*100)}%`,
+        relevant: externalCubeMult.value < 1 || props.set.effects.get('research_cost_mult') < 1,
     });
 
     ret.set('dili', {
-        text: getEffectDescription('boost_duration_bonus'),
-        valueUpd: `×${formatNumber(props.set.effects.get('boost_duration_bonus'))}`,
-        relevant: props.set.effects.get('boost_duration_bonus') > 1,
+        text: getEffectText('boost_duration_mult'),
+        valueUpd: `×${formatNumber(props.set.effects.get('boost_duration_mult'))}`,
+        relevant: props.set.effects.get('boost_duration_mult') > 1,
     });
 
     ret.set('ihr', {
-        text: getEffectDescription('internal_hatchery_bonus'),
+        text: getEffectText('ihr_mult'),
         valueUpd:
-        `×${formatNumber(props.set.effects.get('internal_hatchery_bonus')*props.set.effects.get('boost_bonus'))}`,
-        relevant: props.set.effects.get('internal_hatchery_bonus') > 1,
+        `×${formatNumber(props.set.effects.get('ihr_mult')*props.set.effects.get('boost_mult'))}`,
+        relevant: props.set.effects.get('ihr_mult') > 1,
     });
 
     ret.set('hab', {
-        text: getEffectDescription('hab_capacity_bonus'),
-        valueUpd: `×${formatNumber(props.set.effects.get('hab_capacity_bonus'))}`,
+        text: getEffectText('hab_capacity_mult'),
+        valueUpd: `×${formatNumber(props.set.effects.get('hab_capacity_mult'))}`,
         // TODO: get base hab capacity from userData instead
-        valueNew: formatNumber(11340000000*props.set.effects.get('hab_capacity_bonus')),
-        relevant: props.set.effects.get('hab_capacity_bonus') > 1,
+        valueNew: formatNumber(11340000000*props.set.effects.get('hab_capacity_mult')),
+        relevant: props.set.effects.get('hab_capacity_mult') > 1,
     });
 
     ret.set('lay', {
-        text: getEffectDescription('laying_bonus'),
-        valueUpd: `×${formatNumber(props.set.effects.get('laying_bonus'))}`,
-        relevant: props.set.effects.get('laying_bonus') > 1,
+        text: getEffectText('laying_rate'),
+        valueUpd: `×${formatNumber(props.set.effects.get('laying_rate'))}`,
+        relevant: props.set.effects.get('laying_rate') > 1,
     });
 
     ret.set('ship', {
-        text: getEffectDescription('shipping_bonus'),
-        valueUpd: `×${formatNumber(props.set.effects.get('shipping_bonus'))}`,
-        relevant: props.set.effects.get('shipping_bonus') > 1,
+        text: getEffectText('shipping_mult'),
+        valueUpd: `×${formatNumber(props.set.effects.get('shipping_mult'))}`,
+        relevant: props.set.effects.get('shipping_mult') > 1,
     });
 
     const stats = props.stats ?? [];
     const substats = (props.substats ?? [...ret.keys()]).filter(x => !stats.includes(x) && ret.get(x)!.relevant);
     return [...stats, ...substats].filter(x => ret.has(x)).map(x => ret.get(x)!);
-});
-
-const userEB = computed(() => {
-    let eb: number = props.userData?.soulEggs ?? 0;
-    eb *= props.userData?.soulEggBonus ?? 0.1;
-    eb *= Math.pow(props.userData?.prophecyEggBonus ?? 1.05, props.userData?.prophecyEggs ?? 0)
-    return 1 + eb;
 });
 
 const ebMultiplier = computed(() => {
@@ -157,27 +153,27 @@ const ebMultiplier = computed(() => {
 
 const earningMultiplier = computed(() => {
     const baseRCB = props.userData?.mrcbEarningBonus ?? 5;
-    return props.set.effects.get('laying_bonus')
-         * props.set.effects.get('egg_value_bonus')
-         * (baseRCB + props.set.effects.get('running_chicken_bonus'));
+    return props.set.effects.get('laying_rate')
+         * props.set.effects.get('egg_value_mult')
+         * (baseRCB + props.set.effects.get('earning_mrcb_mult'));
 });
 
 const awayEarningMultiplier = computed(() => {
-    return props.set.effects.get('laying_bonus')
-         * props.set.effects.get('egg_value_bonus')
-         * props.set.effects.get('away_earning_bonus');
+    return props.set.effects.get('laying_rate')
+         * props.set.effects.get('egg_value_mult')
+         * props.set.effects.get('earning_away_mult');
 });
 
 const externalCubeMult = computed(() => {
-    return props.externalCube ? getEffects(props.externalCube).get('research_cost_bonus') : 1;
+    return props.externalCube ? getEffects(props.externalCube).get('research_cost_mult') : 1;
 });
 
 const soulEggMultiplier = computed(() => {
-    return Math.pow(ebMultiplier.value*earningMultiplier.value*props.set.effects.get('soul_egg_collection_bonus'), 0.21);
+    return Math.pow(ebMultiplier.value*earningMultiplier.value*props.set.effects.get('prestige_earning_mult'), 0.21);
 });
 
 const awaySoulEggMultiplier = computed(() => {
-    return Math.pow(ebMultiplier.value*awayEarningMultiplier.value*props.set.effects.get('soul_egg_collection_bonus'), 0.21);
+    return Math.pow(ebMultiplier.value*awayEarningMultiplier.value*props.set.effects.get('prestige_earning_mult'), 0.21);
 });
 
 </script>

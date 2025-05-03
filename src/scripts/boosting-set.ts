@@ -1,7 +1,7 @@
 import * as T from '@/scripts/types.ts';
 import { isclose } from '@/scripts/utils.ts';
-import { EffectMap } from '@/scripts/artifacts.ts';
 import { prepareItems, searchSet } from '@/scripts/solvers.ts';
+import { Effects } from '@/scripts/effects.ts';
 
 
 
@@ -19,9 +19,9 @@ export function searchDiliSet(items: T.Item[],
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
-        'boost_duration_bonus',
-        'internal_hatchery_bonus',
-        'boost_bonus',
+        'boost_duration_mult',
+        'ihr_mult',
+        'boost_mult',
     ]);
 
     const requiredFamilies: T.ArtifactFamily[] = [];
@@ -35,10 +35,10 @@ export function searchDiliSet(items: T.Item[],
         .filter(x => !requiredFamilies.includes(x)
                   && (allowedGusset !== T.AllowedGusset.NONE || x !== T.ArtifactFamily.GUSSET));
 
-    function scoreFn(effects: EffectMap): number[] {
+    function scoreFn(effects: Effects): number[] {
         return [
-            effects.get('boost_duration_bonus'),
-            effects.get('internal_hatchery_bonus')*effects.get('boost_bonus'),
+            effects.get('boost_duration_mult'),
+            effects.get('ihr_mult')*effects.get('boost_mult'),
         ];
     }
 
@@ -66,18 +66,18 @@ export function searchIHRSets(items: T.Item[],
 
     const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
         'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
-        'internal_hatchery_bonus',
-        'laying_bonus',
-        'boost_bonus',
-        'hab_capacity_bonus',
+        'ihr_mult',
+        'laying_rate',
+        'boost_mult',
+        'hab_capacity_mult',
     ]);
 
-    function scoreFn(effects: EffectMap): number[] {
-        //return [effects.get('internal_hatchery_bonus')*effects.get('boost_bonus')];
+    function scoreFn(effects: Effects): number[] {
+        //return [effects.get('ihr_mult')*effects.get('boost_mult')];
         return [
-            effects.get('internal_hatchery_bonus')*effects.get('boost_bonus'),
-            effects.get('hab_capacity_bonus'),
-            effects.get('laying_bonus'),
+            effects.get('ihr_mult')*effects.get('boost_mult'),
+            effects.get('hab_capacity_mult'),
+            effects.get('laying_rate'),
         ];
     }
 
@@ -155,10 +155,10 @@ export function searchSlowIHRSet(items: T.Item[],
 
     const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
         'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
-        'internal_hatchery_bonus',
-        'laying_bonus',
-        'boost_bonus',
-        'hab_capacity_bonus',
+        'ihr_mult',
+        'laying_rate',
+        'boost_mult',
+        'hab_capacity_mult',
     ]);
 
     // Restrict to the highest deflector and ship bonus
@@ -181,11 +181,11 @@ export function searchSlowIHRSet(items: T.Item[],
 
     const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
 
-    function scoreFn(effects: EffectMap): number[] {
+    function scoreFn(effects: Effects): number[] {
         return [
-            effects.get('internal_hatchery_bonus')*effects.get('laying_bonus')*effects.get('boost_bonus'),
-            effects.get('internal_hatchery_bonus')*effects.get('boost_bonus'),
-            effects.get('hab_capacity_bonus'),
+            effects.get('ihr_mult')*effects.get('laying_rate')*effects.get('boost_mult'),
+            effects.get('ihr_mult')*effects.get('boost_mult'),
+            effects.get('hab_capacity_mult'),
         ];
     }
 

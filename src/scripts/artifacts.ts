@@ -5,10 +5,12 @@
  * Credit to Forzpace for populating artifactMetadata
  */
 import * as T from "@/scripts/types.ts";
+import type { EffectKey } from "@/scripts/effects.ts";
+import { Effects, getEffectText } from "@/scripts/effects.ts";
 
 
 type Effect = {
-    target: string;
+    target: EffectKey | 'enlightenment_value' | 'enlightenment_effectiveness';
     value: number;
     text: string;
 };
@@ -82,7 +84,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-light_of_eggendil-1",
                     "name": "Dim Light of Eggendil",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_light_t1c", "slot_count": 0, "value": 88553.49331, "odds_multiplier": 0.9, "effects": [{"target": "enlightenment_earning_bonus", "value": 1.5, "text": "+50%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_light_t1c", "slot_count": 0, "value": 88553.49331, "odds_multiplier": 0.9, "effects": [{"target": 'enlightenment_value', "value": 1.5, "text": "+50%"}]}
                     }
                 },
                 {
@@ -92,8 +94,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-light_of_eggendil-2",
                     "name": "Shimmering Light of Eggendil",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_light_t2c", "slot_count": 0, "value": 178016.513068, "odds_multiplier": 0.9, "effects": [{"target": "enlightenment_earning_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_light_t2r", "slot_count": 1, "value": 689383.16588, "odds_multiplier": 0.06, "effects": [{"target": "enlightenment_earning_bonus", "value": 2.2, "text": "+120%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_light_t2c", "slot_count": 0, "value": 178016.513068, "odds_multiplier": 0.9, "effects": [{"target": 'enlightenment_value', "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_light_t2r", "slot_count": 1, "value": 689383.16588, "odds_multiplier": 0.06, "effects": [{"target": 'enlightenment_value', "value": 2.2, "text": "+120%"}]}
                     }
                 },
                 {
@@ -103,8 +105,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-light_of_eggendil-3",
                     "name": "Glowing Light of Eggendil",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_light_t3c", "slot_count": 0, "value": 406201.997701, "odds_multiplier": 0.9, "effects": [{"target": "enlightenment_earning_bonus", "value": 10, "text": "10x"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_light_t3r", "slot_count": 1, "value": 1284469.445905, "odds_multiplier": 0.09, "effects": [{"target": "enlightenment_earning_bonus", "value": 15, "text": "15x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_light_t3c", "slot_count": 0, "value": 406201.997701, "odds_multiplier": 0.9, "effects": [{"target": 'enlightenment_value', "value": 10, "text": "10x"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_light_t3r", "slot_count": 1, "value": 1284469.445905, "odds_multiplier": 0.09, "effects": [{"target": 'enlightenment_value', "value": 15, "text": "15x"}]}
                     }
                 },
                 {
@@ -114,9 +116,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-light_of_eggendil-4",
                     "name": "Brilliant Light of Eggendil",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_light_t4c", "slot_count": 0, "value": 766894.647031, "odds_multiplier": 0.9, "effects": [{"target": "enlightenment_earning_bonus", "value": 100, "text": "100x"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_light_t4e", "slot_count": 2, "value": 7668721.47031, "odds_multiplier": 0.009, "effects": [{"target": "enlightenment_earning_bonus", "value": 150, "text": "150x"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_light_t4l", "slot_count": 3, "value": 24250572.530675, "odds_multiplier": 0.0009, "effects": [{"target": "enlightenment_earning_bonus", "value": 250, "text": "250x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_light_t4c", "slot_count": 0, "value": 766894.647031, "odds_multiplier": 0.9, "effects": [{"target": 'enlightenment_value', "value": 100, "text": "100x"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_light_t4e", "slot_count": 2, "value": 7668721.47031, "odds_multiplier": 0.009, "effects": [{"target": 'enlightenment_value', "value": 150, "text": "150x"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_light_t4l", "slot_count": 3, "value": 24250572.530675, "odds_multiplier": 0.0009, "effects": [{"target": 'enlightenment_value', "value": 250, "text": "250x"}]}
                     }
                 }
             ]
@@ -277,7 +279,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-titanium_actuator-1",
                     "name": "Inconsistent Titanium Actuator",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t1c", "slot_count": 0, "value": 24687.627965, "odds_multiplier": 0.9, "effects": [{"target": "hold_to_hatch_bonus", "value": 1, "text": "+1"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t1c", "slot_count": 0, "value": 24687.627965, "odds_multiplier": 0.9, "effects": [{"target": "hatching_rate", "value": 1, "text": "+1"}]}
                     }
                 },
                 {
@@ -287,7 +289,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-titanium_actuator-2",
                     "name": "Titanium Actuator",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t2c", "slot_count": 0, "value": 78600.18956, "odds_multiplier": 0.9, "effects": [{"target": "hold_to_hatch_bonus", "value": 4, "text": "+4"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t2c", "slot_count": 0, "value": 78600.18956, "odds_multiplier": 0.9, "effects": [{"target": "hatching_rate", "value": 4, "text": "+4"}]}
                     }
                 },
                 {
@@ -297,8 +299,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-titanium_actuator-3",
                     "name": "Precise Titanium Actuator",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t3c", "slot_count": 0, "value": 226664.36139, "odds_multiplier": 0.9, "effects": [{"target": "hold_to_hatch_bonus", "value": 6, "text": "+6"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_actuator_t3r", "slot_count": 1, "value": 716721.589438, "odds_multiplier": 0.09, "effects": [{"target": "hold_to_hatch_bonus", "value": 7, "text": "+7"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t3c", "slot_count": 0, "value": 226664.36139, "odds_multiplier": 0.9, "effects": [{"target": "hatching_rate", "value": 6, "text": "+6"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_actuator_t3r", "slot_count": 1, "value": 716721.589438, "odds_multiplier": 0.09, "effects": [{"target": "hatching_rate", "value": 7, "text": "+7"}]}
                     }
                 },
                 {
@@ -308,9 +310,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-titanium_actuator-4",
                     "name": "Reggference Titanium Actuator",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t4c", "slot_count": 0, "value": 513124.329702, "odds_multiplier": 0.9, "effects": [{"target": "hold_to_hatch_bonus", "value": 10, "text": "+10"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_actuator_t4e", "slot_count": 1, "value": 7256345.309091, "odds_multiplier": 0.0045, "effects": [{"target": "hold_to_hatch_bonus", "value": 12, "text": "+12"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_actuator_t4l", "slot_count": 2, "value": 16225650.47764, "odds_multiplier": 0.0009, "effects": [{"target": "hold_to_hatch_bonus", "value": 15, "text": "+15"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_actuator_t4c", "slot_count": 0, "value": 513124.329702, "odds_multiplier": 0.9, "effects": [{"target": "hatching_rate", "value": 10, "text": "+10"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_actuator_t4e", "slot_count": 1, "value": 7256345.309091, "odds_multiplier": 0.0045, "effects": [{"target": "hatching_rate", "value": 12, "text": "+12"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_actuator_t4l", "slot_count": 2, "value": 16225650.47764, "odds_multiplier": 0.0009, "effects": [{"target": "hatching_rate", "value": 15, "text": "+15"}]}
                     }
                 }
             ]
@@ -325,7 +327,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-1",
                     "name": "Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t1c", "slot_count": 0, "value": 23977.318202, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t1c", "slot_count": 0, "value": 23977.318202, "odds_multiplier": 0.9, "effects": [{"target": "boost_mult", "value": 1.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -335,7 +337,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-2",
                     "name": "Precise Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t2c", "slot_count": 0, "value": 73924.958295, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t2c", "slot_count": 0, "value": 73924.958295, "odds_multiplier": 0.9, "effects": [{"target": "boost_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -345,7 +347,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-3",
                     "name": "Eggsacting Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t3c", "slot_count": 0, "value": 207471.844866, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.15, "text": "+15%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t3c", "slot_count": 0, "value": 207471.844866, "odds_multiplier": 0.9, "effects": [{"target": "boost_mult", "value": 1.15, "text": "+15%"}]}
                     }
                 },
                 {
@@ -355,9 +357,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-dilithium_monocle-4",
                     "name": "Flawless Dilithium Monocle",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t4c", "slot_count": 0, "value": 637962.638942, "odds_multiplier": 0.9, "effects": [{"target": "boost_bonus", "value": 1.2, "text": "+20%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_monocle_t4e", "slot_count": 2, "value": 7813133.515615, "odds_multiplier": 0.006, "effects": [{"target": "boost_bonus", "value": 1.25, "text": "+25%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_monocle_t4l", "slot_count": 3, "value": 20173384.442059, "odds_multiplier": 0.0009, "effects": [{"target": "boost_bonus", "value": 1.3, "text": "+30%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_monocle_t4c", "slot_count": 0, "value": 637962.638942, "odds_multiplier": 0.9, "effects": [{"target": "boost_mult", "value": 1.2, "text": "+20%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_monocle_t4e", "slot_count": 2, "value": 7813133.515615, "odds_multiplier": 0.006, "effects": [{"target": "boost_mult", "value": 1.25, "text": "+25%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_monocle_t4l", "slot_count": 3, "value": 20173384.442059, "odds_multiplier": 0.0009, "effects": [{"target": "boost_mult", "value": 1.3, "text": "+30%"}]}
                     }
                 }
             ]
@@ -372,7 +374,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-quantum_metronome-1",
                     "name": "Misaligned Quantum Metronome",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t1c", "slot_count": 0, "value": 21930.921549, "odds_multiplier": 0.9, "effects": [{"target": "laying_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t1c", "slot_count": 0, "value": 21930.921549, "odds_multiplier": 0.9, "effects": [{"target": "laying_rate", "value": 1.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -382,8 +384,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-quantum_metronome-2",
                     "name": "Adequate Quantum Metronome",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t2c", "slot_count": 0, "value": 58415.572564, "odds_multiplier": 0.9, "effects": [{"target": "laying_bonus", "value": 1.1, "text": "+10%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_metronome_t2r", "slot_count": 1, "value": 226170.715116, "odds_multiplier": 0.06, "effects": [{"target": "laying_bonus", "value": 1.12, "text": "+12%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t2c", "slot_count": 0, "value": 58415.572564, "odds_multiplier": 0.9, "effects": [{"target": "laying_rate", "value": 1.1, "text": "+10%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_metronome_t2r", "slot_count": 1, "value": 226170.715116, "odds_multiplier": 0.06, "effects": [{"target": "laying_rate", "value": 1.12, "text": "+12%"}]}
                     }
                 },
                 {
@@ -393,9 +395,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-quantum_metronome-3",
                     "name": "Perfect Quantum Metronome",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t3c", "slot_count": 0, "value": 178016.513068, "odds_multiplier": 0.9, "effects": [{"target": "laying_bonus", "value": 1.15, "text": "+15%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_metronome_t3r", "slot_count": 1, "value": 562883.585475, "odds_multiplier": 0.09, "effects": [{"target": "laying_bonus", "value": 1.17, "text": "+17%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_metronome_t3e", "slot_count": 2, "value": 1592029.490555, "odds_multiplier": 0.01125, "effects": [{"target": "laying_bonus", "value": 1.2, "text": "+20%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t3c", "slot_count": 0, "value": 178016.513068, "odds_multiplier": 0.9, "effects": [{"target": "laying_rate", "value": 1.15, "text": "+15%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_metronome_t3r", "slot_count": 1, "value": 562883.585475, "odds_multiplier": 0.09, "effects": [{"target": "laying_rate", "value": 1.17, "text": "+17%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_metronome_t3e", "slot_count": 2, "value": 1592029.490555, "odds_multiplier": 0.01125, "effects": [{"target": "laying_rate", "value": 1.2, "text": "+20%"}]}
                     }
                 },
                 {
@@ -405,10 +407,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-quantum_metronome-4",
                     "name": "Reggference Quantum Metronome",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t4c", "slot_count": 0, "value": 655728.244215, "odds_multiplier": 0.63, "effects": [{"target": "laying_bonus", "value": 1.25, "text": "+25%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_metronome_t4r", "slot_count": 1, "value": 3766753.363929, "odds_multiplier": 0.019091, "effects": [{"target": "laying_bonus", "value": 1.27, "text": "+27%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_metronome_t4e", "slot_count": 2, "value": 8294087.883519, "odds_multiplier": 0.003938, "effects": [{"target": "laying_bonus", "value": 1.3, "text": "+30%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_metronome_t4l", "slot_count": 3, "value": 20735182.208798, "odds_multiplier": 0.00063, "effects": [{"target": "laying_bonus", "value": 1.35, "text": "+35%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_metronome_t4c", "slot_count": 0, "value": 655728.244215, "odds_multiplier": 0.63, "effects": [{"target": "laying_rate", "value": 1.25, "text": "+25%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_metronome_t4r", "slot_count": 1, "value": 3766753.363929, "odds_multiplier": 0.019091, "effects": [{"target": "laying_rate", "value": 1.27, "text": "+27%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_metronome_t4e", "slot_count": 2, "value": 8294087.883519, "odds_multiplier": 0.003938, "effects": [{"target": "laying_rate", "value": 1.3, "text": "+30%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_metronome_t4l", "slot_count": 3, "value": 20735182.208798, "odds_multiplier": 0.00063, "effects": [{"target": "laying_rate", "value": 1.35, "text": "+35%"}]}
                     }
                 }
             ]
@@ -423,7 +425,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-phoenix_feather-1",
                     "name": "Tattered Phoenix Feather",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_feather_t1c", "slot_count": 0, "value": 18204.534523, "odds_multiplier": 0.9, "effects": [{"target": "soul_egg_collection_bonus", "value": 1.25, "text": "+25%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_feather_t1c", "slot_count": 0, "value": 18204.534523, "odds_multiplier": 0.9, "effects": [{"target": "prestige_earning_mult", "value": 1.25, "text": "+25%"}]}
                     }
                 },
                 {
@@ -433,7 +435,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-phoenix_feather-2",
                     "name": "Phoenix Feather",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_feather_t2c", "slot_count": 0, "value": 53382.131454, "odds_multiplier": 0.9, "effects": [{"target": "soul_egg_collection_bonus", "value": 2, "text": "+100%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_feather_t2c", "slot_count": 0, "value": 53382.131454, "odds_multiplier": 0.9, "effects": [{"target": "prestige_earning_mult", "value": 2, "text": "+100%"}]}
                     }
                 },
                 {
@@ -443,8 +445,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-phoenix_feather-3",
                     "name": "Brilliant Phoenix Feather",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_feather_t3c", "slot_count": 0, "value": 137077.78869, "odds_multiplier": 0.9, "effects": [{"target": "soul_egg_collection_bonus", "value": 5, "text": "5x"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_feather_t3r", "slot_count": 1, "value": 433423.971939, "odds_multiplier": 0.09, "effects": [{"target": "soul_egg_collection_bonus", "value": 6, "text": "6x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_feather_t3c", "slot_count": 0, "value": 137077.78869, "odds_multiplier": 0.9, "effects": [{"target": "prestige_earning_mult", "value": 5, "text": "5x"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_feather_t3r", "slot_count": 1, "value": 433423.971939, "odds_multiplier": 0.09, "effects": [{"target": "prestige_earning_mult", "value": 6, "text": "6x"}]}
                     }
                 },
                 {
@@ -454,9 +456,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-phoenix_feather-4",
                     "name": "Blazing Phoenix Feather",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_feather_t4c", "slot_count": 0, "value": 560824.843537, "odds_multiplier": 0.9, "effects": [{"target": "soul_egg_collection_bonus", "value": 10, "text": "10x"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_feather_t4r", "slot_count": 1, "value": 3546834.634086, "odds_multiplier": 0.0225, "effects": [{"target": "soul_egg_collection_bonus", "value": 12, "text": "12x"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_feather_t4l", "slot_count": 2, "value": 17734073.170428, "odds_multiplier": 0.0009, "effects": [{"target": "soul_egg_collection_bonus", "value": 15, "text": "15x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_feather_t4c", "slot_count": 0, "value": 560824.843537, "odds_multiplier": 0.9, "effects": [{"target": "prestige_earning_mult", "value": 10, "text": "10x"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_feather_t4r", "slot_count": 1, "value": 3546834.634086, "odds_multiplier": 0.0225, "effects": [{"target": "prestige_earning_mult", "value": 12, "text": "12x"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_feather_t4l", "slot_count": 2, "value": 17734073.170428, "odds_multiplier": 0.0009, "effects": [{"target": "prestige_earning_mult", "value": 15, "text": "15x"}]}
                     }
                 }
             ]
@@ -471,7 +473,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-chalice-1",
                     "name": "Plain Chalice",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t1c", "slot_count": 0, "value": 13001.536402, "odds_multiplier": 0.9, "effects": [{"target": "internal_hatchery_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t1c", "slot_count": 0, "value": 13001.536402, "odds_multiplier": 0.9, "effects": [{"target": "ihr_mult", "value": 1.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -481,8 +483,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-chalice-2",
                     "name": "Polished Chalice",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t2c", "slot_count": 0, "value": 32605.875215, "odds_multiplier": 0.9, "effects": [{"target": "internal_hatchery_bonus", "value": 1.1, "text": "+10%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_chalice_t2e", "slot_count": 2, "value": 291437.206984, "odds_multiplier": 0.01125, "effects": [{"target": "internal_hatchery_bonus", "value": 1.15, "text": "+15%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t2c", "slot_count": 0, "value": 32605.875215, "odds_multiplier": 0.9, "effects": [{"target": "ihr_mult", "value": 1.1, "text": "+10%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_chalice_t2e", "slot_count": 2, "value": 291437.206984, "odds_multiplier": 0.01125, "effects": [{"target": "ihr_mult", "value": 1.15, "text": "+15%"}]}
                     }
                 },
                 {
@@ -492,9 +494,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-chalice-3",
                     "name": "Jeweled Chalice",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t3c", "slot_count": 0, "value": 88553.49331, "odds_multiplier": 0.9, "effects": [{"target": "internal_hatchery_bonus", "value": 1.2, "text": "+20%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_chalice_t3r", "slot_count": 1, "value": 279976.676682, "odds_multiplier": 0.09, "effects": [{"target": "internal_hatchery_bonus", "value": 1.23, "text": "+23%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_chalice_t3e", "slot_count": 2, "value": 885309.933098, "odds_multiplier": 0.009, "effects": [{"target": "internal_hatchery_bonus", "value": 1.25, "text": "+25%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t3c", "slot_count": 0, "value": 88553.49331, "odds_multiplier": 0.9, "effects": [{"target": "ihr_mult", "value": 1.2, "text": "+20%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_chalice_t3r", "slot_count": 1, "value": 279976.676682, "odds_multiplier": 0.09, "effects": [{"target": "ihr_mult", "value": 1.23, "text": "+23%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_chalice_t3e", "slot_count": 2, "value": 885309.933098, "odds_multiplier": 0.009, "effects": [{"target": "ihr_mult", "value": 1.25, "text": "+25%"}]}
                     }
                 },
                 {
@@ -504,9 +506,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-chalice-4",
                     "name": "Eggceptional Chalice",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t4c", "slot_count": 0, "value": 341210.673655, "odds_multiplier": 0.9, "effects": [{"target": "internal_hatchery_bonus", "value": 1.3, "text": "+30%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_chalice_t4e", "slot_count": 2, "value": 4178679.040016, "odds_multiplier": 0.006, "effects": [{"target": "internal_hatchery_bonus", "value": 1.35, "text": "+35%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_chalice_t4l", "slot_count": 3, "value": 10789263.337695, "odds_multiplier": 0.0009, "effects": [{"target": "internal_hatchery_bonus", "value": 1.4, "text": "+40%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_chalice_t4c", "slot_count": 0, "value": 341210.673655, "odds_multiplier": 0.9, "effects": [{"target": "ihr_mult", "value": 1.3, "text": "+30%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_chalice_t4e", "slot_count": 2, "value": 4178679.040016, "odds_multiplier": 0.006, "effects": [{"target": "ihr_mult", "value": 1.35, "text": "+35%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_chalice_t4l", "slot_count": 3, "value": 10789263.337695, "odds_multiplier": 0.0009, "effects": [{"target": "ihr_mult", "value": 1.4, "text": "+40%"}]}
                     }
                 }
             ]
@@ -521,7 +523,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-interstellar_compass-1",
                     "name": "Miscalibrated Interstellar Compass",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_compass_t1c", "slot_count": 0, "value": 11412.456608, "odds_multiplier": 0.9, "effects": [{"target": "shipping_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_compass_t1c", "slot_count": 0, "value": 11412.456608, "odds_multiplier": 0.9, "effects": [{"target": "shipping_mult", "value": 1.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -531,7 +533,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-interstellar_compass-2",
                     "name": "Interstellar Compass",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_compass_t2c", "slot_count": 0, "value": 34375.591304, "odds_multiplier": 0.9, "effects": [{"target": "shipping_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_compass_t2c", "slot_count": 0, "value": 34375.591304, "odds_multiplier": 0.9, "effects": [{"target": "shipping_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -541,8 +543,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-interstellar_compass-3",
                     "name": "Precise Interstellar Compass",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_compass_t3c", "slot_count": 0, "value": 107014.301871, "odds_multiplier": 0.9, "effects": [{"target": "shipping_bonus", "value": 1.2, "text": "+20%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_compass_t3r", "slot_count": 1, "value": 338354.879183, "odds_multiplier": 0.09, "effects": [{"target": "shipping_bonus", "value": 1.22, "text": "+22%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_compass_t3c", "slot_count": 0, "value": 107014.301871, "odds_multiplier": 0.9, "effects": [{"target": "shipping_mult", "value": 1.2, "text": "+20%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_compass_t3r", "slot_count": 1, "value": 338354.879183, "odds_multiplier": 0.09, "effects": [{"target": "shipping_mult", "value": 1.22, "text": "+22%"}]}
                     }
                 },
                 {
@@ -552,10 +554,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-interstellar_compass-4",
                     "name": "Clairvoyant Interstellar Compass",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_compass_t4c", "slot_count": 0, "value": 482534.406971, "odds_multiplier": 0.45, "effects": [{"target": "shipping_bonus", "value": 1.3, "text": "+30%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_compass_t4r", "slot_count": 1, "value": 3051682.436969, "odds_multiplier": 0.01125, "effects": [{"target": "shipping_bonus", "value": 1.35, "text": "+35%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_compass_t4e", "slot_count": 2, "value": 6823738.473105, "odds_multiplier": 0.00225, "effects": [{"target": "shipping_bonus", "value": 1.4, "text": "+40%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_compass_t4l", "slot_count": 2, "value": 15258312.184844, "odds_multiplier": 0.00045, "effects": [{"target": "shipping_bonus", "value": 1.5, "text": "+50%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_compass_t4c", "slot_count": 0, "value": 482534.406971, "odds_multiplier": 0.45, "effects": [{"target": "shipping_mult", "value": 1.3, "text": "+30%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_compass_t4r", "slot_count": 1, "value": 3051682.436969, "odds_multiplier": 0.01125, "effects": [{"target": "shipping_mult", "value": 1.35, "text": "+35%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_compass_t4e", "slot_count": 2, "value": 6823738.473105, "odds_multiplier": 0.00225, "effects": [{"target": "shipping_mult", "value": 1.4, "text": "+40%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_compass_t4l", "slot_count": 2, "value": 15258312.184844, "odds_multiplier": 0.00045, "effects": [{"target": "shipping_mult", "value": 1.5, "text": "+50%"}]}
                     }
                 }
             ]
@@ -570,7 +572,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-carved_rainstick-1",
                     "name": "Simple Carved Rainstick",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t1c", "slot_count": 0, "value": 10430.823962, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_bonus", "value": 1.2, "text": "+20%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t1c", "slot_count": 0, "value": 10430.823962, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_mult", "value": 1.2, "text": "+20%"}]}
                     }
                 },
                 {
@@ -580,7 +582,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-carved_rainstick-2",
                     "name": "Carved Rainstick",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t2c", "slot_count": 0, "value": 36210.297843, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_bonus", "value": 1.5, "text": "+50%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t2c", "slot_count": 0, "value": 36210.297843, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_mult", "value": 1.5, "text": "+50%"}]}
                     }
                 },
                 {
@@ -590,7 +592,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-carved_rainstick-3",
                     "name": "Ornate Carved Rainstick",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t3c", "slot_count": 0, "value": 110999.525346, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_bonus", "value": 2, "text": "+100%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t3c", "slot_count": 0, "value": 110999.525346, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_mult", "value": 2, "text": "+100%"}]}
                     }
                 },
                 {
@@ -600,9 +602,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-carved_rainstick-4",
                     "name": "Meggnificent Carved Rainstick",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t4c", "slot_count": 0, "value": 406201.997701, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_bonus", "value": 5, "text": "5x"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_rainstick_t4e", "slot_count": 1, "value": 5295925.120705, "odds_multiplier": 0.005294, "effects": [{"target": "drone_cash_bonus", "value": 10, "text": "10x"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_rainstick_t4l", "slot_count": 2, "value": 12844469.459051, "odds_multiplier": 0.0009, "effects": [{"target": "drone_cash_bonus", "value": 25, "text": "Guaranteed"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_rainstick_t4c", "slot_count": 0, "value": 406201.997701, "odds_multiplier": 0.9, "effects": [{"target": "drone_cash_mult", "value": 5, "text": "5x"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_rainstick_t4e", "slot_count": 1, "value": 5295925.120705, "odds_multiplier": 0.005294, "effects": [{"target": "drone_cash_mult", "value": 10, "text": "10x"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_rainstick_t4l", "slot_count": 2, "value": 12844469.459051, "odds_multiplier": 0.0009, "effects": [{"target": "drone_cash_mult", "value": 25, "text": "Guaranteed"}]}
                     }
                 }
             ]
@@ -617,7 +619,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-beak_of_midas-1",
                     "name": "Dull Beak of Midas",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_beak_t1c", "slot_count": 0, "value": 5831.260105, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_bonus", "value": 1.2, "text": "+20%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_beak_t1c", "slot_count": 0, "value": 5831.260105, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_mult", "value": 1.2, "text": "+20%"}]}
                     }
                 },
                 {
@@ -627,7 +629,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-beak_of_midas-2",
                     "name": "Beak of Midas",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_beak_t2c", "slot_count": 0, "value": 24687.627965, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_bonus", "value": 1.5, "text": "+50%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_beak_t2c", "slot_count": 0, "value": 24687.627965, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_mult", "value": 1.5, "text": "+50%"}]}
                     }
                 },
                 {
@@ -637,8 +639,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-beak_of_midas-3",
                     "name": "Jeweled Beak of Midas",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_beak_t3c", "slot_count": 0, "value": 72410.081186, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_beak_t3r", "slot_count": 1, "value": 240099.154712, "odds_multiplier": 0.081818, "effects": [{"target": "drone_gold_bonus", "value": 3, "text": "+200%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_beak_t3c", "slot_count": 0, "value": 72410.081186, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_mult", "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_beak_t3r", "slot_count": 1, "value": 240099.154712, "odds_multiplier": 0.081818, "effects": [{"target": "drone_gold_mult", "value": 3, "text": "+200%"}]}
                     }
                 },
                 {
@@ -648,9 +650,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-beak_of_midas-4",
                     "name": "Glistening Beak of Midas",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_beak_t4c", "slot_count": 0, "value": 220136.90814, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_bonus", "value": 6, "text": "6x"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_beak_t4r", "slot_count": 1, "value": 1556451.22866, "odds_multiplier": 0.018, "effects": [{"target": "drone_gold_bonus", "value": 11, "text": "11x"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_beak_t4l", "slot_count": 2, "value": 8524922.545295, "odds_multiplier": 0.0006, "effects": [{"target": "drone_gold_bonus", "value": 25, "text": "Guaranteed"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_beak_t4c", "slot_count": 0, "value": 220136.90814, "odds_multiplier": 0.9, "effects": [{"target": "drone_gold_mult", "value": 6, "text": "6x"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_beak_t4r", "slot_count": 1, "value": 1556451.22866, "odds_multiplier": 0.018, "effects": [{"target": "drone_gold_mult", "value": 11, "text": "11x"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_beak_t4l", "slot_count": 2, "value": 8524922.545295, "odds_multiplier": 0.0006, "effects": [{"target": "drone_gold_mult", "value": 25, "text": "Guaranteed"}]}
                     }
                 }
             ]
@@ -665,7 +667,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-mercurys_lens-1",
                     "name": "Misaligned Mercury's Lens",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_lens_t1c", "slot_count": 0, "value": 4834.759409, "odds_multiplier": 0.9, "effects": [{"target": "farm_value_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_lens_t1c", "slot_count": 0, "value": 4834.759409, "odds_multiplier": 0.9, "effects": [{"target": "farm_value_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -675,8 +677,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-mercurys_lens-2",
                     "name": "Mercury's Lens",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_lens_t2c", "slot_count": 0, "value": 27673.9271, "odds_multiplier": 0.9, "effects": [{"target": "farm_value_bonus", "value": 1.2, "text": "+20%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_lens_t2r", "slot_count": 1, "value": 87458.584496, "odds_multiplier": 0.09, "effects": [{"target": "farm_value_bonus", "value": 1.22, "text": "+22%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_lens_t2c", "slot_count": 0, "value": 27673.9271, "odds_multiplier": 0.9, "effects": [{"target": "farm_value_mult", "value": 1.2, "text": "+20%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_lens_t2r", "slot_count": 1, "value": 87458.584496, "odds_multiplier": 0.09, "effects": [{"target": "farm_value_mult", "value": 1.22, "text": "+22%"}]}
                     }
                 },
                 {
@@ -686,8 +688,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-mercurys_lens-3",
                     "name": "Precise Mercury's Lens",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_lens_t3c", "slot_count": 0, "value": 88553.49331, "odds_multiplier": 0.9, "effects": [{"target": "farm_value_bonus", "value": 1.5, "text": "+50%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_lens_t3r", "slot_count": 1, "value": 279976.676682, "odds_multiplier": 0.09, "effects": [{"target": "farm_value_bonus", "value": 1.55, "text": "+55%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_lens_t3c", "slot_count": 0, "value": 88553.49331, "odds_multiplier": 0.9, "effects": [{"target": "farm_value_mult", "value": 1.5, "text": "+50%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_lens_t3r", "slot_count": 1, "value": 279976.676682, "odds_multiplier": 0.09, "effects": [{"target": "farm_value_mult", "value": 1.55, "text": "+55%"}]}
                     }
                 },
                 {
@@ -697,10 +699,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-mercurys_lens-4",
                     "name": "Meggnificent Mercury's Lens",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_lens_t4c", "slot_count": 0, "value": 617276.000138, "odds_multiplier": 0.45, "effects": [{"target": "farm_value_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_lens_t4r", "slot_count": 1, "value": 3903863.096907, "odds_multiplier": 0.01125, "effects": [{"target": "farm_value_bonus", "value": 2.25, "text": "+125%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_lens_t4e", "slot_count": 2, "value": 9759620.242267, "odds_multiplier": 0.0018, "effects": [{"target": "farm_value_bonus", "value": 2.5, "text": "+150%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_lens_t4l", "slot_count": 2, "value": 19519215.484534, "odds_multiplier": 0.00045, "effects": [{"target": "farm_value_bonus", "value": 3, "text": "+200%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_lens_t4c", "slot_count": 0, "value": 617276.000138, "odds_multiplier": 0.45, "effects": [{"target": "farm_value_mult", "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_lens_t4r", "slot_count": 1, "value": 3903863.096907, "odds_multiplier": 0.01125, "effects": [{"target": "farm_value_mult", "value": 2.25, "text": "+125%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_lens_t4e", "slot_count": 2, "value": 9759620.242267, "odds_multiplier": 0.0018, "effects": [{"target": "farm_value_mult", "value": 2.5, "text": "+150%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_lens_t4l", "slot_count": 2, "value": 19519215.484534, "odds_multiplier": 0.00045, "effects": [{"target": "farm_value_mult", "value": 3, "text": "+200%"}]}
                     }
                 }
             ]
@@ -715,7 +717,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-neodymium_medallion-1",
                     "name": "Weak Neodymium Medallion",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t1c", "slot_count": 0, "value": 3570.412409, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t1c", "slot_count": 0, "value": 3570.412409, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -725,8 +727,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-neodymium_medallion-2",
                     "name": "Neodymium Medallion",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t2c", "slot_count": 0, "value": 18204.534523, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_bonus", "value": 1.25, "text": "+25%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_medallion_t2r", "slot_count": 1, "value": 63000.754903, "odds_multiplier": 0.075, "effects": [{"target": "drone_frequency_bonus", "value": 1.3, "text": "+30%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t2c", "slot_count": 0, "value": 18204.534523, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_mult", "value": 1.25, "text": "+25%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_medallion_t2r", "slot_count": 1, "value": 63000.754903, "odds_multiplier": 0.075, "effects": [{"target": "drone_frequency_mult", "value": 1.3, "text": "+30%"}]}
                     }
                 },
                 {
@@ -736,8 +738,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-neodymium_medallion-3",
                     "name": "Precise Neodymium Medallion",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t3c", "slot_count": 0, "value": 53382.131454, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_bonus", "value": 1.5, "text": "+50%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_medallion_t3e", "slot_count": 2, "value": 653513.73101, "odds_multiplier": 0.006, "effects": [{"target": "drone_frequency_bonus", "value": 1.6, "text": "+60%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t3c", "slot_count": 0, "value": 53382.131454, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_mult", "value": 1.5, "text": "+50%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_medallion_t3e", "slot_count": 2, "value": 653513.73101, "odds_multiplier": 0.006, "effects": [{"target": "drone_frequency_mult", "value": 1.6, "text": "+60%"}]}
                     }
                 },
                 {
@@ -747,10 +749,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-neodymium_medallion-4",
                     "name": "Eggceptional Neodymium Medallion",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t4c", "slot_count": 0, "value": 156628.760864, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_medallion_t4r", "slot_count": 1, "value": 990474.148954, "odds_multiplier": 0.0225, "effects": [{"target": "drone_frequency_bonus", "value": 2.1, "text": "+110%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_medallion_t4e", "slot_count": 2, "value": 2214736.625319, "odds_multiplier": 0.0045, "effects": [{"target": "drone_frequency_bonus", "value": 2.2, "text": "+120%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_medallion_t4l", "slot_count": 3, "value": 4952270.744771, "odds_multiplier": 0.0009, "effects": [{"target": "drone_frequency_bonus", "value": 2.3, "text": "+130%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_medallion_t4c", "slot_count": 0, "value": 156628.760864, "odds_multiplier": 0.9, "effects": [{"target": "drone_frequency_mult", "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_medallion_t4r", "slot_count": 1, "value": 990474.148954, "odds_multiplier": 0.0225, "effects": [{"target": "drone_frequency_mult", "value": 2.1, "text": "+110%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_medallion_t4e", "slot_count": 2, "value": 2214736.625319, "odds_multiplier": 0.0045, "effects": [{"target": "drone_frequency_mult", "value": 2.2, "text": "+120%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_medallion_t4l", "slot_count": 3, "value": 4952270.744771, "odds_multiplier": 0.0009, "effects": [{"target": "drone_frequency_mult", "value": 2.3, "text": "+130%"}]}
                     }
                 }
             ]
@@ -765,7 +767,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-gusset-1",
                     "name": "Plain Gusset",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t1c", "slot_count": 0, "value": 2003.275502, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_bonus", "value": 1.05, "text": "+5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t1c", "slot_count": 0, "value": 2003.275502, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_mult", "value": 1.05, "text": "+5%"}]}
                     }
                 },
                 {
@@ -775,8 +777,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-gusset-2",
                     "name": "Ornate Gusset",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t2c", "slot_count": 0, "value": 21930.921549, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_bonus", "value": 1.1, "text": "+10%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_gusset_t2e", "slot_count": 2, "value": 219084.215486, "odds_multiplier": 0.009, "effects": [{"target": "hab_capacity_bonus", "value": 1.12, "text": "+12%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t2c", "slot_count": 0, "value": 21930.921549, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_mult", "value": 1.1, "text": "+10%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_gusset_t2e", "slot_count": 2, "value": 219084.215486, "odds_multiplier": 0.009, "effects": [{"target": "hab_capacity_mult", "value": 1.12, "text": "+12%"}]}
                     }
                 },
                 {
@@ -786,8 +788,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-gusset-3",
                     "name": "Distegguished Gusset",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t3c", "slot_count": 0, "value": 85144.841389, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_bonus", "value": 1.15, "text": "+15%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_gusset_t3r", "slot_count": 1, "value": 269197.57286, "odds_multiplier": 0.09, "effects": [{"target": "hab_capacity_bonus", "value": 1.16, "text": "+16%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t3c", "slot_count": 0, "value": 85144.841389, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_mult", "value": 1.15, "text": "+15%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_gusset_t3r", "slot_count": 1, "value": 269197.57286, "odds_multiplier": 0.09, "effects": [{"target": "hab_capacity_mult", "value": 1.16, "text": "+16%"}]}
                     }
                 },
                 {
@@ -797,9 +799,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-gusset-4",
                     "name": "Jeweled Gusset",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t4c", "slot_count": 0, "value": 396437.090005, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_bonus", "value": 1.2, "text": "+20%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_gusset_t4e", "slot_count": 2, "value": 4855061.741907, "odds_multiplier": 0.006, "effects": [{"target": "hab_capacity_bonus", "value": 1.22, "text": "+22%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_gusset_t4l", "slot_count": 3, "value": 12535675.96442, "odds_multiplier": 0.0009, "effects": [{"target": "hab_capacity_bonus", "value": 1.25, "text": "+25%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_gusset_t4c", "slot_count": 0, "value": 396437.090005, "odds_multiplier": 0.9, "effects": [{"target": "hab_capacity_mult", "value": 1.2, "text": "+20%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_gusset_t4e", "slot_count": 2, "value": 4855061.741907, "odds_multiplier": 0.006, "effects": [{"target": "hab_capacity_mult", "value": 1.22, "text": "+22%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_gusset_t4l", "slot_count": 3, "value": 12535675.96442, "odds_multiplier": 0.0009, "effects": [{"target": "hab_capacity_mult", "value": 1.25, "text": "+25%"}]}
                     }
                 }
             ]
@@ -814,7 +816,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-tungsten_ankh-1",
                     "name": "Crude Tungsten Ankh",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t1c", "slot_count": 0, "value": 993.667506, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t1c", "slot_count": 0, "value": 993.667506, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -824,8 +826,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-tungsten_ankh-2",
                     "name": "Tungsten Ankh",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t2c", "slot_count": 0, "value": 18204.534523, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 1.25, "text": "+25%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_ankh_t2r", "slot_count": 1, "value": 90922.672615, "odds_multiplier": 0.036, "effects": [{"target": "egg_value_bonus", "value": 1.28, "text": "+28%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t2c", "slot_count": 0, "value": 18204.534523, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 1.25, "text": "+25%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_ankh_t2r", "slot_count": 1, "value": 90922.672615, "odds_multiplier": 0.036, "effects": [{"target": "egg_value_mult", "value": 1.28, "text": "+28%"}]}
                     }
                 },
                 {
@@ -835,9 +837,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-tungsten_ankh-3",
                     "name": "Polished Tungsten Ankh",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t3c", "slot_count": 0, "value": 75461.490186, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 1.5, "text": "+50%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_ankh_t3r", "slot_count": 1, "value": 238576.127675, "odds_multiplier": 0.09, "effects": [{"target": "egg_value_bonus", "value": 1.75, "text": "+75%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_ankh_t3l", "slot_count": 3, "value": 2385536.276752, "odds_multiplier": 0.0009, "effects": [{"target": "egg_value_bonus", "value": 2, "text": "+100%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t3c", "slot_count": 0, "value": 75461.490186, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 1.5, "text": "+50%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_ankh_t3r", "slot_count": 1, "value": 238576.127675, "odds_multiplier": 0.09, "effects": [{"target": "egg_value_mult", "value": 1.75, "text": "+75%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_ankh_t3l", "slot_count": 3, "value": 2385536.276752, "odds_multiplier": 0.0009, "effects": [{"target": "egg_value_mult", "value": 2, "text": "+100%"}]}
                     }
                 },
                 {
@@ -847,9 +849,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-tungsten_ankh-4",
                     "name": "Brilliant Tungsten Ankh",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t4c", "slot_count": 0, "value": 276129.51142, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_ankh_t4r", "slot_count": 1, "value": 1746263.25667, "odds_multiplier": 0.0225, "effects": [{"target": "egg_value_bonus", "value": 2.25, "text": "+125%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_ankh_t4l", "slot_count": 3, "value": 8731216.283349, "odds_multiplier": 0.0009, "effects": [{"target": "egg_value_bonus", "value": 2.5, "text": "+150%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_ankh_t4c", "slot_count": 0, "value": 276129.51142, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_ankh_t4r", "slot_count": 1, "value": 1746263.25667, "odds_multiplier": 0.0225, "effects": [{"target": "egg_value_mult", "value": 2.25, "text": "+125%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_ankh_t4l", "slot_count": 3, "value": 8731216.283349, "odds_multiplier": 0.0009, "effects": [{"target": "egg_value_mult", "value": 2.5, "text": "+150%"}]}
                     }
                 }
             ]
@@ -864,7 +866,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-aurelian_brooch-1",
                     "name": "Plain Aurelian Brooch",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t1c", "slot_count": 0, "value": 847.034923, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t1c", "slot_count": 0, "value": 847.034923, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -874,7 +876,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-aurelian_brooch-2",
                     "name": "Aurelian Brooch",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t2c", "slot_count": 0, "value": 8233.909878, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_bonus", "value": 1.25, "text": "+25%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t2c", "slot_count": 0, "value": 8233.909878, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_mult", "value": 1.25, "text": "+25%"}]}
                     }
                 },
                 {
@@ -884,9 +886,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-aurelian_brooch-3",
                     "name": "Jeweled Aurelian Brooch",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t3c", "slot_count": 0, "value": 46403.651172, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_bonus", "value": 1.5, "text": "+50%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_brooch_t3r", "slot_count": 1, "value": 146687.172511, "odds_multiplier": 0.09, "effects": [{"target": "drone_reward_bonus", "value": 1.6, "text": "+60%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_brooch_t3e", "slot_count": 2, "value": 463811.511722, "odds_multiplier": 0.009, "effects": [{"target": "drone_reward_bonus", "value": 1.7, "text": "+70%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t3c", "slot_count": 0, "value": 46403.651172, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_mult", "value": 1.5, "text": "+50%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_brooch_t3r", "slot_count": 1, "value": 146687.172511, "odds_multiplier": 0.09, "effects": [{"target": "drone_reward_mult", "value": 1.6, "text": "+60%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_brooch_t3e", "slot_count": 2, "value": 463811.511722, "odds_multiplier": 0.009, "effects": [{"target": "drone_reward_mult", "value": 1.7, "text": "+70%"}]}
                     }
                 },
                 {
@@ -896,10 +898,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-aurelian_brooch-4",
                     "name": "Eggceptional Aurelian Brooch",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t4c", "slot_count": 0, "value": 156628.760864, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_brooch_t4r", "slot_count": 1, "value": 990474.148954, "odds_multiplier": 0.0225, "effects": [{"target": "drone_reward_bonus", "value": 2.25, "text": "+125%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_brooch_t4e", "slot_count": 2, "value": 2101084.928938, "odds_multiplier": 0.005, "effects": [{"target": "drone_reward_bonus", "value": 2.5, "text": "+150%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_brooch_t4l", "slot_count": 3, "value": 4952270.744771, "odds_multiplier": 0.0009, "effects": [{"target": "drone_reward_bonus", "value": 3, "text": "+200%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_brooch_t4c", "slot_count": 0, "value": 156628.760864, "odds_multiplier": 0.9, "effects": [{"target": "drone_reward_mult", "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_brooch_t4r", "slot_count": 1, "value": 990474.148954, "odds_multiplier": 0.0225, "effects": [{"target": "drone_reward_mult", "value": 2.25, "text": "+125%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_brooch_t4e", "slot_count": 2, "value": 2101084.928938, "odds_multiplier": 0.005, "effects": [{"target": "drone_reward_mult", "value": 2.5, "text": "+150%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_brooch_t4l", "slot_count": 3, "value": 4952270.744771, "odds_multiplier": 0.0009, "effects": [{"target": "drone_reward_mult", "value": 3, "text": "+200%"}]}
                     }
                 }
             ]
@@ -914,7 +916,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-vial_of_martian_dust-1",
                     "name": "Tiny Vial of Martian Dust",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_vial_t1c", "slot_count": 0, "value": 656.830376, "odds_multiplier": 0.9, "effects": [{"target": "running_chicken_bonus", "value": 10, "text": "+10"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_vial_t1c", "slot_count": 0, "value": 656.830376, "odds_multiplier": 0.9, "effects": [{"target": "earning_mrcb_mult", "value": 10, "text": "+10"}]}
                     }
                 },
                 {
@@ -924,8 +926,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-vial_of_martian_dust-2",
                     "name": "Vial of Martian Dust",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_vial_t2c", "slot_count": 0, "value": 15978.306346, "odds_multiplier": 0.9, "effects": [{"target": "running_chicken_bonus", "value": 50, "text": "+50"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_vial_t2r", "slot_count": 1, "value": 50473.784263, "odds_multiplier": 0.09, "effects": [{"target": "running_chicken_bonus", "value": 60, "text": "+60"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_vial_t2c", "slot_count": 0, "value": 15978.306346, "odds_multiplier": 0.9, "effects": [{"target": "earning_mrcb_mult", "value": 50, "text": "+50"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_vial_t2r", "slot_count": 1, "value": 50473.784263, "odds_multiplier": 0.09, "effects": [{"target": "earning_mrcb_mult", "value": 60, "text": "+60"}]}
                     }
                 },
                 {
@@ -935,8 +937,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-vial_of_martian_dust-3",
                     "name": "Hermetic Vial of Martian Dust",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_vial_t3c", "slot_count": 0, "value": 78600.18956, "odds_multiplier": 0.9, "effects": [{"target": "running_chicken_bonus", "value": 100, "text": "+100"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_vial_t3e", "slot_count": 1, "value": 785776.895596, "odds_multiplier": 0.009, "effects": [{"target": "running_chicken_bonus", "value": 150, "text": "+150"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_vial_t3c", "slot_count": 0, "value": 78600.18956, "odds_multiplier": 0.9, "effects": [{"target": "earning_mrcb_mult", "value": 100, "text": "+100"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_vial_t3e", "slot_count": 1, "value": 785776.895596, "odds_multiplier": 0.009, "effects": [{"target": "earning_mrcb_mult", "value": 150, "text": "+150"}]}
                     }
                 },
                 {
@@ -946,9 +948,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-vial_of_martian_dust-4",
                     "name": "Prime Vial of Martian Dust",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_vial_t4c", "slot_count": 0, "value": 341210.673655, "odds_multiplier": 0.9, "effects": [{"target": "running_chicken_bonus", "value": 200, "text": "+200"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_vial_t4r", "slot_count": 1, "value": 2157872.667539, "odds_multiplier": 0.0225, "effects": [{"target": "running_chicken_bonus", "value": 300, "text": "+300"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_vial_t4l", "slot_count": 2, "value": 10789263.337695, "odds_multiplier": 0.0009, "effects": [{"target": "running_chicken_bonus", "value": 500, "text": "+500"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_vial_t4c", "slot_count": 0, "value": 341210.673655, "odds_multiplier": 0.9, "effects": [{"target": "earning_mrcb_mult", "value": 200, "text": "+200"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_vial_t4r", "slot_count": 1, "value": 2157872.667539, "odds_multiplier": 0.0225, "effects": [{"target": "earning_mrcb_mult", "value": 300, "text": "+300"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_vial_t4l", "slot_count": 2, "value": 10789263.337695, "odds_multiplier": 0.0009, "effects": [{"target": "earning_mrcb_mult", "value": 500, "text": "+500"}]}
                     }
                 }
             ]
@@ -963,7 +965,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-demeters_necklace-1",
                     "name": "Simple Demeters Necklace",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t1c", "slot_count": 0, "value": 213.911646, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 1.1, "text": "+10%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t1c", "slot_count": 0, "value": 213.911646, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 1.1, "text": "+10%"}]}
                     }
                 },
                 {
@@ -973,8 +975,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-demeters_necklace-2",
                     "name": "Jeweled Demeters Necklace",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t2c", "slot_count": 0, "value": 4383.717036, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 1.25, "text": "+25%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_necklace_t2r", "slot_count": 1, "value": 23898.676423, "odds_multiplier": 0.03, "effects": [{"target": "egg_value_bonus", "value": 1.35, "text": "+35%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t2c", "slot_count": 0, "value": 4383.717036, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 1.25, "text": "+25%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_necklace_t2r", "slot_count": 1, "value": 23898.676423, "odds_multiplier": 0.03, "effects": [{"target": "egg_value_mult", "value": 1.35, "text": "+35%"}]}
                     }
                 },
                 {
@@ -984,9 +986,9 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-demeters_necklace-3",
                     "name": "Pristine Demeters Necklace",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t3c", "slot_count": 0, "value": 29256.313096, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 1.5, "text": "+50%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_necklace_t3r", "slot_count": 1, "value": 130751.406309, "odds_multiplier": 0.045, "effects": [{"target": "egg_value_bonus", "value": 1.6, "text": "+60%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_necklace_t3e", "slot_count": 2, "value": 292338.13096, "odds_multiplier": 0.009, "effects": [{"target": "egg_value_bonus", "value": 1.75, "text": "+75%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t3c", "slot_count": 0, "value": 29256.313096, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 1.5, "text": "+50%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_necklace_t3r", "slot_count": 1, "value": 130751.406309, "odds_multiplier": 0.045, "effects": [{"target": "egg_value_mult", "value": 1.6, "text": "+60%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_necklace_t3e", "slot_count": 2, "value": 292338.13096, "odds_multiplier": 0.009, "effects": [{"target": "egg_value_mult", "value": 1.75, "text": "+75%"}]}
                     }
                 },
                 {
@@ -996,10 +998,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-demeters_necklace-4",
                     "name": "Beggspoke Demeters Necklace",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t4c", "slot_count": 0, "value": 115085.635013, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_bonus", "value": 2, "text": "+100%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_necklace_t4r", "slot_count": 1, "value": 727732.351336, "odds_multiplier": 0.0225, "effects": [{"target": "egg_value_bonus", "value": 2.25, "text": "+125%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_necklace_t4e", "slot_count": 2, "value": 1361440.793268, "odds_multiplier": 0.006429, "effects": [{"target": "egg_value_bonus", "value": 2.5, "text": "+150%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_necklace_t4l", "slot_count": 3, "value": 3638561.756679, "odds_multiplier": 0.0009, "effects": [{"target": "egg_value_bonus", "value": 3, "text": "+200%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_necklace_t4c", "slot_count": 0, "value": 115085.635013, "odds_multiplier": 0.9, "effects": [{"target": "egg_value_mult", "value": 2, "text": "+100%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_necklace_t4r", "slot_count": 1, "value": 727732.351336, "odds_multiplier": 0.0225, "effects": [{"target": "egg_value_mult", "value": 2.25, "text": "+125%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_necklace_t4e", "slot_count": 2, "value": 1361440.793268, "odds_multiplier": 0.006429, "effects": [{"target": "egg_value_mult", "value": 2.5, "text": "+150%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_necklace_t4l", "slot_count": 3, "value": 3638561.756679, "odds_multiplier": 0.0009, "effects": [{"target": "egg_value_mult", "value": 3, "text": "+200%"}]}
                     }
                 }
             ]
@@ -1014,7 +1016,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-lunar_totem-1",
                     "name": "Basic Lunar Totem",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_totem_t1c", "slot_count": 0, "value": 58.666074, "odds_multiplier": 0.9, "effects": [{"target": "away_earning_bonus", "value": 2, "text": "+100%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_totem_t1c", "slot_count": 0, "value": 58.666074, "odds_multiplier": 0.9, "effects": [{"target": "earning_away_mult", "value": 2, "text": "+100%"}]}
                     }
                 },
                 {
@@ -1024,8 +1026,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-lunar_totem-2",
                     "name": "Lunar Totem",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_totem_t2c", "slot_count": 0, "value": 5316.895747, "odds_multiplier": 0.9, "effects": [{"target": "away_earning_bonus", "value": 4, "text": "+300%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_totem_t2r", "slot_count": 1, "value": 29009.906728, "odds_multiplier": 0.03, "effects": [{"target": "away_earning_bonus", "value": 8, "text": "8x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_totem_t2c", "slot_count": 0, "value": 5316.895747, "odds_multiplier": 0.9, "effects": [{"target": "earning_away_mult", "value": 4, "text": "+300%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_totem_t2r", "slot_count": 1, "value": 29009.906728, "odds_multiplier": 0.03, "effects": [{"target": "earning_away_mult", "value": 8, "text": "8x"}]}
                     }
                 },
                 {
@@ -1035,8 +1037,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-lunar_totem-3",
                     "name": "Powerful Lunar Totem",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_totem_t3c", "slot_count": 0, "value": 42117.186554, "odds_multiplier": 0.9, "effects": [{"target": "away_earning_bonus", "value": 20, "text": "20x"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_totem_t3r", "slot_count": 1, "value": 188266.980912, "odds_multiplier": 0.045, "effects": [{"target": "away_earning_bonus", "value": 40, "text": "40x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_totem_t3c", "slot_count": 0, "value": 42117.186554, "odds_multiplier": 0.9, "effects": [{"target": "earning_away_mult", "value": 20, "text": "20x"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_totem_t3r", "slot_count": 1, "value": 188266.980912, "odds_multiplier": 0.045, "effects": [{"target": "earning_away_mult", "value": 40, "text": "40x"}]}
                     }
                 },
                 {
@@ -1046,10 +1048,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-lunar_totem-4",
                     "name": "Eggceptional Lunar Totem",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_totem_t4c", "slot_count": 0, "value": 233323.677759, "odds_multiplier": 0.9, "effects": [{"target": "away_earning_bonus", "value": 50, "text": "50x"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_totem_t4r", "slot_count": 1, "value": 1277854.484446, "odds_multiplier": 0.03, "effects": [{"target": "away_earning_bonus", "value": 100, "text": "100x"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_totem_t4e", "slot_count": 2, "value": 3688800.984116, "odds_multiplier": 0.0036, "effects": [{"target": "away_earning_bonus", "value": 150, "text": "150x"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_totem_t4l", "slot_count": 3, "value": 9035643.936518, "odds_multiplier": 0.0006, "effects": [{"target": "away_earning_bonus", "value": 200, "text": "200x"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_totem_t4c", "slot_count": 0, "value": 233323.677759, "odds_multiplier": 0.9, "effects": [{"target": "earning_away_mult", "value": 50, "text": "50x"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_totem_t4r", "slot_count": 1, "value": 1277854.484446, "odds_multiplier": 0.03, "effects": [{"target": "earning_away_mult", "value": 100, "text": "100x"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_totem_t4e", "slot_count": 2, "value": 3688800.984116, "odds_multiplier": 0.0036, "effects": [{"target": "earning_away_mult", "value": 150, "text": "150x"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_totem_t4l", "slot_count": 3, "value": 9035643.936518, "odds_multiplier": 0.0006, "effects": [{"target": "earning_away_mult", "value": 200, "text": "200x"}]}
                     }
                 }
             ]
@@ -1064,7 +1066,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-puzzle_cube-1",
                     "name": "Ancient Puzzle Cube",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_cube_t1c", "slot_count": 0, "value": 36.470511, "odds_multiplier": 0.9, "effects": [{"target": "research_cost_bonus", "value": 0.95, "text": "-5%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_cube_t1c", "slot_count": 0, "value": 36.470511, "odds_multiplier": 0.9, "effects": [{"target": "research_cost_mult", "value": 0.95, "text": "-5%"}]}
                     }
                 },
                 {
@@ -1074,8 +1076,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-puzzle_cube-2",
                     "name": "Puzzle Cube",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_cube_t2c", "slot_count": 0, "value": 2267.815035, "odds_multiplier": 0.9, "effects": [{"target": "research_cost_bonus", "value": 0.9, "text": "-10%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_cube_t2e", "slot_count": 2, "value": 20085.347517, "odds_multiplier": 0.01125, "effects": [{"target": "research_cost_bonus", "value": 0.85, "text": "-15%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_cube_t2c", "slot_count": 0, "value": 2267.815035, "odds_multiplier": 0.9, "effects": [{"target": "research_cost_mult", "value": 0.9, "text": "-10%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_cube_t2e", "slot_count": 2, "value": 20085.347517, "odds_multiplier": 0.01125, "effects": [{"target": "research_cost_mult", "value": 0.85, "text": "-15%"}]}
                     }
                 },
                 {
@@ -1085,8 +1087,8 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-puzzle_cube-3",
                     "name": "Mystical Puzzle Cube",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_cube_t3c", "slot_count": 0, "value": 48655.335519, "odds_multiplier": 0.9, "effects": [{"target": "research_cost_bonus", "value": 0.8, "text": "-20%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_cube_t3r", "slot_count": 1, "value": 153807.623618, "odds_multiplier": 0.09, "effects": [{"target": "research_cost_bonus", "value": 0.78, "text": "-22%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_cube_t3c", "slot_count": 0, "value": 48655.335519, "odds_multiplier": 0.9, "effects": [{"target": "research_cost_mult", "value": 0.8, "text": "-20%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_cube_t3r", "slot_count": 1, "value": 153807.623618, "odds_multiplier": 0.09, "effects": [{"target": "research_cost_mult", "value": 0.78, "text": "-22%"}]}
                     }
                 },
                 {
@@ -1096,10 +1098,10 @@ const artifactMetadata: ArtifactMetadata = {
                     "image": "artifact-puzzle_cube-4",
                     "name": "Unsolvable Puzzle Cube",
                     "rarities": {
-                        [T.Rarity.COMMON]: {"id": "artifact_cube_t4c", "slot_count": 0, "value": 260860.851265, "odds_multiplier": 0.72, "effects": [{"target": "research_cost_bonus", "value": 0.5, "text": "-50%"}]},
-                        [T.Rarity.RARE]: {"id": "artifact_cube_t4r", "slot_count": 1, "value": 1844412.992058, "odds_multiplier": 0.0144, "effects": [{"target": "research_cost_bonus", "value": 0.47, "text": "-53%"}]},
-                        [T.Rarity.EPIC]: {"id": "artifact_cube_t4e", "slot_count": 2, "value": 3400908.417855, "odds_multiplier": 0.004235, "effects": [{"target": "research_cost_bonus", "value": 0.45, "text": "-55%"}]},
-                        [T.Rarity.LEGENDARY]: {"id": "artifact_cube_t4l", "slot_count": 3, "value": 8248378.854253, "odds_multiplier": 0.00072, "effects": [{"target": "research_cost_bonus", "value": 0.4, "text": "-60%"}]}
+                        [T.Rarity.COMMON]: {"id": "artifact_cube_t4c", "slot_count": 0, "value": 260860.851265, "odds_multiplier": 0.72, "effects": [{"target": "research_cost_mult", "value": 0.5, "text": "-50%"}]},
+                        [T.Rarity.RARE]: {"id": "artifact_cube_t4r", "slot_count": 1, "value": 1844412.992058, "odds_multiplier": 0.0144, "effects": [{"target": "research_cost_mult", "value": 0.47, "text": "-53%"}]},
+                        [T.Rarity.EPIC]: {"id": "artifact_cube_t4e", "slot_count": 2, "value": 3400908.417855, "odds_multiplier": 0.004235, "effects": [{"target": "research_cost_mult", "value": 0.45, "text": "-55%"}]},
+                        [T.Rarity.LEGENDARY]: {"id": "artifact_cube_t4l", "slot_count": 3, "value": 8248378.854253, "odds_multiplier": 0.00072, "effects": [{"target": "research_cost_mult", "value": 0.4, "text": "-60%"}]}
                     }
                 }
             ]
@@ -1171,7 +1173,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_clarity_t2",
                     "value": 293343.150806,
                     "odds_multiplier": 0.07,
-                    "effects": [{"target": "enlightenment_effectiveness", "value": 0.25, "text": "25%"}]},
+                    "effects": [{"target": 'enlightenment_effectiveness', "value": 0.25, "text": "25%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1181,7 +1183,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_clarity_t3",
                     "value": 1339289.804938,
                     "odds_multiplier": 0.05,
-                    "effects": [{"target": "enlightenment_effectiveness", "value": 0.50, "text": "50%"}]},
+                    "effects": [{"target": 'enlightenment_effectiveness', "value": 0.50, "text": "50%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Eggceptional",
@@ -1191,7 +1193,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_clarity_t4",
                     "value": 6717510.81403,
                     "odds_multiplier": 0.02,
-                    "effects": [{"target": "enlightenment_effectiveness", "value": 1.00, "text": "100%"}]}
+                    "effects": [{"target": 'enlightenment_effectiveness', "value": 1.00, "text": "100%"}]}
             ]
         },
         [T.StoneFamily.LIFE_STONE]: {
@@ -1215,7 +1217,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_life_t2",
                     "value": 97767.625644,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "internal_hatchery_bonus", "value": 1.02, "text": "+2%"}]},
+                    "effects": [{"target": "ihr_mult", "value": 1.02, "text": "+2%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Good",
@@ -1225,7 +1227,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_life_t3",
                     "value": 428216.690225,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "internal_hatchery_bonus", "value": 1.03, "text": "+3%"}]},
+                    "effects": [{"target": "ihr_mult", "value": 1.03, "text": "+3%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Eggceptional",
@@ -1235,7 +1237,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_life_t4",
                     "value": 1913837.916825,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "internal_hatchery_bonus", "value": 1.04, "text": "+4%"}]}
+                    "effects": [{"target": "ihr_mult", "value": 1.04, "text": "+4%"}]}
             ]
         },
         [T.StoneFamily.QUANTUM_STONE]: {
@@ -1259,7 +1261,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_quantum_t2",
                     "value": 74012.883896,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "shipping_bonus", "value": 1.02, "text": "+2%"}]},
+                    "effects": [{"target": "shipping_mult", "value": 1.02, "text": "+2%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Phased",
@@ -1269,7 +1271,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_quantum_t3",
                     "value": 195413.983179,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "shipping_bonus", "value": 1.04, "text": "+4%"}]},
+                    "effects": [{"target": "shipping_mult", "value": 1.04, "text": "+4%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Meggnificent",
@@ -1279,7 +1281,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_quantum_t4",
                     "value": 1372504.337427,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "shipping_bonus", "value": 1.05, "text": "+5%"}]}
+                    "effects": [{"target": "shipping_mult", "value": 1.05, "text": "+5%"}]}
             ]
         },
         [T.StoneFamily.DILITHIUM_STONE]: {
@@ -1303,7 +1305,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_dilithium_t2",
                     "value": 160096.394363,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "boost_duration_bonus", "value": 1.03, "text": "+3%"}]},
+                    "effects": [{"target": "boost_duration_mult", "value": 1.03, "text": "+3%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1313,7 +1315,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_dilithium_t3",
                     "value": 542420.864079,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "boost_duration_bonus", "value": 1.06, "text": "+6%"}]},
+                    "effects": [{"target": "boost_duration_mult", "value": 1.06, "text": "+6%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Brilliant",
@@ -1323,7 +1325,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_dilithium_t4",
                     "value": 2661483.487963,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "boost_duration_bonus", "value": 1.08, "text": "+8%"}]}
+                    "effects": [{"target": "boost_duration_mult", "value": 1.08, "text": "+8%"}]}
             ]
         },
         [T.StoneFamily.SOUL_STONE]: {
@@ -1391,7 +1393,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_terra_t2",
                     "value": 58131.479486,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "running_chicken_bonus", "value": 10, "text": "+10"}]},
+                    "effects": [{"target": "earning_mrcb_mult", "value": 10, "text": "+10"}]},
                 {
                     "tier": 3,
                     "qualifier": "Rich",
@@ -1401,7 +1403,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_terra_t3",
                     "value": 226334.470557,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "running_chicken_bonus", "value": 50, "text": "+50"}]},
+                    "effects": [{"target": "earning_mrcb_mult", "value": 50, "text": "+50"}]},
                 {
                     "tier": 4,
                     "qualifier": "Eggceptional",
@@ -1411,7 +1413,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_terra_t4",
                     "value": 1795569.028501,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "running_chicken_bonus", "value": 100, "text": "+100"}]}
+                    "effects": [{"target": "earning_mrcb_mult", "value": 100, "text": "+100"}]}
             ]
         },
         [T.StoneFamily.TACHYON_STONE]: {
@@ -1435,7 +1437,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_tachyon_t2",
                     "value": 13766.266268,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "laying_bonus", "value": 1.02, "text": "+2%"}]},
+                    "effects": [{"target": "laying_rate", "value": 1.02, "text": "+2%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1445,7 +1447,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_tachyon_t3",
                     "value": 149376.582539,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "laying_bonus", "value": 1.04, "text": "+4%"}]},
+                    "effects": [{"target": "laying_rate", "value": 1.04, "text": "+4%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Brilliant",
@@ -1455,7 +1457,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_tachyon_t4",
                     "value": 1421172.890927,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "laying_bonus", "value": 1.05, "text": "+5%"}]}
+                    "effects": [{"target": "laying_rate", "value": 1.05, "text": "+5%"}]}
             ]
         },
         [T.StoneFamily.SHELL_STONE]: {
@@ -1479,7 +1481,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_shell_t2",
                     "value": 10104.301843,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "egg_value_bonus", "value": 1.05, "text": "+5%"}]},
+                    "effects": [{"target": "egg_value_mult", "value": 1.05, "text": "+5%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1489,7 +1491,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_shell_t3",
                     "value": 149376.582539,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "egg_value_bonus", "value": 1.08, "text": "+8%"}]},
+                    "effects": [{"target": "egg_value_mult", "value": 1.08, "text": "+8%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Flawless",
@@ -1499,7 +1501,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_shell_t4",
                     "value": 1118149.100504,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "egg_value_bonus", "value": 1.1, "text": "+10%"}]}
+                    "effects": [{"target": "egg_value_mult", "value": 1.1, "text": "+10%"}]}
             ]
         },
         [T.StoneFamily.LUNAR_STONE]: {
@@ -1523,7 +1525,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_lunar_t2",
                     "value": 17443.780316,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "away_earning_bonus", "value": 1.2, "text": "+20%"}]},
+                    "effects": [{"target": "earning_away_mult", "value": 1.2, "text": "+20%"}]},
                 {
                     "tier": 3,
                     "qualifier": "Eggsquisite",
@@ -1533,7 +1535,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_lunar_t3",
                     "value": 179119.241098,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "away_earning_bonus", "value": 1.3, "text": "+30%"}]},
+                    "effects": [{"target": "earning_away_mult", "value": 1.3, "text": "+30%"}]},
                 {
                     "tier": 4,
                     "qualifier": "Meggnificent",
@@ -1543,7 +1545,7 @@ const artifactMetadata: ArtifactMetadata = {
                     "id": "stone_lunar_t4",
                     "value": 1233387.70098,
                     "odds_multiplier": 0.1,
-                    "effects": [{"target": "away_earning_bonus", "value": 1.4, "text": "+40%"}]}
+                    "effects": [{"target": "earning_away_mult", "value": 1.4, "text": "+40%"}]}
             ]
         }
     },
@@ -1648,89 +1650,6 @@ const artifactMetadata: ArtifactMetadata = {
 };
 
 
-enum EffectType {
-    ADDITIVE,
-    MULTIPLICATIVE,
-    UNKNOWN
-};
-
-const effectMetadata: Map<string, { type: EffectType, text: string }> = new Map([
-    ["enlightenment_earning_bonus", { "type": EffectType.MULTIPLICATIVE, "text": "enlightenment egg value" }],
-    ["prophecy_egg_bonus"         , { "type": EffectType.ADDITIVE      , "text": "to Egg of Prophecy bonus" }],
-    ["team_laying_bonus"          , { "type": EffectType.ADDITIVE      , "text": "co-op teammates' egg laying rate" }],
-    ["team_earning_bonus"         , { "type": EffectType.ADDITIVE      , "text": "co-op teammates' earnings" }],
-    ["hold_to_hatch_bonus"        , { "type": EffectType.ADDITIVE      , "text": "hold to hatch rate" }],
-    ["boost_bonus"                , { "type": EffectType.MULTIPLICATIVE, "text": "boost boost" }],
-    ["laying_bonus"               , { "type": EffectType.MULTIPLICATIVE, "text": "egg laying rate" }],
-    ["soul_egg_collection_bonus"  , { "type": EffectType.MULTIPLICATIVE, "text": "Soul Egg collection rate" }],
-    ["internal_hatchery_bonus"    , { "type": EffectType.MULTIPLICATIVE, "text": "internal hatchery rate" }],
-    ["shipping_bonus"             , { "type": EffectType.MULTIPLICATIVE, "text": "shipping rate" }],
-    ["drone_cash_bonus"           , { "type": EffectType.MULTIPLICATIVE, "text": "chance of cash in gifts and drones" }],
-    ["drone_gold_bonus"           , { "type": EffectType.MULTIPLICATIVE, "text": "chance of gold in gifts and drones" }],
-    ["farm_value_bonus"           , { "type": EffectType.MULTIPLICATIVE, "text": "farm valuation" }],
-    ["drone_frequency_bonus"      , { "type": EffectType.MULTIPLICATIVE, "text": "drone frequency" }],
-    ["hab_capacity_bonus"         , { "type": EffectType.MULTIPLICATIVE, "text": "hab capacity" }],
-    ["egg_value_bonus"            , { "type": EffectType.MULTIPLICATIVE, "text": "egg value" }],
-    ["drone_reward_bonus"         , { "type": EffectType.MULTIPLICATIVE, "text": "drone rewards" }],
-    ["running_chicken_bonus"      , { "type": EffectType.ADDITIVE      , "text": "max running chicken bonus" }],
-    ["away_earning_bonus"         , { "type": EffectType.MULTIPLICATIVE, "text": "away earnings" }],
-    ["research_cost_bonus"        , { "type": EffectType.MULTIPLICATIVE, "text": "research cost" }],
-    ["enlightenment_effectiveness", { "type": EffectType.ADDITIVE      , "text": "effect of artifact on enlightenment" }],
-    ["boost_duration_bonus"       , { "type": EffectType.MULTIPLICATIVE, "text": "boost duration" }],
-    ["soul_egg_bonus"             , { "type": EffectType.ADDITIVE      , "text": "bonus per Soul Egg" }],
-]);
-
-
-export function getEffectDescription(key: string) {
-    return effectMetadata.get(key)?.text ?? "bonus";
-}
-
-export class EffectMap extends Map<string, number> {
-    constructor(...effects: EffectMap[]) {
-        super();
-        this.merge(...effects);
-    }
-    get(key: string): number {
-        if (!this.has(key)) {
-            const type: EffectType = effectMetadata.get(key)?.type ?? EffectType.UNKNOWN;
-
-            let defaultValue: number;
-            switch (type) {
-                case EffectType.ADDITIVE      : defaultValue = 0; break;
-                case EffectType.MULTIPLICATIVE: defaultValue = 1; break;
-                default:
-                    console.warn(`Unknown effect type for ${key}`);
-                    defaultValue = 0;
-                    break;
-            }
-            this.set(key, defaultValue);
-            return defaultValue;
-        }
-        return super.get(key)!;
-    }
-    update(key: string, value: number, amount: number = 1): this {
-        const type: EffectType = effectMetadata.get(key)?.type ?? EffectType.UNKNOWN;
-
-        let res = this.get(key);
-        switch (type) {
-            case EffectType.ADDITIVE      : res += value*amount; break;
-            case EffectType.MULTIPLICATIVE: res *= value**amount; break;
-            default:
-                console.warn(`update: Unknown effect type for ${key}, ignoring`);
-                break;
-        }
-        this.set(key, res);
-        return this;
-    }
-    merge(...effects: EffectMap[]): this {
-        for (const effect of effects) {
-            for (const [key, value] of effect.entries()) {
-                this.update(key, value);
-            }
-        }
-        return this;
-    }
-}
 
 /**
  * Return a unique string that can be used to sort items
@@ -1764,7 +1683,13 @@ export function getDescriptions(item: T.Item | null): [string, string][] {
         return [["", "Reload your EID"], ["", "Contact the dev if the problem persists"]];
     }
     for (const effect of effects) {
-        ret.push([effect.text ?? "unknown", effectMetadata.get(effect.target)?.["text"] ?? "bonus"]);
+        let desc: string;
+        switch (effect.target) {
+            case 'enlightenment_value': desc = "enlightenment egg value"; break;
+            case 'enlightenment_effectiveness': desc = "effect of artifact on enlightenment"; break;
+            default: desc = getEffectText(effect.target); break;
+        }
+        ret.push([effect.text, desc ]);
     }
     return ret;
 }
@@ -1792,22 +1717,34 @@ export function getSlotCount(artifact: T.Artifact): number {
  * If the item contains stones, compound their effects, unless recursive is set to false.
  * If targets is given, only read these effects
  */
-export function getEffects(item: T.Item | null, recursive: boolean = true, targets?: string[]): EffectMap {
-    if (!item) return new EffectMap();
+export function getEffects(item: T.Item | null,
+                           options?: {
+                               recursive?: boolean,
+                               targets?: string[],
+                           }): Effects {
+    if (!item) return new Effects();
+
+    const {
+        recursive = true,
+        targets,
+    } = options ?? {};
+
     const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     // @ts-ignore
     const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;;
-    if (!effects) return new EffectMap();
+    if (!effects) return new Effects();
 
-    let ret: EffectMap = new EffectMap();
+    const ret: Effects = new Effects();
     for (const { target, value } of effects) {
         if (targets && !targets.includes(target)) continue;
-        ret.update(target, value);
+        if (target === 'enlightenment_value') continue;
+        if (target === 'enlightenment_effectiveness') continue;
+        ret.apply(target, value);
     }
 
     if (recursive && item.category === T.ItemCategory.ARTIFACT) {
         const artifact = item as T.Artifact;
-        ret.merge(...artifact.stones.map(stone => getEffects(stone, recursive, targets)));
+        ret.merge(...artifact.stones.map(stone => getEffects(stone, options)));
     }
 
     return ret;
