@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { checkEID, checkSID } from '@/scripts/utils.ts';
 import { getUserData } from '@/scripts/api.ts';
@@ -54,23 +54,25 @@ const isLoadingEID = ref<boolean>(false);
 const errorMsg = ref<string>("");
 
 const itemCount = computed((): number => {
-  return userData.value?.items?.reduce((tot: number, cur: T.Item) => tot + (cur.quantity ??
-  1), 0) ?? 0;
+    return userData.value?.items?.reduce((tot: number, cur: T.Item) => tot + (cur.quantity ?? 1), 0) ?? 0;
 });
 
 onMounted(async () => {
     const queryEID = (new URLSearchParams(window.location.search)).get('eid');
     const storedEID = localStorage.getItem('player-eid');
 
+    let reload: boolean = (new URLSearchParams(window.location.search)).has('reload');
+
     if (queryEID && checkEID(queryEID)) {
         eid.value = queryEID;
+        reload ||= queryEID !== storedEID;
     } else if (storedEID && checkEID(storedEID)) {
         eid.value = storedEID;
     }
 
     const saved = localStorage.getItem('user-data');
     let loaded: T.UserData|null = null;
-    if (saved) {
+    if (!reload && saved) {
         try {
             loaded = JSON.parse(saved);
             if (loaded && loaded['date'])
@@ -86,7 +88,7 @@ onMounted(async () => {
         // User data found in localStorage, use it
         userData.value = loaded;
     } else if (checkEID(eid.value)) {
-        load(eid.value);
+        await load(eid.value);
     }
 });
 
@@ -96,31 +98,31 @@ async function load(eid: string) {
         throw new Error("Invalid EID format");
 
     if (isLoadingEID.value) return;
-    isLoadingEID.value = true;
-    errorMsg.value = "";
 
     console.log("Loading from EID", eid);
 
+    isLoadingEID.value = true;
+    errorMsg.value = "";
+
+
+    let loaded: T.UserData|null = null;
     try {
-        userData.value = await getUserData(eid);
-        isLoadingEID.value = false;
+        loaded = await getUserData(eid);
     } catch (e) {
         console.error("Error loading user data:", e);
         errorMsg.value = String(e);
-        isLoadingEID.value = false;
-        return
     }
 
-    if (!checkSID(eid)) {
-        localStorage.setItem('player-eid', eid);
+    isLoadingEID.value = false;
+
+    if (loaded) {
+        userData.value = loaded;
+        if (!checkSID(eid)) {
+            localStorage.setItem('player-eid', eid);
+            localStorage.setItem('user-data', JSON.stringify(loaded));
+        }
     }
 }
-
-watch(userData, () => {
-    if (!userData.value) return;
-    if (userData.value.ephemeral) return;
-    localStorage.setItem('user-data', JSON.stringify(userData.value));
-});
 
 </script>
 

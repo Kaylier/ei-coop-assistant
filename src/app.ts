@@ -56,7 +56,10 @@ const app = createApp(App);
 
 app.config.errorHandler = (err) => {
     console.error('Global error:', err);
-    router.push('/error');
+    router.push({
+        name: 'error',
+        // @ts-expect-error "err is of type unknown, we duck-type to try getting a code and message"
+        query: { code: err.code, message: err.message ?? String(err), }});
     throw err;
 };
 
@@ -143,6 +146,21 @@ const routes = [
 
 const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes });
 
+router.beforeEach((to, from) => {
+    let query = from.query;
+
+    // If we’re coming from the /error page, omit message and code parameters
+    if (from.path === '/error') {
+        const { message, code, ...rest } = query;
+        query = rest;
+    }
+
+    // Pass query parameters when destination doesn't have any
+    if (Object.keys(query).length > 0 && Object.keys(to.query).length === 0) {
+        return { ...to, query: { ...query } };
+    }
+});
+
 router.afterEach((to) => {
     nextTick(() => {
         document.title = (to.meta.title + " — " || "") + "Coop Assistant";
@@ -155,7 +173,12 @@ router.isReady().then(() => {
 
 router.onError((err) => {
     console.error('Router error:', err);
-    router.push('/error');
+    router.push({
+        name: 'error',
+        query: {
+            code: err.code ?? 500,
+            message: err.message ?? 'Navigation failure',
+        }});
     throw err;
 });
 
