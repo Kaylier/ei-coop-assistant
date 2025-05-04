@@ -160,6 +160,7 @@ import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseNumber, formatNumber, formatTime } from '@/scripts/utils.ts';
 import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
+import { Effects } from '@/scripts/effects.ts';
 import { boostSets, searchDiliSet, searchIHRSets, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
@@ -264,37 +265,43 @@ function changePin(id: string, checked: boolean) {
 
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
-const diliBonus = computed(() => setDili.value?.effects.get('boost_duration_mult') ?? 1);
-const baseIHR = computed(() => (userData.value?.baseIHRate ?? 7440*4)*
-                               (ihcSetting.value ? userData.value?.awayIHBonus ?? 3 : 1));
-const baseHabCapacity = computed(() => 11340000000); // TODO: read from userData
+const diliBonus = computed(() => setDili.value?.effects.boost_duration_mult ?? 1);
+const baseEffects = computed(() => userData.value?.maxedEffects ?? Effects.initial);
 const boostSetCardStats = computed(() => {
     const ret = [];
     for (const set of setIHR.value) {
-        const ihr = baseIHR.value*set.effects.get('ihr_mult')*set.effects.get('boost_mult');
-        const habCapacity = baseHabCapacity.value*set.effects.get('hab_capacity_mult');
-        ret.push({ ihr, habCapacity });
+        const effects = new Effects(baseEffects.value, set.effects);
+        ret.push({
+            ihr: (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult,
+            habCapacity: effects.hab_capacity,
+        });
     }
     if (ret.length === 0) {
-        ret.push({ ihr: baseIHR.value, habCapacity: baseHabCapacity.value });
+        ret.push({
+            ihr: (ihcSetting.value ? baseEffects.value.ihr_away : baseEffects.value.ihr) * baseEffects.value.boost_mult,
+            habCapacity: baseEffects.value.hab_capacity
+        });
     }
     return ret;
 });
 
 const IHRMilestones = computed(() => {
-    const ihrbonus = (setIHR.value?.at(0)?.effects.get('ihr_mult') ?? 1)*
-                     (setIHR.value?.at(0)?.effects.get('boost_mult') ?? 1);
+    const effects = new Effects(baseEffects.value);
+    if (setIHR.value?.at(0)) effects.merge(setIHR.value.at(0)!.effects);
+    const ihrbonus = (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
-        { population: baseIHR.value*ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
-        { population: baseIHR.value*ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
+        { population: ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
+        { population: ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
     ];
+
 });
 const slowIHRMilestones = computed(() => {
-    const ihrbonus = (setSlow.value?.effects.get('ihr_mult') ?? 1)*
-                     (setSlow.value?.effects.get('boost_mult') ?? 1);
+    const effects = new Effects(baseEffects.value)
+    if (setSlow.value) effects.merge(setSlow.value.effects);
+    const ihrbonus = (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
-        { population: baseIHR.value*ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
-        { population: baseIHR.value*ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
+        { population: ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
+        { population: ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
     ];
 });
 
@@ -338,6 +345,7 @@ function updateSet() {
 
         setDili.value = searchDiliSet(userData.value?.items ?? [],
                                       maxSlot,
+                                      userData.value?.maxedEffects ?? Effects.initial,
                                       false, // include deflector
                                       false, // include ship
                                       reslottingSetting.value,
@@ -350,6 +358,7 @@ function updateSet() {
                              allowedGussetSetting.value;
         setIHR.value = searchIHRSets(userData.value?.items ?? [],
                                      maxSlot,
+                                     userData.value?.maxedEffects ?? Effects.initial,
                                      includesSetting.value.includes('Deflector'),
                                      swappingSetting.value === 'Deflector',
                                      includesSetting.value.includes('SiaB'),
@@ -364,6 +373,7 @@ function updateSet() {
 
         setSlow.value = searchSlowIHRSet(userData.value?.items ?? [],
                                          maxSlot,
+                                         userData.value?.maxedEffects ?? Effects.initial,
                                          includesSetting.value.includes('Deflector'),
                                          includesSetting.value.includes('SiaB'),
                                          reslottingSetting.value,

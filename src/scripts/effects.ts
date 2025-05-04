@@ -342,7 +342,7 @@ const effectMetadata = {
      *  - Contract Modifiers
      *  - Event
      */
-    research_cost_mult    : { type: 1, init: 1, text: "research cost" },
+    research_cost_mult    : { type: 1, init: 1, minimize: true, text: "research cost" },
 
     /** Vehicle Cost
      *
@@ -354,7 +354,7 @@ const effectMetadata = {
      *  - Contract Modifiers
      *  - Event
      */
-    vehicle_cost_mult     : { type: 1, init: 1, text: "vehicle cost" },
+    vehicle_cost_mult     : { type: 1, init: 1, minimize: true, text: "vehicle cost" },
 
     /** Hab Cost
      *
@@ -366,7 +366,7 @@ const effectMetadata = {
      *  - Contract Modifiers
      *  - Event
      */
-    hab_cost_mult         : { type: 1, init: 1, text: "hab cost" },
+    hab_cost_mult         : { type: 1, init: 1, minimize: true, text: "hab cost" },
 
     /** Team Earning Bonus
      *
@@ -547,6 +547,15 @@ export class Effects {
         if (v === effectMetadata[key].type) this.values.delete(key);
         else                                this.values.set(key, v);
         return this;
+    }
+
+    /**
+     * Return a score for this effect, higher scores are prefered
+     * This must be used when the effect value is used in a generic optimization context, to make sure
+     * decreasing-value effects like cost reduction are optimized correctly
+     */
+    getScore<K extends EffectKey>(key: K): number {
+        return "minimize" in effectMetadata[key] && effectMetadata[key].minimize ? -this.get(key) : this.get(key);
     }
 
     /**

@@ -160,6 +160,7 @@ import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
+import { Effects } from '@/scripts/effects.ts';
 import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
 
@@ -175,11 +176,6 @@ type EntryType = {
     higherThreshold: number,
     higherRate: number,
 };
-
-// These defaults are only used when no user data is loaded, or when it failed to calculate the rate from user data
-// I'm using the value for max ER and CR without colleggtibles
-const DEFAULT_BASE_LAYING_RATE = 1047816000000;
-const DEFAULT_BASE_SHIPPING_RATE = 1985572814941.4062;
 
 
 // Settings variables
@@ -246,10 +242,8 @@ const allowedGussetOptions = computed(() => {
 // State variables
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
-const baseLayingRate = computed<number>(() =>
-    baseLayingRateSetting.value ?? userData.value?.baseLayingRate ?? DEFAULT_BASE_LAYING_RATE);
-const baseShippingRate = computed<number>(() =>
-    baseShippingRateSetting.value ?? userData.value?.baseShippingRate ?? DEFAULT_BASE_SHIPPING_RATE);
+const baseLayingRate = computed<number>(() => (userData.value?.maxedEffects ?? Effects.initial).max_laying_rate);
+const baseShippingRate = computed<number>(() =>(userData.value?.maxedEffects ?? Effects.initial).shipping_rate);
 
 
 // Data variables

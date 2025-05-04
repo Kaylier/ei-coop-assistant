@@ -97,7 +97,7 @@ export function prepareItems(items: T.Item[],
 
         // Remove dominated artifacts
         const paretoList: AnnotatedArtifact[][] = extractParetoFrontier(artifactList.map(x => [[
-            x.stoneSlot, ...effectList.map(eff => x.effects.get(eff))
+            x.stoneSlot, ...effectList.map(eff => x.effects.getScore(eff))
         ], x]));
 
         // flatten equivalence groups and mutualize effects
@@ -131,12 +131,15 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                               optionalFamilies?: T.ArtifactFamily[],
                               stoneFamilies?: T.StoneFamily[],
                               minimumScore?: number[],
+                              userEffects?: Effects,
                           }): T.ArtifactSet | null {
     let { requiredFamilies, optionalFamilies, stoneFamilies } = options ?? {};
-    const { minimumScore } = options ?? {};
+    const { minimumScore, userEffects } = options ?? {};
 
     function itemCompare<A extends { effects: Effects }>(a: A, b: A) {
-        return arrayCompare(scoreFn(a.effects), scoreFn(b.effects));
+        const aeff = new Effects(userEffects ?? Effects.initial, a.effects);
+        const beff = new Effects(userEffects ?? Effects.initial, b.effects);
+        return arrayCompare(scoreFn(aeff), scoreFn(beff));
     }
 
     // Sort candidate artifacts, most promising first
@@ -172,12 +175,11 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
     let solutions: { artifacts: AnnotatedArtifact[], stones: AnnotatedStone[] }[] = []
     let bestScore: number[] = minimumScore ?? [];
 
-
-    // Recursion on required families
+    // Recursion on families
     function rec(current: AnnotatedArtifact[] = [], idx: number = 0): number {
         let callCount = 1;
 
-        const baseEffects = new Effects(...current.map(x => x.effects));
+        const baseEffects = new Effects(userEffects ?? Effects.initial, ...current.map(x => x.effects));
         const stoneCount = current.reduce((tot,cur) => tot + cur.stoneSlot, 0);
 
         // evaluate current (only if all required families have been added)

@@ -33,7 +33,7 @@ import { computed } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { formatNumber } from '@/scripts/utils.ts';
 import { getImageSource, getEffects } from '@/scripts/artifacts.ts';
-import { getEffectText } from '@/scripts/effects.ts';
+import { Effects, getEffectText } from '@/scripts/effects.ts';
 
 type Entry = {
     img?: string,
@@ -60,120 +60,113 @@ const props = defineProps<{
 const entries = computed(() => {
     const ret = new Map<string, Entry>();
 
-    const userEB = props.userData?.maxedEffects.eb ?? 1;
-    //const maxedEffects = new Effects(props.userData.maxedEffects, props.set.effects);
+    const nakedEff = props.userData?.maxedEffects ?? Effects.initial;
+    const clothedEff = new Effects(nakedEff, props.set.effects);
+
+    const newEB = Math.max(clothedEff.eb, props.mirror ?? 1);
 
     ret.set('eb', {
-        img: props.mirror ? "/img/icons/mirror.png" : undefined,
-        valueUpd: `×${formatNumber(props.mirror ?? ebMultiplier.value)}`,
+        img: props.mirror && props.mirror > clothedEff.eb ? "/img/icons/mirror.png" : undefined,
+        valueUpd: `×${formatNumber(newEB/nakedEff.eb)}`,
         text: "EB",
-        valueOld: `${formatNumber(userEB*100)}%`,
-        valueNew: `${formatNumber(userEB*(props.mirror ?? ebMultiplier.value)*100)}%`,
-        relevant: (props.mirror ?? ebMultiplier.value) >= 2,
+        valueOld: `${formatNumber(nakedEff.eb*100)}%`,
+        valueNew: `${formatNumber(newEB*100)}%`,
+        relevant: (newEB/nakedEff.eb) >= 2,
     });
+
+    const earnings_mrcb = clothedEff.laying_rate      / nakedEff.laying_rate
+                        * clothedEff.egg_value        / nakedEff.egg_value
+                        * clothedEff.earning_mult     / nakedEff.earning_mult
+                        * clothedEff.earning_mrcb_mult
+                        * clothedEff.eb               / nakedEff.eb;
+    const earnings_away = clothedEff.laying_rate      / nakedEff.laying_rate
+                        * clothedEff.egg_value        / nakedEff.egg_value
+                        * clothedEff.earning_mult     / nakedEff.earning_mult
+                        * clothedEff.earning_away_mult
+                        * clothedEff.eb               / nakedEff.eb;
 
     ret.set('rcb', {
         text: "earnings (with rcb)",
-        valueUpd: `×${formatNumber(earningMultiplier.value)}`,
-        relevant: earningMultiplier.value > 1080 && earningMultiplier.value > awayEarningMultiplier.value,
-    });
-
-    ret.set('sercb', {
-        text: "SE gains (with rcb)",
-        valueUpd: `×${formatNumber(soulEggMultiplier.value)}`,
-        relevant: soulEggMultiplier.value > 6 && soulEggMultiplier.value > awaySoulEggMultiplier.value,
+        valueUpd: `×${formatNumber(earnings_mrcb)}`,
+        relevant: earnings_mrcb > 1080 && earnings_mrcb > earnings_away,
     });
 
     ret.set('away', {
         text: "earnings (away)",
-        valueUpd: `×${formatNumber(awayEarningMultiplier.value)}`,
-        relevant: awayEarningMultiplier.value > 1080 && awayEarningMultiplier.value > earningMultiplier.value,
+        valueUpd: `×${formatNumber(earnings_away)}`,
+        relevant: earnings_away > 1080 && earnings_away > earnings_mrcb,
+    });
+
+    const soulegg_mrcb = Math.pow(earnings_mrcb * clothedEff.prestige_earning_mult / nakedEff.prestige_earning_mult,
+                                  0.21);
+    const soulegg_away = Math.pow(earnings_away * clothedEff.prestige_earning_mult / nakedEff.prestige_earning_mult,
+                                  0.21);
+    ret.set('sercb', {
+        text: "SE gains (with rcb)",
+        valueUpd: `×${formatNumber(soulegg_mrcb)}`,
+        relevant: soulegg_mrcb > 6 && soulegg_mrcb > soulegg_away,
     });
 
     ret.set('seaway', {
         text: "SE gains (away)",
-        valueUpd: `×${formatNumber(awaySoulEggMultiplier.value)}`,
-        relevant: awaySoulEggMultiplier.value > 6 && awaySoulEggMultiplier.value > soulEggMultiplier.value,
+        valueUpd: `×${formatNumber(soulegg_away)}`,
+        relevant: soulegg_away > 6 && soulegg_away > soulegg_mrcb,
     });
 
+    const externalCubeMult = props.externalCube ? getEffects(props.externalCube).research_cost_mult : 1;
+    const research_cost = clothedEff.research_cost_mult / nakedEff.research_cost_mult;
+
     ret.set('cr', {
-        img: props.externalCube && externalCubeMult.value < props.set.effects.get('research_cost_mult') ?
-        getImageSource(props.externalCube): undefined,
+        img: props.externalCube && externalCubeMult < research_cost ? getImageSource(props.externalCube) : undefined,
         text: getEffectText('research_cost_mult'),
-        valueUpd: `-${formatNumber((1 - Math.min(externalCubeMult.value, props.set.effects.get('research_cost_mult')))*100)}%`,
-        relevant: externalCubeMult.value < 1 || props.set.effects.get('research_cost_mult') < 1,
+        valueUpd: `-${formatNumber((1 - Math.min(externalCubeMult, research_cost))*100)}%`,
+        relevant: externalCubeMult < 1 || research_cost < 1,
     });
+
+    const boost_duration = clothedEff.boost_duration_mult / nakedEff.boost_duration_mult;
 
     ret.set('dili', {
         text: getEffectText('boost_duration_mult'),
-        valueUpd: `×${formatNumber(props.set.effects.get('boost_duration_mult'))}`,
-        relevant: props.set.effects.get('boost_duration_mult') > 1,
+        valueUpd: `×${formatNumber(boost_duration)}`,
+        relevant: boost_duration > 1,
     });
+
+    const ihr = clothedEff.ihr / nakedEff.ihr * clothedEff.boost_mult / nakedEff.boost_mult;
 
     ret.set('ihr', {
         text: getEffectText('ihr_mult'),
         valueUpd:
-        `×${formatNumber(props.set.effects.get('ihr_mult')*props.set.effects.get('boost_mult'))}`,
-        relevant: props.set.effects.get('ihr_mult') > 1,
+        `×${formatNumber(ihr)}`,
+        relevant: ihr > 1,
     });
+
+    const hab_capacity = clothedEff.hab_capacity / nakedEff.hab_capacity;
 
     ret.set('hab', {
         text: getEffectText('hab_capacity_mult'),
-        valueUpd: `×${formatNumber(props.set.effects.get('hab_capacity_mult'))}`,
-        // TODO: get base hab capacity from userData instead
-        valueNew: formatNumber(11340000000*props.set.effects.get('hab_capacity_mult')),
-        relevant: props.set.effects.get('hab_capacity_mult') > 1,
+        valueUpd: `×${formatNumber(hab_capacity)}`,
+        valueNew: formatNumber(clothedEff.hab_capacity),
+        relevant: hab_capacity > 1,
     });
+
+    const laying_rate = clothedEff.laying_rate / nakedEff.laying_rate;
+    const shipping_rate = clothedEff.shipping_rate / nakedEff.shipping_rate;
 
     ret.set('lay', {
         text: getEffectText('laying_rate'),
-        valueUpd: `×${formatNumber(props.set.effects.get('laying_rate'))}`,
-        relevant: props.set.effects.get('laying_rate') > 1,
+        valueUpd: `×${formatNumber(laying_rate)}`,
+        relevant: laying_rate > 1,
     });
 
     ret.set('ship', {
         text: getEffectText('shipping_mult'),
-        valueUpd: `×${formatNumber(props.set.effects.get('shipping_mult'))}`,
-        relevant: props.set.effects.get('shipping_mult') > 1,
+        valueUpd: `×${formatNumber(shipping_rate)}`,
+        relevant: shipping_rate > 1,
     });
 
     const stats = props.stats ?? [];
     const substats = (props.substats ?? [...ret.keys()]).filter(x => !stats.includes(x) && ret.get(x)!.relevant);
     return [...stats, ...substats].filter(x => ret.has(x)).map(x => ret.get(x)!);
-});
-
-const ebMultiplier = computed(() => {
-    const SEBonus = props.set.effects.get('soul_egg_bonus');
-    const baseSEBonus = props.userData?.soulEggBonus ?? 0.1;
-    const PEBonus = props.set.effects.get('prophecy_egg_bonus');
-    const basePEBonus = props.userData?.prophecyEggBonus ?? 1.05;
-    const PECount = props.userData?.prophecyEggs ?? 0;
-    return (1 + SEBonus/baseSEBonus)*Math.pow(1 + PEBonus/basePEBonus, PECount);
-});
-
-const earningMultiplier = computed(() => {
-    const baseRCB = props.userData?.mrcbEarningBonus ?? 5;
-    return props.set.effects.get('laying_rate')
-         * props.set.effects.get('egg_value_mult')
-         * (baseRCB + props.set.effects.get('earning_mrcb_mult'));
-});
-
-const awayEarningMultiplier = computed(() => {
-    return props.set.effects.get('laying_rate')
-         * props.set.effects.get('egg_value_mult')
-         * props.set.effects.get('earning_away_mult');
-});
-
-const externalCubeMult = computed(() => {
-    return props.externalCube ? getEffects(props.externalCube).get('research_cost_mult') : 1;
-});
-
-const soulEggMultiplier = computed(() => {
-    return Math.pow(ebMultiplier.value*earningMultiplier.value*props.set.effects.get('prestige_earning_mult'), 0.21);
-});
-
-const awaySoulEggMultiplier = computed(() => {
-    return Math.pow(ebMultiplier.value*awayEarningMultiplier.value*props.set.effects.get('prestige_earning_mult'), 0.21);
 });
 
 </script>

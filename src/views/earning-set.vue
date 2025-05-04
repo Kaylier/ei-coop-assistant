@@ -101,12 +101,12 @@
             :userData="userData"
             :set="optimalMirrorSet"
             :externalCube="swapCubeSetting.value ? optimalCube : null"
-            :mirror="mirrorMult"
+            :mirror="mirrorSetting.value"
             :stats="['eb', onlineSetting.value ? 'rcb' : 'away', 'cr']"
             :substats="['rcb', 'away', 'ihr', 'hab', 'lay', 'ship']"
             >
             <div v-html="graphTitleHtml"/>
-            <research-chart size="80%" :data="generateChartData(optimalMirrorSet, mirrorMult)" />
+            <research-chart size="80%" :data="generateChartData(optimalMirrorSet, true)" />
         </artifact-set-card>
     </section>
 </template>
@@ -114,20 +114,22 @@
 <style scoped src="@/styles/earning-set.css"></style>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch } from 'vue';
+import { ref, shallowRef, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { clamp, isclose, parseNumber, formatNumber } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
+import { Effects } from '@/scripts/effects.ts';
 
 
 const DEFAULT_EGG_VALUE = 0.05;
 const DEFAULT_MISC_VALUE = 4;
-const DEFAULT_MIRROR_VALUE = 1e24;
+const DEFAULT_MIRROR_VALUE = 1e22;
 
 const MIN_EGG_VALUE = 0.01; // default base for showing egg value bonus in progress circle
 const MIN_MISC_BONUS = 1; // default base for showing misc bonuses in progress circle
-const CR_TARGET_CNST = 3.340e45; // precomputed time constant for max shipping research
+const CR_TARGET_CNST = 1.268e45*3.751861484591138e+22; // precomputed time constant for max shipping research
+//const CR_TARGET_CNST = 3.340e45; // precomputed time constant for max shipping research
 
 
 const graphTitleHtml = `
@@ -169,8 +171,8 @@ const mirrorSetting = createTextInputSetting<number>({
     localStorageKey: 'earning-mirror',
     queryParamKey: 'mirror',
     defaultValue: DEFAULT_MIRROR_VALUE,
-    parser: (s: string) => s ? parseNumber(s) : DEFAULT_MIRROR_VALUE,
-    formatter: formatNumber,
+    parser: (s: string) => s ? parseNumber(s)/100 : DEFAULT_MIRROR_VALUE,
+    formatter: (x: number) => formatNumber(x*100),
 });
 const miscBonusSetting = createTextInputSetting<number>({
     localStorageKey: 'earning-misc-bonus',
@@ -182,21 +184,15 @@ const miscBonusSetting = createTextInputSetting<number>({
 
 
 
-// State variables
 const errorMessage = ref<string>("");
-const userEB = computed(() => 1 + (userData.value?.soulEggBonus ?? 0.1)*(userData.value?.soulEggs ?? 0)*
-                              Math.pow(userData.value?.prophecyEggBonus ?? 1.05, userData.value?.prophecyEggs ?? 0));
-const mirrorMult = computed(() => Math.max(1, mirrorSetting.value/100/userEB.value));
 
 
-
-// Data variables
 const userData = shallowRef<T.UserData>(); // loaded via load-eid component
 const optimalEBSet = shallowRef<T.ArtifactSet|null>(null);
 const optimalEarningSet = shallowRef<T.ArtifactSet|null>(null);
 const optimalMirrorSet = shallowRef<T.ArtifactSet|null>(null);
 const optimalCube = shallowRef<T.Artifact|null>(null);
-const optimalCubeBonus = ref<number>(1);
+const swappedCubeMult = ref<number>(1);
 const mergeEBEarningSets = ref<boolean>(false);
 
 
@@ -215,19 +211,12 @@ function updateSet() {
     console.log("Update sets");
 
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
-    const baseBonuses = {
-        PECount    : userData.value?.prophecyEggs ?? 0,
-        SECount    : userData.value?.soulEggs ?? 0,
-        basePEBonus: userData.value?.prophecyEggBonus ?? 1.05,
-        baseSEBonus: userData.value?.soulEggBonus ?? 0.1,
-        baseRCBonus: userData.value?.mrcbEarningBonus ?? 5,
-    };
 
     try {
         errorMessage.value = "";
         optimalEBSet.value = searchEBSet(userData.value?.items ?? [],
                                          maxSlot,
-                                         baseBonuses,
+                                         userData.value?.maxedEffects ?? Effects.initial,
                                          !swapCubeSetting.value,
                                          false, // countMonocle
                                          onlineSetting.value,
@@ -235,7 +224,7 @@ function updateSet() {
         console.log("EB set:", optimalEBSet.value);
         optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
                                                    maxSlot,
-                                                   baseBonuses,
+                                                   userData.value?.maxedEffects ?? Effects.initial,
                                                    !swapCubeSetting.value,
                                                    false, // countMonocle
                                                    onlineSetting.value,
@@ -243,7 +232,7 @@ function updateSet() {
         console.log("Earning set:", optimalEarningSet.value);
         optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
                                                  maxSlot,
-                                                 baseBonuses,
+                                                 userData.value?.maxedEffects ?? Effects.initial,
                                                  !swapCubeSetting.value,
                                                  false, // countMonocle
                                                  onlineSetting.value,
@@ -252,7 +241,7 @@ function updateSet() {
         const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
         console.log("Cube:", cubeBonus, cube);
         optimalCube.value = cube;
-        optimalCubeBonus.value = cubeBonus;
+        swappedCubeMult.value = cubeBonus*(userData.value?.baseEffects.research_cost_mult ?? 1);
 
         mergeEBEarningSets.value = isclose(getEBMultiplier(optimalEBSet.value), getEBMultiplier(optimalEarningSet.value));
 
@@ -262,7 +251,7 @@ function updateSet() {
         optimalEarningSet.value = null;
         optimalMirrorSet.value = null;
         optimalCube.value = null;
-        optimalCubeBonus.value = 1;
+        swappedCubeMult.value = userData.value?.baseEffects.research_cost_mult ?? 1;
         mergeEBEarningSets.value = false;
         return;
     }
@@ -270,38 +259,40 @@ function updateSet() {
 
 function getEBMultiplier(set: T.ArtifactSet|null): number {
     if (!set) return 1;
-    const SEBonus: number = set.effects.get('soul_egg_bonus');
-    const baseSEBonus: number = userData.value?.soulEggBonus ?? 0.1;
-    const PEBonus: number = set.effects.get('prophecy_egg_bonus');
-    const basePEBonus: number = userData.value?.prophecyEggBonus ?? 1.05;
-    const PECount: number = userData.value?.prophecyEggs ?? 0;
-    return (1 + SEBonus/baseSEBonus)*Math.pow(1 + PEBonus/basePEBonus, PECount);
+    const userEffects = userData.value?.maxedEffects ?? Effects.initial;
+    return new Effects(userEffects, set.effects).eb/userEffects.eb;
 }
 
-function generateChartData(set: T.ArtifactSet, mirrorMult?: number) {
-    let artifactBonus: number = set.effects.get('egg_value_mult')*set.effects.get('laying_rate');
-    if (onlineSetting.value) {
-        artifactBonus *= ((userData.value?.mrcbEarningBonus ?? 5) + set.effects.get('earning_mrcb_mult'));
-    } else {
-        artifactBonus *= set.effects.get('earning_away_mult');
-    }
-    if (!mirrorMult) {
-        artifactBonus *= getEBMultiplier(set);
-    }
-    if (swapCubeSetting.value) {
-        artifactBonus /= optimalCubeBonus.value;
-    } else {
-        artifactBonus /= set.effects.get('research_cost_mult');
-    }
+function generateChartData(set: T.ArtifactSet, mirroring: boolean = false) {
+    const userEffects = userData.value?.maxedEffects ?? Effects.initial;
+    const combEffects = new Effects(userEffects, set.effects);
 
+    // Rate from naked user with initial farm, ×60 to get it in /min
+    let userRate: number = 60;
+    userRate *= userEffects.laying_rate;
+    userRate *= userEffects.egg_value_mult;
+    userRate *= userEffects.earning_mult;
+    userRate *= onlineSetting.value ? userEffects.earning_mrcb_mult : userEffects.earning_away_mult;
+    userRate *= userEffects.eb;
+    userRate /= userEffects.research_cost_mult;
 
-    let min = (userData.value?.baseEarningRate ?? 2/60)*60; // convert a rate from /s to /min
-    if (!onlineSetting.value) min *= userData.value?.awayEarningBonus ?? 1;
-    const max = CR_TARGET_CNST;
+    // Rate from clothed user with initial farm, ×60 to get it in /min
+    let combRate: number = 60;
+    combRate *= combEffects.laying_rate;
+    combRate *= combEffects.egg_value_mult;
+    combRate *= combEffects.earning_mult;
+    combRate *= onlineSetting.value ? combEffects.earning_mrcb_mult : combEffects.earning_away_mult;
+    combRate *= combEffects.eb;
+    combRate /= swapCubeSetting.value ? swappedCubeMult.value : combEffects.research_cost_mult;
 
+    // Mirror multiplier, from user clothed EB
+    const mirrorMult = mirroring ? Math.max(1, mirrorSetting.value/combEffects.eb) : 1;
 
-    mirrorMult = mirrorMult ?? 1;
-    let missing = max/(min * eggValueSetting.value * miscBonusSetting.value * artifactBonus * mirrorMult);
+    let missing = CR_TARGET_CNST;
+    missing /= eggValueSetting.value;
+    missing /= miscBonusSetting.value;
+    missing /= combRate;
+    missing /= mirrorMult;
 
     // Evaluate time and population required (heuristic formula, we need time*population ~= missing)
     const time = clamp(Math.round(Math.log(missing/(onlineSetting.value ? 4539993 : 453999))), 1, 10);
@@ -336,9 +327,9 @@ function generateChartData(set: T.ArtifactSet, mirrorMult?: number) {
                 value: Math.log(Math.max(miscBonusSetting.value/MIN_MISC_BONUS, 1)),
             }, {
                 label: "Artifacts",
-                valueLabel: "×"+formatNumber(artifactBonus),
+                valueLabel: "×"+formatNumber(combRate/userRate),
                 color: "#226f7e",
-                value: Math.log(artifactBonus),
+                value: Math.log(combRate/userRate),
             }, {
                 label: "Mirror",
                 valueLabel: "×"+formatNumber(mirrorMult),

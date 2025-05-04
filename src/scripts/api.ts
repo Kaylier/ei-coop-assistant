@@ -618,10 +618,13 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<any, number> {
 export async function getSandboxLink(artifacts: T.Artifact[],
                                      userData?: T.UserData,
                                      deflectorBonus: number = 0,
+                                     enlightenment: boolean = false,
                                     ) {
     const proto = await protobuf.parse(sandboxProto).root;
     const protoBuilds = proto.lookupType('Builds')
     const protoArtifactName = proto.lookupEnum('ArtifactSpec.Name');
+
+    const userEffects = userData?.maxedEffects ?? Effects.initial;
 
     const stoneMap = {
         [T.StoneFamily.PROPHECY_STONE]: protoArtifactName.values.PROPHECY_STONE,
@@ -662,13 +665,13 @@ export async function getSandboxLink(artifacts: T.Artifact[],
     const payload = {
         builds: [{ artifacts: [] as any[] }],
         config: {
-            prophecyEggs: userData?.prophecyEggs ?? 1,
-            soulEggs: userData?.soulEggs ?? 250,
-            soulEggsInput: formatNumber(userData?.soulEggs ?? 250, 'en-us'),
-            isEnlightenment: false,
-            missingSoulFood: Math.round(150 - (userData?.soulEggBonus ?? 1.5)*100),
-            missingProphecyBonus: Math.round(110 - (userData?.prophecyEggBonus ?? 1.1)*100),
-            missingEpicMultiplier: Math.round(270 - (userData?.mrcbEarningBonus ?? 540)/2),
+            prophecyEggs: userEffects.prophecy_eggs,
+            soulEggs: userEffects.soul_eggs,
+            soulEggsInput: formatNumber(userEffects.soul_eggs, 'en-us'),
+            isEnlightenment: enlightenment,
+            missingSoulFood: Math.round(150 - userEffects.soul_egg_bonus*100),
+            missingProphecyBonus: Math.round(110 - userEffects.prophecy_egg_bonus*100),
+            missingEpicMultiplier: Math.round(270 - userEffects.earning_mrcb_mult/2),
             birdFeedActive: false,
             tachyonPrismActive: false,
             soulBeaconActive: false,

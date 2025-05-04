@@ -46,8 +46,8 @@ export function getOptimalGussets(items: T.Item[], includeStones: boolean = true
         const effects = getEffects(item, { recursive: includeStones });
 
         gussets.push([[
-            effects.get('laying_rate')*effects.get('hab_capacity_mult'),
-            effects.get('shipping_mult')],
+            effects.laying_rate*effects.hab_capacity_mult,
+            effects.shipping_mult],
             `artifact-gusset-${item.tier}-${item.rarity}` as T.AllowedGusset]);
     });
 
@@ -225,13 +225,13 @@ export function computeOptimalSetsWithReslotting(items: T.Item[],
     const tachyonBonus: number[] = [1];
     cumul = 1;
     for (const stone of tachyonQueue) {
-        cumul *= getEffects(stone).get('laying_rate');
+        cumul *= getEffects(stone).laying_rate;
         tachyonBonus.push(cumul);
     }
     const quantumBonus: number[] = [1];
     cumul = 1;
     for (const stone of quantumQueue) {
-        cumul *= getEffects(stone).get('shipping_mult');
+        cumul *= getEffects(stone).shipping_mult;
         quantumBonus.push(cumul);
     }
 
@@ -474,10 +474,10 @@ function getArtifacts(items: T.Item[], includeStones: boolean = true): Map<T.Art
 
         const annotatedArtifact: AnnotatedArtifact = {
             artifact,
-            layingBonus: effects.get('laying_rate'),
-            habCapacityBonus: effects.get('hab_capacity_mult'),
-            shippingBonus: effects.get('shipping_mult'),
-            deflectorBonus: effects.get('team_laying_bonus'),
+            layingBonus: effects.laying_rate,
+            habCapacityBonus: effects.hab_capacity_mult,
+            shippingBonus: effects.shipping_mult,
+            deflectorBonus: effects.team_laying_bonus,
             stoneSlotAmount: artifact.stones?.length ?? 0,
         };
 
