@@ -467,29 +467,9 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const baseEffects = new Effects(Effects.initial, userEffects);
     const maxedEffects = new Effects(baseEffects, farmEffects);
 
-    // TODO: remove this after transition is done
-    console.log("base effects", baseEffects);
-    console.log("maxed effects", maxedEffects);
-    const prophecyEggs = maxedEffects.prophecy_eggs;
-    const soulEggs = maxedEffects.soul_eggs;
-    const baseLayingRate = maxedEffects.laying_rate * maxedEffects.hab_capacity;
-    const baseShippingRate = maxedEffects.shipping_rate;
-    const baseIHRate = maxedEffects.ihr;
-    const awayIHBonus = maxedEffects.ihr_away_mult;
-    const mrcbEarningBonus = maxedEffects.earning_mrcb_mult;
-    const baseEarningRate = baseEffects.laying_rate * baseEffects.earning_mult * baseEffects.eb / baseEffects.research_cost_mult;
-    const awayEarningBonus = baseEffects.earning_away_mult;
-    const prophecyEggBonus = baseEffects.prophecy_egg_bonus;
-    const soulEggBonus = baseEffects.soul_egg_bonus;
-    // TODO
-
     return {
         items, sets,
-        proPermit, prophecyEggs, soulEggs,
-        baseLayingRate, baseShippingRate,
-        baseIHRate, awayIHBonus,
-        baseEarningRate, awayEarningBonus, mrcbEarningBonus,
-        prophecyEggBonus, soulEggBonus,
+        proPermit,
         baseEffects, maxedEffects,
         date: new Date(backup.approxTime*1000),
         ephemeral: checkSID(eid),
