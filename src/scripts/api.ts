@@ -597,9 +597,13 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<any, number> {
  */
 export async function getSandboxLink(artifacts: T.Artifact[],
                                      userData?: T.UserData,
-                                     deflectorBonus: number = 0,
-                                     enlightenment: boolean = false,
-                                    ) {
+                                     options?: {
+                                         deflectorBonus?: number,
+                                         enlightenment?: boolean,
+                                         boosts?: T.BoostCategory[],
+                                     }) {
+    const { deflectorBonus, enlightenment, boosts } = options ?? {};
+
     const proto = await protobuf.parse(sandboxProto).root;
     const protoBuilds = proto.lookupType('Builds')
     const protoArtifactName = proto.lookupEnum('ArtifactSpec.Name');
@@ -648,16 +652,16 @@ export async function getSandboxLink(artifacts: T.Artifact[],
             prophecyEggs: userEffects.prophecy_eggs,
             soulEggs: userEffects.soul_eggs,
             soulEggsInput: formatNumber(userEffects.soul_eggs, 'en-us'),
-            isEnlightenment: enlightenment,
+            isEnlightenment: enlightenment ?? false,
             missingSoulFood: Math.round(150 - userEffects.soul_egg_bonus*100),
             missingProphecyBonus: Math.round(110 - userEffects.prophecy_egg_bonus*100),
             missingEpicMultiplier: Math.round(270 - userEffects.earning_mrcb_mult/2),
-            birdFeedActive: false,
-            tachyonPrismActive: false,
-            soulBeaconActive: false,
-            boostBeaconActive: false,
+            birdFeedActive: boosts?.includes(T.BoostCategory.BIRD_FEED) ?? false,
+            tachyonPrismActive: boosts?.includes(T.BoostCategory.TACHYON_PRISM) ?? false,
+            soulBeaconActive: boosts?.includes(T.BoostCategory.SOUL_BEACON) ?? false,
+            boostBeaconActive: boosts?.includes(T.BoostCategory.BOOST_BEACON) ?? false,
             proPermit: userData?.proPermit ?? true,
-            tachyonDeflectorBonus: deflectorBonus
+            tachyonDeflectorBonus: deflectorBonus ?? 0,
         }
     }
 

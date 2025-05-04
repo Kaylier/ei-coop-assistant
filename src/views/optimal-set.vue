@@ -24,6 +24,7 @@
                 :description="entry.description"
                 :set="entry.solution"
                 :userData="userData"
+                :boosts="entry.boosts"
                 />
         </template>
 
@@ -56,6 +57,7 @@ type SetEntry = {
     solution?: T.ArtifactSet|null,
     effects: EffectKey[],
     scoreFn: (effect: Effects) => number[];
+    boosts?: T.BoostCategory[],
 };
 
 const reslottingSetting = createSetting<boolean>({
@@ -91,6 +93,11 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.prestige_earning_mult;
             return [ score ];
         },
+        boosts: [
+            T.BoostCategory.BIRD_FEED,
+            T.BoostCategory.SOUL_BEACON,
+            T.BoostCategory.BOOST_BEACON,
+        ],
     },
     {
         title: "AIO RCB Prestige",
@@ -116,6 +123,12 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.prestige_earning_mult;
             return [ score ];
         },
+        boosts: [
+            T.BoostCategory.BIRD_FEED,
+            T.BoostCategory.SOUL_BEACON,
+            T.BoostCategory.TACHYON_PRISM,
+            T.BoostCategory.BOOST_BEACON,
+        ],
     },
     {
         title: "Multi RCB Prestige",
@@ -141,6 +154,12 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.prestige_earning_mult;
             return [ score ];
         },
+        boosts: [
+            T.BoostCategory.BIRD_FEED,
+            T.BoostCategory.SOUL_BEACON,
+            T.BoostCategory.TACHYON_PRISM,
+            T.BoostCategory.BOOST_BEACON,
+        ],
     },
     {
         title: "Preloaded Lunar Prestige",
@@ -166,6 +185,11 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.prestige_earning_mult;
             return [ score ];
         },
+        boosts: [
+            T.BoostCategory.BIRD_FEED,
+            T.BoostCategory.SOUL_BEACON,
+            T.BoostCategory.BOOST_BEACON,
+        ],
     },
     {
         title: "AIO Lunar Prestige",
@@ -183,6 +207,7 @@ const sets = shallowRef<SetEntry[]>([
         scoreFn: (e) => {
             let score = 1;
             //score *= e.ihr_mult; // only counted the first couple minutes, we ignore it
+            //score *= e.ihr_away_mult; // only counted the first couple minutes, we ignore it
             score *= e.hab_capacity_mult;
             score *= e.laying_rate;
             score *= e.egg_value_mult;
@@ -193,6 +218,12 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.prestige_earning_mult;
             return [ score ];
         },
+        boosts: [
+            T.BoostCategory.BIRD_FEED,
+            T.BoostCategory.SOUL_BEACON,
+            T.BoostCategory.TACHYON_PRISM,
+            T.BoostCategory.BOOST_BEACON,
+        ],
     },
     {
         title: "Multi Lunar Prestige",
@@ -209,6 +240,7 @@ const sets = shallowRef<SetEntry[]>([
         scoreFn: (e) => {
             let score = 1;
             score *= e.ihr_mult;
+            score *= e.ihr_away_mult;
             score *= e.laying_rate;
             score *= e.egg_value_mult;
             score *= e.earning_mult;
@@ -218,6 +250,12 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.prestige_earning_mult;
             return [ score ];
         },
+        boosts: [
+            T.BoostCategory.BIRD_FEED,
+            T.BoostCategory.SOUL_BEACON,
+            T.BoostCategory.TACHYON_PRISM,
+            T.BoostCategory.BOOST_BEACON,
+        ],
     },
     {
         title: "Dilithium",
@@ -228,6 +266,7 @@ const sets = shallowRef<SetEntry[]>([
         title: "IHR",
         effects: ['ihr_mult', 'boost_mult', 'hab_capacity_mult'],
         scoreFn: (e) => [ e.ihr_mult*e.boost_mult, e.hab_capacity_mult ],
+        boosts: [ T.BoostCategory.TACHYON_PRISM ],
     },
     {
         title: "EB",
@@ -248,6 +287,7 @@ const sets = shallowRef<SetEntry[]>([
             score *= e.boost_mult;
             return [ score ];
         },
+        boosts: [ T.BoostCategory.TACHYON_PRISM ],
     },
     {
         title: "Drone (GE)",

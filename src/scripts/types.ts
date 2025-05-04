@@ -143,11 +143,25 @@ export enum AllowedGusset {
     T4L = "artifact-gusset-4-3",
 };
 
+
+export enum BoostCategory {
+    BIRD_FEED,
+    SOUL_BEACON,
+    TACHYON_PRISM,
+    BOOST_BEACON,
+}
+
 export enum Boost {
-    TACHYON_10X30 = "tachyon_10x30",
+    BULB_QUANTUM = "bulb_quantum",
+    BULB_DILI = "bulb_dili",
+    EARNING_3X20 = "earning_3x20",
+    //EARNING_3X240 = "earning_3x240",
+    EARNING_10X15 = "earning_10x15",
+    EARNING_10X180 = "earning_10x180",
+    EARNING_50X10 = "earning_50x10",
+    EARNING_50X120 = "earning_50x120",
     TACHYON_10X10 = "tachyon_10x10",
     TACHYON_10X240 = "tachyon_10x240",
-    TACHYON_100X20 = "tachyon_100x20",
     TACHYON_100X10 = "tachyon_100x10",
     TACHYON_100X120 = "tachyon_100x120",
     TACHYON_1000X10 = "tachyon_1000x10",
@@ -156,5 +170,14 @@ export enum Boost {
     BOOST_10X10 = "boost_10x10",
     BOOST_5X60 = "boost_5x60",
     BOOST_50X10 = "boost_50x10",
+    SOUL_5X30 = "soul_5x30",
+    SOUL_50X20 = "soul_50x20",
+    SOUL_500X10 = "soul_500x10",
+    CASH_10 = "cash_10",
+    CASH_100 = "cash_100",
+    CASH_500 = "cash_500",
+    MIRROR_10 = "mirror_10",
+    MIRROR_60 = "mirror_60",
+    MIRROR_1D = "mirror_1d",
 };
 

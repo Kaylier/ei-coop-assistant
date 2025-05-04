@@ -83,7 +83,7 @@
                 </g>
             </svg>
         </div>
-        <button v-if="timerData.length"
+        <button v-if="notifications.length"
                 id="timer-button"
                 @click="timerToggle">
             {{ timer.isRunning.value ? `${formatTime(timer.elapsed.value)}` : 'start' }}
@@ -120,12 +120,13 @@ const emit = defineEmits<{
 
 const props = defineProps<{
     boosts: { id: T.Boost, amount?: number, streamlined?: number }[],
-    stats: { ihr: number, habCapacity: number }[],
+    stats: { ihr: number, habCapacity: number }[], // ihr in /min
     dili: number,
     startPopulation?: number,
     pinned?: boolean, // not shown if undefined
 }>();
 
+// When a timer is started, the current state is frozen
 const frozenProps = ref<null | {
     boosts: typeof props.boosts;
     stats: typeof props.stats;
@@ -141,6 +142,7 @@ const startPopulation = computed(() => (frozenProps.value ? frozenProps.value : 
 const pinned = computed(() => (frozenProps.value ? frozenProps.value : props).pinned);
 
 
+// Logic for expanding to detailed view
 const expanded = ref<boolean>(false);
 const focused = ref<boolean>(false);
 let debounceTimer: ReturnType<typeof setTimeout>;
@@ -257,10 +259,13 @@ const milestones = computed<Milestone[]>(() => {
     return ret;
 });
 
+
+
+// Visual segments used for showing population and time progress
 type Segment = {
-    population0: number, population1: number, // population ratio on the graph
+    population0: number, population1: number, // population ratios on the graph
     population: number, // actual population
-    time0: number, time1: number, // time ratio on the graph
+    time0: number, time1: number, // time ratios on the graph
     time: number, // actual time
     speed: ''|'fast'|'slow',
     img?: string,
@@ -307,7 +312,8 @@ const segments = computed<Segment[]>(() => {
 });
 
 
-const timerData = computed(() => {
+// Notification data, time in second since timer start
+const notifications = computed<{ time: number, title: string, msg?: string }[]>(() => {
     const ret = [];
 
     for (const milestone of milestones.value) {
@@ -344,7 +350,7 @@ const timer: {
     isRunning: Ref<boolean>,
     intervalId: number|null,
     startTimestamp: number,
-    notifications: { time: number, title?: string, msg?: string }[],
+    notifications: { time: number, title?: string, msg?: string }[], // frozen notification data
     pPopulation: number, // proportion of total population reached
     pTime: number, // proportion of total time reached
 } = { elapsed: ref(0), isRunning: ref(false), intervalId: null, startTimestamp: 0, notifications: [], pPopulation: 0,
@@ -385,7 +391,7 @@ function timerToggle() {
             Notification.requestPermission();
         }
 
-        timer.notifications = timerData.value;
+        timer.notifications = notifications.value;
         if (timer.notifications.length === 0) return;
 
         console.log("Start timer", timer.notifications);

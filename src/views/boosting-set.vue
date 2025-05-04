@@ -91,6 +91,7 @@
             :userData="userData"
             :stats="['lay', 'ihr']"
             :substats="['hab']"
+            :boosts="[T.BoostCategory.TACHYON_PRISM]"
             >
             <span>
                 <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
@@ -113,6 +114,7 @@
             :userData="userData"
             :stats="['ihr']"
             :substats="['hab', 'lay']"
+            :boosts="[T.BoostCategory.TACHYON_PRISM]"
             >
             <template v-if="i === 0">
             <span>
@@ -272,13 +274,13 @@ const boostSetCardStats = computed(() => {
     for (const set of setIHR.value) {
         const effects = new Effects(baseEffects.value, set.effects);
         ret.push({
-            ihr: (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult,
+            ihr: 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult,
             habCapacity: effects.hab_capacity,
         });
     }
     if (ret.length === 0) {
         ret.push({
-            ihr: (ihcSetting.value ? baseEffects.value.ihr_away : baseEffects.value.ihr) * baseEffects.value.boost_mult,
+            ihr: 60 * (ihcSetting.value ? baseEffects.value.ihr_away : baseEffects.value.ihr) * baseEffects.value.boost_mult,
             habCapacity: baseEffects.value.hab_capacity
         });
     }
@@ -288,7 +290,7 @@ const boostSetCardStats = computed(() => {
 const IHRMilestones = computed(() => {
     const effects = new Effects(baseEffects.value);
     if (setIHR.value?.at(0)) effects.merge(setIHR.value.at(0)!.effects);
-    const ihrbonus = (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
+    const ihrbonus = 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
         { population: ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
         { population: ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
@@ -298,7 +300,7 @@ const IHRMilestones = computed(() => {
 const slowIHRMilestones = computed(() => {
     const effects = new Effects(baseEffects.value)
     if (setSlow.value) effects.merge(setSlow.value.effects);
-    const ihrbonus = (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
+    const ihrbonus = 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
         { population: ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
         { population: ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
