@@ -410,11 +410,11 @@ export async function getUserData(eid: string): Promise<T.UserData> {
   //farmEffects.apply('hatchery_refill_mult'   , 1 + 0.1  *15 ); // Better Incubators
   //farmEffects.apply('running_chicken_mult'   ,     0.001*25 ); // Excitable Chickens
     farmEffects.apply('hab_capacity_mult'      , 1 + 0.05 *8  ); // Hen House Remodel
-    farmEffects.apply('ihr_base'               ,     2    *10 ); // Internal Hatcheries
+    farmEffects.apply('ihr_base'               ,     2/60 *10 ); // Internal Hatcheries
     farmEffects.apply('egg_value_mult'         , 1 + 0.25 *30 ); // Padded Packaging
   //farmEffects.apply('hatchery_capacity'      ,       10 *10 ); // Hatchery Expansion
     farmEffects.apply('egg_value_mult'         ,     2   **1  ); // Bigger Eggs
-    farmEffects.apply('ihr_base'               ,     5    *10 ); // Internal Hatchery Upgrades
+    farmEffects.apply('ihr_base'               ,     5/60 *10 ); // Internal Hatchery Upgrades
     farmEffects.apply('shipping_mult'          , 1 + 0.05 *30 ); // Improved Leafsprings
   //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Vehicle Reliability
   //farmEffects.apply('hatchery_refill_mult'   , 1 + 0.05 *25 ); // Rooster Booster
@@ -427,7 +427,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
   //farmEffects.apply('hatchery_capacity'      ,    10    *10 ); // Compact Incubators
     farmEffects.apply('shipping_mult'          , 1 + 0.1  *40 ); // Lightweight Boxes
   //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Depot Worker Exoskeletons
-    farmEffects.apply('ihr_base'               ,    10    *15 ); // Internal Hatchery Expansion
+    farmEffects.apply('ihr_base'               ,    10/60 *15 ); // Internal Hatchery Expansion
     farmEffects.apply('laying_rate'            , 1 + 0.15 *30 ); // Improved Genetics
     farmEffects.apply('egg_value_mult'         , 1 + 0.15 *30 ); // Improved Genetics
   //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Traffic Management
@@ -437,17 +437,17 @@ export async function getUserData(eid: string): Promise<T.UserData> {
   //farmEffects.apply('vehicle_count_max'      ,     1    *2  ); // Egg Loading Bots
     farmEffects.apply('shipping_mult'          , 1 + 0.05 *50 ); // Super Alloy Frames
     farmEffects.apply('egg_value_mult'         ,     2   **5  ); // Even Bigger Eggs
-    farmEffects.apply('ihr_base'               ,    25    *30 ); // Internal Hatchery Expansion
+    farmEffects.apply('ihr_base'               ,    25/60 *30 ); // Internal Hatchery Expansion
     farmEffects.apply('shipping_mult'          , 1 + 0.05 *20 ); // Quantum Egg Storage
     farmEffects.apply('egg_value_mult'         , 1 + 0.1  *100); // Genetic Purification
-    farmEffects.apply('ihr_base'               ,     5    *250); // Machine Learning Incubators
+    farmEffects.apply('ihr_base'               ,     5/60 *250); // Machine Learning Incubators
     farmEffects.apply('laying_rate'            , 1 + 0.1  *20 ); // Time Compression
     farmEffects.apply('shipping_mult'          , 1 + 0.05 *25 ); // Hover Upgrades
     farmEffects.apply('egg_value_mult'         ,     2   **7  ); // Graviton Coating
     farmEffects.apply('hab_capacity_mult'      , 1 + 0.02 *25 ); // Grav Plating
     farmEffects.apply('egg_value_mult'         , 1 + 0.25 *100); // Crystalline Shelling
   //farmEffects.apply('vehicle_count_max'      ,     1    *5  ); // Autonomous Vehicles
-    farmEffects.apply('ihr_base'               ,    50    *30 ); // Neural Linking
+    farmEffects.apply('ihr_base'               ,    50/60 *30 ); // Neural Linking
     farmEffects.apply('egg_value_mult'         , 1 + 0.25 *50 ); // Telepathic Will
     farmEffects.apply('earning_mrcb_mult'      ,     2    *150); // Enlightened Chickens
     farmEffects.apply('shipping_mult'          , 1 + 0.05 *25 ); // Dark Containment
