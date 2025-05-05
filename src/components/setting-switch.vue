@@ -1,7 +1,7 @@
 <template>
     <span class="setting-entry"
           :class="{ hidden: hide && unref(setting.value) === setting.defaultValue && !focused  }"
-          @focusin="onfocusin" @focusout="onfocusout"
+          @focusin="focused = true" @focusout="focused = false"
           >
         <label v-if="label || tooltip">
             <span v-if="tooltip" tabindex="0" class="tooltip-icon">
@@ -31,7 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, unref } from 'vue';
+import { unref } from 'vue';
+import { focusRef } from '@/scripts/settings.ts';
 import type { Setting } from '@/scripts/settings.ts';
 
 type KeyType = string | number | symbol;
@@ -49,17 +50,7 @@ defineProps<{
 
 // When changing from default option to non-default one, the focus flickering hides the setting
 // We need debouncing to mitigate this
-const focused = ref<boolean>(false);
-let debounceTimer: ReturnType<typeof setTimeout>;
-
-function onfocusin() {
-    clearTimeout(debounceTimer);
-    focused.value = true;
-}
-
-function onfocusout() {
-    debounceTimer = setTimeout(() => focused.value = false, 200);
-}
+const focused = focusRef();
 
 </script>
 

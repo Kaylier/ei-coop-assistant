@@ -128,16 +128,19 @@ const DEFAULT_MIRROR_VALUE = 1e22;
 
 const MIN_EGG_VALUE = 0.01; // default base for showing egg value bonus in progress circle
 const MIN_MISC_BONUS = 1; // default base for showing misc bonuses in progress circle
-const CR_TARGET_CNST = 1.268e45*3.751861484591138e+22; // precomputed time constant for max shipping research
-//const CR_TARGET_CNST = 3.340e45; // precomputed time constant for max shipping research
 
+// Precomputed constant for max contract-relevant researches
+// This represents the time it takes to buy all these researches if the user has an earning rate of 1/s
+// once **all** researches are bought
+// This assumes optimal buying order, instant buying, and no tier unlocking limitation
+const CR_TARGET_CNST = 4.778932e67;
 
 const graphTitleHtml = `
 Can you
 <span tabindex="0" class="tooltip-icon">
     max relevant CR? <sup>ⓘ</sup>
     <span class="tooltip-text">
-        Matter Reconfiguration level 403<br/>
+        Matter Reconfiguration level 405<br/>
         Timeline Splicing level 0<br/>
         Every other researches maxed.<br/>
         <br/>
@@ -198,10 +201,7 @@ const mergeEBEarningSets = ref<boolean>(false);
 
 
 // Watchers for triggering recomputations
-watch(userData, updateSet);
-watch(swapCubeSetting, updateSet);
-watch(reslottingSetting, updateSet);
-watch(onlineSetting, updateSet);
+watch([userData, swapCubeSetting, reslottingSetting, onlineSetting], updateSet);
 
 
 /**
@@ -325,6 +325,11 @@ function generateChartData(set: T.ArtifactSet, mirroring: boolean = false) {
                 valueLabel: "×"+formatNumber(miscBonusSetting.value),
                 color: "#699b17",
                 value: Math.log(Math.max(miscBonusSetting.value/MIN_MISC_BONUS, 1)),
+            }, {
+                label: "Running chickens",
+                valueLabel: "×"+formatNumber(userEffects.earning_mrcb_mult),
+                color: "#866a32",
+                value: Math.log(onlineSetting.value ? userEffects.earning_mrcb_mult : 1),
             }, {
                 label: "Artifacts",
                 valueLabel: "×"+formatNumber(combRate/userRate),

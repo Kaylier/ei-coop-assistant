@@ -2,7 +2,7 @@
  * Settings modules management
  */
 
-import { shallowRef, reactive, computed, watch } from 'vue';
+import { shallowRef, ref, reactive, computed, watch } from 'vue';
 import type { Ref, Reactive } from 'vue';
 
 export type Setting<T> = {
@@ -10,7 +10,7 @@ export type Setting<T> = {
     defaultValue: T,
 };
 
-/*
+/**
  * Create a Setting, a generic structure used for managing settings
  * text is populated by query parameter (if provided), or previously stored localStorage entry (if provided),
  * or default value.
@@ -67,7 +67,7 @@ export type TextInputSetting<T> = {
     defaultValue: T,
 };
 
-/*
+/**
  * Create a TextInputSetting, a structure used for text input settings (woaahhh)
  * text is populated by query parameter (if provided), or previously stored localStorage entry (if provided),
  * or default value.
@@ -139,4 +139,33 @@ export function createTextInputSetting<T>(options: {
   });
 }
 
+
+
+
+export function focusRef(delayin = 200, delayout = 200): Ref<boolean> {
+    const inner = ref<boolean>(false);
+    let timer: ReturnType<typeof setTimeout>;
+
+    return new Proxy(inner, {
+        get(target, prop) {
+            return Reflect.get(target, prop);
+        },
+        set(target, prop, value) {
+            if (prop === 'value') {
+                clearTimeout(timer);
+                if (value) {
+                    timer = setTimeout(() => {
+                        target.value = value;
+                    }, delayin);
+                } else {
+                    timer = setTimeout(() => {
+                        target.value = value;
+                    }, delayout);
+                }
+                return true;
+            }
+            return Reflect.set(target, prop, value);
+        }
+    });
+}
 

@@ -309,8 +309,7 @@ const sets = shallowRef<SetEntry[]>([
 ]);
 
 
-watch(userData, updateSets);
-watch(reslottingSetting, updateSets);
+watch([userData, reslottingSetting], updateSets);
 
 
 function updateSets() {

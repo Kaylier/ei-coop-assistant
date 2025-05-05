@@ -8,8 +8,7 @@ import { Effects } from '@/scripts/effects.ts';
 export function searchDiliSet(items: T.Item[],
                               maxSlot: number,
                               userEffects: Effects,
-                              includeDeflector: boolean,
-                              includeShip: boolean,
+                              includedFamilies: T.ArtifactFamily[],
                               reslotting: boolean,
                               allowedGusset: T.AllowedGusset
                              ): T.ArtifactSet | null {
@@ -25,9 +24,7 @@ export function searchDiliSet(items: T.Item[],
         'boost_mult',
     ]);
 
-    const requiredFamilies: T.ArtifactFamily[] = [];
-    if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
-    if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
     if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }
@@ -54,10 +51,8 @@ export function searchDiliSet(items: T.Item[],
 export function searchIHRSets(items: T.Item[],
                               maxSlot: number,
                               userEffects: Effects,
-                              includeDeflector: boolean,
-                              relaxDeflector: boolean, // relax the deflector contraint for 2nd to last sets
-                              includeShip: boolean,
-                              relaxShip: boolean,
+                              includedFamilies: T.ArtifactFamily[],
+                              relaxedFamilies: T.ArtifactFamily[], // relax the included contraint for 2nd to last sets
                               reslotting: boolean,
                               targetGusset: T.AllowedGusset
                              ): T.ArtifactSet[] {
@@ -96,9 +91,7 @@ export function searchIHRSets(items: T.Item[],
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
 
-    let requiredFamilies: T.ArtifactFamily[] = [];
-    if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
-    if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    let requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
 
     const ret = [];
     let set = searchSet(artifacts, stones, maxSlot, scoreFn, {
@@ -107,12 +100,7 @@ export function searchIHRSets(items: T.Item[],
         userEffects,
     });
 
-    if (relaxDeflector) {
-        requiredFamilies = requiredFamilies.filter(x => x !== T.ArtifactFamily.TACHYON_DEFLECTOR);
-    }
-    if (relaxShip) {
-        requiredFamilies = requiredFamilies.filter(x => x !== T.ArtifactFamily.SHIP_IN_A_BOTTLE);
-    }
+    requiredFamilies = requiredFamilies.filter(x => !relaxedFamilies.includes(x));
     if (targetGusset !== T.AllowedGusset.ANY && targetGusset !== T.AllowedGusset.NONE) {
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }
@@ -148,8 +136,7 @@ export function searchIHRSets(items: T.Item[],
 export function searchSlowIHRSet(items: T.Item[],
                                  maxSlot: number,
                                  userEffects: Effects,
-                                 includeDeflector: boolean,
-                                 includeShip: boolean,
+                                 includedFamilies: T.ArtifactFamily[],
                                  reslotting: boolean,
                                  allowedGusset: T.AllowedGusset
                                 ): T.ArtifactSet | null {
@@ -178,9 +165,8 @@ export function searchSlowIHRSet(items: T.Item[],
     const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
-    const requiredFamilies: T.ArtifactFamily[] = [];
-    if (includeDeflector) requiredFamilies.push(T.ArtifactFamily.TACHYON_DEFLECTOR);
-    if (includeShip)      requiredFamilies.push(T.ArtifactFamily.SHIP_IN_A_BOTTLE);
+    const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
+    console.log(requiredFamilies);
     if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }

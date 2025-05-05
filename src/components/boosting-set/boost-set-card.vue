@@ -1,5 +1,5 @@
 <template>
-    <div id="card-frame" @focusin="debounceFocus(true)" @focusout="debounceFocus(false)">
+    <div id="card-frame" @focusin="focused = true" @focusout="focused = false">
         <div id="header-frame" @mousedown="expanded = timer.isRunning.value || !expanded">
             <button v-if="pinned !== undefined || frozenProps" id="pin"
                     title="Mark as favourite"
@@ -105,6 +105,7 @@ import * as T from '@/scripts/types.ts';
 import { ref, computed, onUnmounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { formatNumber, formatTime, clamp } from '@/scripts/utils.ts';
+import { focusRef } from '@/scripts/settings.ts';
 import * as Boost from '@/scripts/boosts.ts';
 import type { Ref } from 'vue';
 
@@ -144,12 +145,7 @@ const pinned = computed(() => (frozenProps.value ? frozenProps.value : props).pi
 
 // Logic for expanding to detailed view
 const expanded = ref<boolean>(false);
-const focused = ref<boolean>(false);
-let debounceTimer: ReturnType<typeof setTimeout>;
-function debounceFocus(value: boolean) {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => focused.value = value, 200);
-}
+const focused = focusRef();
 const collapsed = computed<boolean>(() => !expanded.value && !focused.value && !timer.isRunning.value);
 
 const focusedSegment = ref<number>();

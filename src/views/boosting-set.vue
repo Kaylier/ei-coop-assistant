@@ -7,9 +7,9 @@
                         tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
                         type="checkbox"
                         :options="[
-                                  { value: 'Deflector', label: 'Deflector',
+                                  { value: T.ArtifactFamily.TACHYON_DEFLECTOR, label: 'Deflector',
                                     img: '/img/items/artifact-tachyon_deflector-3.png' },
-                                  { value: 'SiaB', label: 'Ship in a Bottle',
+                                  { value: T.ArtifactFamily.SHIP_IN_A_BOTTLE, label: 'Ship in a Bottle',
                                     img: '/img/items/artifact-ship_in_a_bottle-3.png' },
                                   ]"/>
         <setting-switch id="reslotting"
@@ -38,8 +38,8 @@
                                  If swapping is enabled, this is the highest gusset<br/>
                                  Disabled on 'any'"
                         :options="allowedGussetOptions"
-                        @focusin="allowedGussetOnFocusIn"
-                        @focusout="allowedGussetOnFocusOut">
+                        @focusin="allowedGussetOptionsAll = allowedGussetOptionsAll"
+                        @focusout="allowedGussetOptionsAll = false">
             <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
@@ -161,24 +161,26 @@
 import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseNumber, formatNumber, formatTime } from '@/scripts/utils.ts';
-import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
+import { createSetting, createTextInputSetting, focusRef } from '@/scripts/settings.ts';
 import { Effects } from '@/scripts/effects.ts';
 import { boostSets, searchDiliSet, searchIHRSets, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
 import { getOptimalGussets } from '@/scripts/laying-set.ts';
 
 
 
-const includesSetting = createSetting<('Deflector'|'SiaB')[]>({
+const includesSetting = createSetting<(T.ArtifactFamily)[]>({
     localStorageKey: 'boosting-including',
     defaultValue: [],
+    parser: (s) => (JSON.parse(s) as T.ArtifactFamily[]).filter(x =>
+                    x === T.ArtifactFamily.TACHYON_DEFLECTOR || x === T.ArtifactFamily.SHIP_IN_A_BOTTLE),
 });
 const reslottingSetting = createSetting<boolean>({
     localStorageKey: 'boosting-reslotting',
     defaultValue: false,
 });
-const swappingSetting = createSetting<false|true|'Deflector'|'SiaB'>({
+const swappingSetting = createSetting<null|T.ArtifactFamily[]>({
     localStorageKey: 'boosting-gusset-swap',
-    defaultValue: false,
+    defaultValue: null,
 });
 const allowedGussetSetting = createSetting<T.AllowedGusset>({
     localStorageKey: 'boosting-gusset-target',
@@ -203,20 +205,26 @@ const pinnedBoostSetting = createSetting<Set<string>>({
 
 
 const swappingOptions = computed(() => {
-    const ret: { value: false|true|'Deflector'|'SiaB', label: string, img?: string }[] = [
-        { value: false, label: 'no' },
-        { value: true, label: 'yes' },
+    const ret: {
+        value: null|T.ArtifactFamily[],
+        label: string,
+        img?: string
+    }[] = [
+        { value: null, label: 'no' },
+        { value: [], label: 'yes' },
     ]
-    if (includesSetting.value.includes('Deflector') || swappingSetting.value === 'Deflector') {
+    const show = (x: T.ArtifactFamily) => includesSetting.value.includes(x) ||
+                                          (swappingSetting.value && swappingSetting.value.includes(x));
+    if (show(T.ArtifactFamily.TACHYON_DEFLECTOR)) {
         ret.push({
-            value: 'Deflector',
+            value: [T.ArtifactFamily.TACHYON_DEFLECTOR],
             label: 'Deflector',
             img: '/img/items/artifact-tachyon_deflector-3.png'
         });
     }
-    if (includesSetting.value.includes('SiaB') || swappingSetting.value === 'SiaB') {
+    if (show(T.ArtifactFamily.SHIP_IN_A_BOTTLE)) {
         ret.push({
-            value: 'SiaB',
+            value: [T.ArtifactFamily.SHIP_IN_A_BOTTLE],
             label: 'Ship in a Bottle',
             img: '/img/items/artifact-ship_in_a_bottle-3.png'
         });
@@ -224,14 +232,9 @@ const swappingOptions = computed(() => {
     return ret;
 });
 
+
 // When true, show every possible gussets
-const allowedGussetOptionsAll = ref<boolean>(false);
-// Debouncer for gusset setting focus
-let allowedGussetFocusTimer: ReturnType<typeof setTimeout>;
-function allowedGussetOnFocusIn() { clearTimeout(allowedGussetFocusTimer); }
-function allowedGussetOnFocusOut() {
-    allowedGussetFocusTimer = setTimeout(() => allowedGussetOptionsAll.value = false, 200);
-}
+const allowedGussetOptionsAll = focusRef(0, 500);
 const allowedGussetOptions = computed(() => {
     const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
         [
@@ -326,12 +329,7 @@ const setIHR  = shallowRef<T.ArtifactSet[]>([]);
 const setSlow = shallowRef<T.ArtifactSet|null>();
 
 
-watch(userData, updateSet);
-watch(includesSetting, updateSet);
-watch(reslottingSetting, updateSet);
-watch(swappingSetting, updateSet);
-watch(allowedGussetSetting, updateSet);
-watch(ihcSetting, updateSet);
+watch([userData, includesSetting, reslottingSetting, swappingSetting, allowedGussetSetting, ihcSetting], updateSet);
 
 
 /**
@@ -348,27 +346,24 @@ function updateSet() {
         setDili.value = searchDiliSet(userData.value?.items ?? [],
                                       maxSlot,
                                       userData.value?.maxedEffects ?? Effects.initial,
-                                      false, // include deflector
-                                      false, // include ship
+                                      [], // no included families
                                       reslottingSetting.value,
                                       T.AllowedGusset.ANY);
         console.log("Dili set:", setDili.value);
 
         // If swapping is enabled, target the highest available gusset, unless one is already forced
-        const targetGusset = swappingSetting.value !== false && allowedGussetSetting.value === T.AllowedGusset.ANY ?
+        const targetGusset = swappingSetting.value !== null && allowedGussetSetting.value === T.AllowedGusset.ANY ?
                              allowedGussetOptions.value.at(-1)?.value ?? T.AllowedGusset.NONE :
                              allowedGussetSetting.value;
         setIHR.value = searchIHRSets(userData.value?.items ?? [],
                                      maxSlot,
                                      userData.value?.maxedEffects ?? Effects.initial,
-                                     includesSetting.value.includes('Deflector'),
-                                     swappingSetting.value === 'Deflector',
-                                     includesSetting.value.includes('SiaB'),
-                                     swappingSetting.value === 'SiaB',
+                                     includesSetting.value,
+                                     swappingSetting.value ?? [],
                                      reslottingSetting.value,
                                      targetGusset);
         // We always solve for swapping, and discard undesired sets when swapping is off
-        if (swappingSetting.value === false) {
+        if (swappingSetting.value === null) {
             setIHR.value = setIHR.value.slice(-1);
         }
         console.log("IHR sets:", ...setIHR.value);
@@ -376,8 +371,7 @@ function updateSet() {
         setSlow.value = searchSlowIHRSet(userData.value?.items ?? [],
                                          maxSlot,
                                          userData.value?.maxedEffects ?? Effects.initial,
-                                         includesSetting.value.includes('Deflector'),
-                                         includesSetting.value.includes('SiaB'),
+                                         includesSetting.value,
                                          reslottingSetting.value,
                                          allowedGussetSetting.value);
         console.log("Slow-IHR set:", setSlow.value);

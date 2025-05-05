@@ -4,14 +4,14 @@
         <img src="/img/not-found.png" alt="Not Found Icon" class="not-found-icon" />
         <div class="not-found-text">
             <h1>Error {{code}}</h1>
-            <p>{{message}}</p>
+            <p v-if="message">{{message}}</p>
         </div>
     </section>
 </template>
 
 <script setup lang="ts">
 defineProps<{
-    code?: number,
+    code?: string,
     message?: string
 }>();
 </script>

@@ -30,8 +30,8 @@
                                  Only your best gussets are shown.<br/>
                                  Disabled on 'any'."
                         :options="allowedGussetOptions"
-                        @focusin="allowedGussetOnFocusIn"
-                        @focusout="allowedGussetOnFocusOut">
+                        @focusin="allowedGussetOptionsAll = allowedGussetOptionsAll"
+                        @focusout="allowedGussetOptionsAll = false">
             <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
@@ -159,7 +159,7 @@
 import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
-import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
+import { createTextInputSetting, createSetting, focusRef } from '@/scripts/settings.ts';
 import { Effects } from '@/scripts/effects.ts';
 import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
 import type { ArtifactSet } from '@/scripts/laying-set.ts';
@@ -210,12 +210,7 @@ const baseShippingRateSetting = createTextInputSetting<number|null>({
 
 
 // When true, show every possible gussets
-const allowedGussetOptionsAll = ref<boolean>(false);
-let allowedGussetFocusTimer: ReturnType<typeof setTimeout>;
-function allowedGussetOnFocusIn() { clearTimeout(allowedGussetFocusTimer); }
-function allowedGussetOnFocusOut() {
-    allowedGussetFocusTimer = setTimeout(() => allowedGussetOptionsAll.value = false, 200);
-}
+const allowedGussetOptionsAll = focusRef(0, 200);
 const allowedGussetOptions = computed(() => {
     const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
         [
@@ -253,13 +248,8 @@ const entries = shallowRef<EntryType[]>([]); // List of solutions (sets along ad
 
 
 // Watchers for triggering recomputations
-watch(userData, updateEntries);
-watch(deflectorModeSetting, updateEntries);
-watch(reslottingSetting, updateEntries);
-watch(allowedGussetSetting, updateEntries);
-
-watch(baseLayingRate, updateThresholds);
-watch(baseShippingRate, updateThresholds);
+watch([userData, deflectorModeSetting, reslottingSetting, allowedGussetSetting], updateEntries);
+watch([baseLayingRate, baseShippingRate], updateThresholds);
 
 
 /**
