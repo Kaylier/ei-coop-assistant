@@ -122,7 +122,7 @@ import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/sc
 import { Effects } from '@/scripts/effects.ts';
 
 
-const DEFAULT_EGG_VALUE = 0.05;
+const DEFAULT_EGG_VALUE = 0.1;
 const DEFAULT_MISC_VALUE = 4;
 const DEFAULT_MIRROR_VALUE = 1e22;
 
