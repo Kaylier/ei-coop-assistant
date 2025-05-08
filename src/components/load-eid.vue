@@ -89,7 +89,7 @@ onMounted(async () => {
         }
     }
 
-    if (loaded) {
+    if (loaded && loaded.baseEffects && loaded.maxedEffects) {
         // User data found in localStorage, use it
         userData.value = loaded;
     } else if (checkEID(eid.value)) {
