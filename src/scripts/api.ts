@@ -474,7 +474,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const soulEggs = maxedEffects.soul_eggs;
     const baseLayingRate = maxedEffects.laying_rate * maxedEffects.hab_capacity;
     const baseShippingRate = maxedEffects.shipping_rate;
-    const baseIHRate = maxedEffects.ihr;
+    const baseIHRate = maxedEffects.ihr*60;
     const awayIHBonus = maxedEffects.ihr_away_mult;
     const mrcbEarningBonus = maxedEffects.earning_mrcb_mult;
     const baseEarningRate = baseEffects.laying_rate * baseEffects.earning_mult * baseEffects.eb / baseEffects.research_cost_mult;
