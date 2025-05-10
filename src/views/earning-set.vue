@@ -16,10 +16,12 @@
                         label="Reslotting"
                         tooltip="Allow reslotting stones in artifacts.<br/>
                                  Stone-holder artifacts are interchangeable and<br/>
-                                 stones may be arbitrarily rearranged."
+                                 stones may be arbitrarily rearranged.<br/>
+                                 Select 'fill' to keep already slotted stones."
                         :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
+                                  { value: 0, label: 'no' },
+                                  { value: 1, label: 'add' },
+                                  { value: 3, label: 'swap' },
                                   ]"/>
         <setting-switch id="online"
                         v-model="onlineSetting"
@@ -161,9 +163,9 @@ const swapCubeSetting = createSetting<boolean>({
     localStorageKey: 'earning-cube-swap',
     defaultValue: false,
 });
-const reslottingSetting = createSetting<boolean>({
+const reslottingSetting = createSetting<0|1|2|3>({
     localStorageKey: 'earning-reslotting',
-    defaultValue: false,
+    defaultValue: 0,
 });
 const onlineSetting = createSetting<boolean>({
     localStorageKey: 'earning-online',

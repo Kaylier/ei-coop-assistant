@@ -7,11 +7,12 @@
                         label="Reslotting"
                         tooltip="Allow reslotting stones in artifacts.<br/>
                                  Stone-holder artifacts are interchangeable and<br/>
-                                 stones may be arbitrarily rearranged."
+                                 stones may be arbitrarily rearranged.<br/>
+                                 Select 'add' to keep already slotted stones."
                         :options="[
                                   { value: 0, label: 'no' },
-                                  //{ value: 1, label: 'add' },
-                                  { value: 3, label: 'yes' },
+                                  { value: 1, label: 'add' },
+                                  { value: 3, label: 'swap' },
                                   ]"/>
         <setting-text id="event-earnings"
                       v-model="eventEarningsSetting"

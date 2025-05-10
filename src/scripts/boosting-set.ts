@@ -9,7 +9,7 @@ export function searchDiliSet(items: T.Item[],
                               maxSlot: number,
                               userEffects: Effects,
                               includedFamilies: T.ArtifactFamily[],
-                              reslotting: boolean,
+                              reslotting: 0|1|2|3,
                               allowedGusset: T.AllowedGusset
                              ): T.ArtifactSet | null {
     const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
@@ -18,7 +18,7 @@ export function searchDiliSet(items: T.Item[],
         return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
     });
 
-    const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
+    const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'boost_duration_mult',
         'ihr_mult',
         'boost_mult',
@@ -53,7 +53,7 @@ export function searchIHRSets(items: T.Item[],
                               userEffects: Effects,
                               includedFamilies: T.ArtifactFamily[],
                               relaxedFamilies: T.ArtifactFamily[], // relax the included contraint for 2nd to last sets
-                              reslotting: boolean,
+                              reslotting: 0|1|2|3,
                               targetGusset: T.AllowedGusset
                              ): T.ArtifactSet[] {
     const filteredItems = targetGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
@@ -62,7 +62,7 @@ export function searchIHRSets(items: T.Item[],
         return `artifact-gusset-${x.tier}-${x.rarity}` <= targetGusset;
     });
 
-    const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
+    const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
         'ihr_mult',
         'laying_rate',
@@ -137,7 +137,7 @@ export function searchSlowIHRSet(items: T.Item[],
                                  maxSlot: number,
                                  userEffects: Effects,
                                  includedFamilies: T.ArtifactFamily[],
-                                 reslotting: boolean,
+                                 reslotting: 0|1|2|3,
                                  allowedGusset: T.AllowedGusset
                                 ): T.ArtifactSet | null {
     const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
@@ -146,7 +146,7 @@ export function searchSlowIHRSet(items: T.Item[],
         return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
     });
 
-    const { artifacts, stones } = prepareItems(filteredItems, reslotting, reslotting, [
+    const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
         'ihr_mult',
         'laying_rate',

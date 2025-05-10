@@ -10,9 +10,9 @@ export function searchEBSet(items: T.Item[],
                             countCube: boolean,
                             countMonocle: boolean,
                             online: boolean,
-                            reslotting: boolean): T.ArtifactSet | null {
+                            reslotting: 0|1|2|3): T.ArtifactSet | null {
 
-    const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
+    const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'prophecy_egg_bonus',
         'soul_egg_bonus',
         'laying_rate',
@@ -61,9 +61,9 @@ export function searchEarningSet(items: T.Item[],
                                  countCube: boolean,
                                  countMonocle: boolean,
                                  online: boolean,
-                                 reslotting: boolean): T.ArtifactSet | null {
+                                 reslotting: 0|1|2|3): T.ArtifactSet | null {
 
-    const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
+    const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'prophecy_egg_bonus',
         'soul_egg_bonus',
         'laying_rate',
@@ -111,9 +111,9 @@ export function searchMirrorSet(items: T.Item[],
                                 countCube: boolean,
                                 countMonocle: boolean,
                                 online: boolean,
-                                reslotting: boolean): T.ArtifactSet | null {
+                                reslotting: 0|1|2|3): T.ArtifactSet | null {
 
-    const { artifacts, stones } = prepareItems(items, reslotting, reslotting, [
+    const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'prophecy_egg_bonus',
         'soul_egg_bonus',
         'laying_rate',

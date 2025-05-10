@@ -7,10 +7,12 @@
                         label="Reslotting"
                         tooltip="Allow reslotting stones in artifacts.<br/>
                                  Stone-holder artifacts are interchangeable and<br/>
-                                 stones may be arbitrarily rearranged."
+                                 stones may be arbitrarily rearranged.<br/>
+                                 Select 'add' to keep already slotted stones."
                         :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
+                                  { value: 0, label: 'no' },
+                                  { value: 1, label: 'add' },
+                                  { value: 3, label: 'swap' },
                                   ]"/>
     </section>
 
@@ -71,9 +73,9 @@ type SetEntry = {
     extra?:  { fn: (effect: Effects) => number, value?: string|number, text: string }[],
 };
 
-const reslottingSetting = createSetting<boolean>({
+const reslottingSetting = createSetting<0|1|2|3>({
     localStorageKey: 'optimal-reslotting',
-    defaultValue: false,
+    defaultValue: 0,
 });
 
 const errorMessage = ref<string>("");
@@ -352,8 +354,8 @@ function updateSet(setEntry: SetEntry) {
     try {
         errorMessage.value = "";
         const { artifacts, stones } = prepareItems(userData.value?.items ?? [],
-                                                   reslottingSetting.value,
-                                                   reslottingSetting.value,
+                                                   (reslottingSetting.value & 2) === 2,
+                                                   (reslottingSetting.value & 1) === 1,
                                                    setEntry.effects);
         setEntry.solution = searchSet(artifacts, stones,
                                       userData.value?.proPermit ? 4 : 2,

@@ -54,6 +54,12 @@ export function prepareItems(items: T.Item[],
         // If no effect detected and there's no potential through stones, skip
         if (stoneSlot == 0 && effects.isDefault()) return;
 
+        for (let i = 0; i < artifact.stones.length; i++) {
+            const stone = artifact.stones[i];
+            if (!stone) continue;
+            stone.reslotted = unslot;
+        }
+
         if (!artifacts.has(family)) {
             artifacts.set(family, []);
         }
@@ -366,12 +372,18 @@ function assignStones(set: T.Artifact[], stones: T.Stone[]): number {
 
     for (const artifact of set) {
         for (let i = 0; i < (artifact.stones?.length ?? 0); i++) {
-            const key = stoneKey(artifact.stones[i]);
-            if ((stoneCount.get(key) || 0) > 0) {
+            const stone = artifact.stones[i];
+            const key = stoneKey(stone);
+            if (stone && !stone.reslotted) continue;
+            if (stone === null) {
+                // Stone to change in priority
+                slotsToFill.push({ artifact, index: i });
+            } else if ((stoneCount.get(key) || 0) > 0) {
                 // Stone to keep
                 stoneCount.set(key, stoneCount.get(key)! - 1);
+                stone.reslotted = false;
             } else {
-                // Stone to change
+                // Stone to change in last
                 slotsToFill.push({ artifact, index: i });
             }
         }

@@ -17,10 +17,12 @@
                         label="Reslotting"
                         tooltip="Allow reslotting stones in artifacts<br/>
                                  Stone-holder artifacts are interchangeable and<br/>
-                                 stones may be arbitrarily rearranged"
+                                 stones may be arbitrarily rearranged.<br/>
+                                 Select 'add' to keep already slotted stones."
                         :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
+                                  { value: 0, label: 'no' },
+                                  { value: 1, label: 'add' },
+                                  { value: 3, label: 'swap' },
                                   ]"/>
         <setting-switch id="swapping"
                         v-model="swappingSetting"
@@ -174,9 +176,9 @@ const includesSetting = createSetting<(T.ArtifactFamily)[]>({
     parser: (s) => (JSON.parse(s) as T.ArtifactFamily[]).filter(x =>
                     x === T.ArtifactFamily.TACHYON_DEFLECTOR || x === T.ArtifactFamily.SHIP_IN_A_BOTTLE),
 });
-const reslottingSetting = createSetting<boolean>({
+const reslottingSetting = createSetting<0|1|2|3>({
     localStorageKey: 'boosting-reslotting',
-    defaultValue: false,
+    defaultValue: 0,
 });
 const swappingSetting = createSetting<null|T.ArtifactFamily[]>({
     localStorageKey: 'boosting-gusset-swap',
@@ -241,7 +243,7 @@ const allowedGussetOptions = computed(() => {
         [
             T.AllowedGusset.ANY,
             T.AllowedGusset.NONE,
-            ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)
+            ...getOptimalGussets(userData.value?.items ?? [], reslottingSetting.value === 0)
         ];
 
     // Force selected option to show up
