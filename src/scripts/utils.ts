@@ -44,7 +44,7 @@ export function parseNumber(s: string): number {
 /**
  * Format a number to a game format string
  */
-export function formatNumber(x: number, ...args: Parameters<number["toLocaleString"]>): string {
+export function formatNumber(x: number, opts?: Intl.NumberFormatOptions): string {
     x = Number(x);
     let unit;
     for (unit of units) {
@@ -52,7 +52,16 @@ export function formatNumber(x: number, ...args: Parameters<number["toLocaleStri
         if (x < 999.999999) break;
         x /= 1e3;
     }
-    return `${x.toLocaleString(...args)}${unit}`;
+    return `${x.toLocaleString('en-us', opts)}${unit}`;
+}
+
+/**
+ * Smart increment/decrement a number in game format
+ * Increments by a value x on the most significant digit
+ */
+export function spinNumber(x: number, inc: number): number {
+    inc *= 10**Math.floor(Math.log10(x) - 1e-3);
+    return x + inc;
 }
 
 /**

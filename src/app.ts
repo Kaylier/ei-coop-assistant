@@ -77,6 +77,11 @@ const routes = [
         meta: { title: "Optimal sets" }
     },
     {
+        path: '/prestige-set',
+        component: () => import('@/views/prestige-set.vue'),
+        meta: { title: "Prestige" }
+    },
+    {
         path: '/error',
         name: 'error',
         component: () => import('@/views/error.vue'),

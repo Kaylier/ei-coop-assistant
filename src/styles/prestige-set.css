@@ -1,0 +1,39 @@
+
+#inputs {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1em 3em;
+    font-size: 0.8rem;
+    font-weight: bold;
+    align-items: center;
+}
+
+#main-sets {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    align-items: flex-start;
+    gap: 2em;
+    text-align: center;
+}
+
+.card-frame h3 {
+    font-size: 1.2em;
+    margin: 0.3em 0 0 0;
+}
+
+.highlighted {
+    color: color-mix(in srgb, var(--active-color) 75%, white);
+    font-kerning: none;
+}
+
+.info-entry {
+    font-size: 1.1em;
+}
+
+.info-entry img {
+    height: 0.75em;
+    margin: 0 0.2em 0 0;
+    scale: 1.7;
+}
+

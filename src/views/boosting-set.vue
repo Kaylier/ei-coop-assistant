@@ -160,7 +160,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { parseNumber, formatNumber, formatTime } from '@/scripts/utils.ts';
+import { parseNumber, formatNumber, formatTime, spinNumber } from '@/scripts/utils.ts';
 import { createSetting, createTextInputSetting, focusRef } from '@/scripts/settings.ts';
 import { Effects } from '@/scripts/effects.ts';
 import { boostSets, searchDiliSet, searchIHRSets, searchSlowIHRSet } from '@/scripts/boosting-set.ts';
@@ -195,6 +195,7 @@ const startingPopulationSetting = createTextInputSetting<number>({
     defaultValue: 0,
     parser: (s: string) => s ? parseNumber(s) : 0,
     formatter: formatNumber,
+    spinner: spinNumber,
 });
 const pinnedBoostSetting = createSetting<Set<string>>({
     localStorageKey: 'boosting-favourite-boost-sets',

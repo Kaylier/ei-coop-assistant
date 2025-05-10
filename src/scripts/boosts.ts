@@ -111,4 +111,7 @@ export function getDuration(boost: T.Boost) {
     return boostMetadata[boost].duration;
 }
 
+export function getImg(boost: T.Boost) {
+    return `/img/boosts/${boost}.png`;
+}
 

@@ -651,7 +651,7 @@ export async function getSandboxLink(artifacts: T.Artifact[],
         config: {
             prophecyEggs: userEffects.prophecy_eggs,
             soulEggs: userEffects.soul_eggs,
-            soulEggsInput: formatNumber(userEffects.soul_eggs, 'en-us'),
+            soulEggsInput: formatNumber(userEffects.soul_eggs),
             isEnlightenment: enlightenment ?? false,
             missingSoulFood: Math.round(150 - userEffects.soul_egg_bonus*100),
             missingProphecyBonus: Math.round(110 - userEffects.prophecy_egg_bonus*100),

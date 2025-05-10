@@ -32,7 +32,8 @@
         <setting-text id="egg-value"
                       v-model="eggValueSetting"
                       label="Egg value"
-                      tooltip="Used to evaluate time to buy researches."/>
+                      tooltip="Used to evaluate time to buy researches."
+                      inputmode="numeric"/>
         <setting-text id="mirror-eb"
                       v-model="mirrorSetting"
                       label="Mirror EB%"
@@ -46,7 +47,8 @@
                                earning event, sale event,<br/>
                                coop earning and laying bonuses<br/>
                                and contract modifiers.<br/>
-                               Default to 4"/>
+                               Default to 4"
+                      inputmode="numeric"/>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
@@ -116,7 +118,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { clamp, isclose, parseNumber, formatNumber } from '@/scripts/utils.ts';
+import { clamp, isclose, parseNumber, formatNumber, spinNumber } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
 import { Effects } from '@/scripts/effects.ts';
@@ -149,6 +151,10 @@ Can you
 </span>
 `;
 
+const EGG_VALUES = [ /*1e-07, */0.05, 0.1, 0.25, 0.99, 1.25, 4.99, 5, 6.25, 30, 50, 100, 150,
+    500, 700, 3000, 12500, 12500, 50000, 175000, 525000, 1500000.0, 10000000.0,
+    1000000000.0, 100000000000.0, 1000000000000.0, 15000000000000.0, 100000000000000.0 ];
+
 
 // Settings variables
 const swapCubeSetting = createSetting<boolean>({
@@ -169,6 +175,8 @@ const eggValueSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_EGG_VALUE,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_EGG_VALUE,
     formatter: formatNumber,
+    spinner: (x, inc) => (inc > 0 ? EGG_VALUES.find(v => v > x)
+                                  : EGG_VALUES.findLast(v => v < x)) ?? x,
 });
 const mirrorSetting = createTextInputSetting<number>({
     localStorageKey: 'earning-mirror',
@@ -176,6 +184,7 @@ const mirrorSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_MIRROR_VALUE,
     parser: (s: string) => s ? parseNumber(s)/100 : DEFAULT_MIRROR_VALUE,
     formatter: (x: number) => formatNumber(x*100),
+    spinner: spinNumber,
 });
 const miscBonusSetting = createTextInputSetting<number>({
     localStorageKey: 'earning-misc-bonus',
@@ -183,6 +192,7 @@ const miscBonusSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_MISC_VALUE,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_MISC_VALUE,
     formatter: formatNumber,
+    spinner: spinNumber,
 });
 
 
@@ -308,10 +318,10 @@ function generateChartData(set: T.ArtifactSet, mirroring: boolean = false) {
     missing /= boostBonus;
 
 
-    const populationLabel = formatNumber(population, undefined, {maximumFractionDigits: 0});
-    const boostLabel = "×"+formatNumber(boostBonus, undefined, {maximumFractionDigits: 0});
-    const timeLabel = formatNumber(time, undefined, {maximumFractionDigits: 0})+" minute"+(time > 1 ? "s" : "");
-    const missingLabel = "×"+formatNumber(missing, undefined, {maximumFractionDigits: 0});
+    const populationLabel = formatNumber(population, {maximumFractionDigits: 0});
+    const boostLabel = "×"+formatNumber(boostBonus, {maximumFractionDigits: 0});
+    const timeLabel = formatNumber(time, {maximumFractionDigits: 0})+" minute"+(time > 1 ? "s" : "");
+    const missingLabel = "×"+formatNumber(missing, {maximumFractionDigits: 0});
 
     return {
         multipliers: [

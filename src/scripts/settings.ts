@@ -65,6 +65,7 @@ export type TextInputSetting<T> = {
     value: Ref<T>,
     placeholder: Ref<string>,
     defaultValue: T,
+    spin?: (arg0: T) => void,
 };
 
 /**
@@ -95,8 +96,9 @@ export function createTextInputSetting<T>(options: {
     defaultValue: T,
     parser?: (arg0: string) => T,
     formatter?: (arg0: T) => string,
+    spinner?: (arg0: T, arg1: T) => T,
 }): Reactive<TextInputSetting<T>> {
-    const { localStorageKey, queryParamKey, defaultValue, parser, formatter } = options;
+    const { localStorageKey, queryParamKey, defaultValue, parser, formatter, spinner } = options;
 
     const parseValue = parser || ((s: string) => s as unknown as T);
     const formatValue = formatter || ((s: T) => s as unknown as string);
@@ -114,21 +116,28 @@ export function createTextInputSetting<T>(options: {
     const placeholder = computed(() => formatValue(value.value));
 
     // Parse the text and update current state (value and isValid)
-    function updateValue(save: boolean = true) {
+    function updateValue(s: string, save: boolean = true): string {
         try {
-            const parsed = parseValue(text.value);
+            const parsed = parseValue(s);
             value.value = parsed;
             isValid.value = true;
         } catch {
             isValid.value = false;
         }
         if (localStorageKey && isValid.value && save) {
-            localStorage.setItem(localStorageKey, text.value);
+            localStorage.setItem(localStorageKey, s);
         }
+        return isValid.value ? s : text.value;
     }
 
-    updateValue(false);
-    watch(text, () => updateValue(!ephemeral));
+    updateValue(text.value, false);
+    watch(text, (s) => updateValue(s, !ephemeral));
+
+    function spin(x: T) {
+        if (!text.value || !isValid.value) return;
+        text.value = updateValue(formatValue(spinner!(value.value, x)), !ephemeral);
+        updateValue(text.value, false);
+    }
 
     return reactive<TextInputSetting<T>>({
         text,
@@ -136,6 +145,7 @@ export function createTextInputSetting<T>(options: {
         value,
         placeholder,
         defaultValue,
+        spin: spinner ? spin : undefined,
   });
 }
 
