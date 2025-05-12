@@ -19,9 +19,11 @@ export function searchDiliSet(items: T.Item[],
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
-        'boost_duration_mult',
+        'boost_duration_mult'
+    ], [
+        'ihr_base',
         'ihr_mult',
-        'boost_mult',
+        'boost_mult'
     ]);
 
     const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
@@ -36,7 +38,7 @@ export function searchDiliSet(items: T.Item[],
     function scoreFn(effects: Effects): number[] {
         return [
             effects.boost_duration_mult,
-            effects.ihr_mult*effects.boost_mult,
+            effects.ihr*effects.boost_mult,
         ];
     }
 
@@ -63,17 +65,22 @@ export function searchIHRSets(items: T.Item[],
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
-        'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
+        'ihr_base',
         'ihr_mult',
-        'laying_rate',
+        'ihr_away_mult',
         'boost_mult',
+        // needed for include requirements:
         'hab_capacity_mult',
+        'team_laying_bonus',
+        'team_earning_bonus',
+    ], [
+        'laying_rate',
     ]);
 
     function scoreFn(effects: Effects): number[] {
         //return [effects.ihr_mult*effects.boost_mult];
         return [
-            effects.ihr_mult*effects.boost_mult,
+            effects.ihr_away*effects.boost_mult,
             effects.hab_capacity_mult,
             effects.laying_rate,
         ];
@@ -147,11 +154,16 @@ export function searchSlowIHRSet(items: T.Item[],
     });
 
     const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
-        'team_laying_bonus', 'team_earning_bonus', // needed for include requirements
+        'ihr_base',
         'ihr_mult',
+        'ihr_away_mult',
         'laying_rate',
         'boost_mult',
+        // needed for include requirements:
         'hab_capacity_mult',
+        'team_laying_bonus',
+        'team_earning_bonus',
+    ], [
     ]);
 
     // Restrict to the highest deflector and ship bonus
@@ -166,7 +178,6 @@ export function searchSlowIHRSet(items: T.Item[],
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
     const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
-    console.log(requiredFamilies);
     if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }
@@ -175,8 +186,8 @@ export function searchSlowIHRSet(items: T.Item[],
 
     function scoreFn(effects: Effects): number[] {
         return [
-            effects.ihr_mult*effects.laying_rate*effects.boost_mult,
-            effects.ihr_mult*effects.boost_mult,
+            effects.ihr_away*effects.laying_rate*effects.boost_mult,
+            effects.ihr_away*effects.boost_mult,
             effects.hab_capacity_mult,
         ];
     }

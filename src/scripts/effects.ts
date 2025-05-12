@@ -99,7 +99,7 @@ const effectMetadata = {
      *  - Internal Hatchery Rate
      *  - Laying Rate
      */
-    hab_capacity_base     : { type: 0, init: 250, text: "hab capacity" },
+    hab_capacity_base     : { type:-1, init: 250, text: "hab capacity" },
     hab_capacity_mult     : { type: 1, init: 1, text: "hab capacity" },
 
     /** Laying Rate
@@ -162,7 +162,7 @@ const effectMetadata = {
      *  - Laying Rate
      *  - Egg Value
      */
-    shipping_base         : { type: 0, init: 5000/60, text: "shipping rate" },
+    shipping_base         : { type:-1, init: 5000/60, text: "shipping rate" },
     shipping_mult         : { type: 1, init: 1, text: "shipping rate" },
 
     /** Egg Value
@@ -201,7 +201,7 @@ const effectMetadata = {
      *  - Shipping Rate
      *  - Earning Rate
      */
-    egg_value_base        : { type: 0, init: 1, text: "egg value" },
+    egg_value_base        : { type:-1, init: 1, text: "egg value" },
     egg_value_mult        : { type: 1, init: 1, text: "egg value" },
 
     /** Earning Multiplier
@@ -527,6 +527,7 @@ export class Effects {
      */
     apply<K extends EffectKey>(key: K, value: number): this {
         switch (effectMetadata[key].type) {
+            case-1: this.set(key, Math.max(this.get(key), value)); break;
             case 0: this.set(key, this.get(key) + value); break;
             case 1: this.set(key, this.get(key) * value); break;
         }
@@ -537,15 +538,23 @@ export class Effects {
      * Generic getter
      */
     get<K extends EffectKey>(key: K): number {
-        return this.values.get(key) ?? effectMetadata[key].type;
+        const ret = this.values.get(key);
+        if (ret !== undefined) return ret;
+        switch (effectMetadata[key].type) {
+            case-1: return 0;
+            case 0: return 0;
+            case 1: return 1;
+        }
     }
 
     /**
      * Generic setter
      */
     set<K extends EffectKey>(key: K, v: number): this {
-        if (v === effectMetadata[key].type) this.values.delete(key);
-        else                                this.values.set(key, v);
+        // Works for type 0 and 1, -1 is never concerned since it should always be postive
+        const neutral = Math.max(effectMetadata[key].type, 0);
+        if (v === neutral) this.values.delete(key);
+        else               this.values.set(key, v);
         return this;
     }
 
@@ -560,9 +569,10 @@ export class Effects {
 
     /**
      * Return true if the effect is identical to new Effects()
+     * If keys are given, only tried on specific keys
      */
-    isDefault(): boolean {
-        return !this.values.size;
+    isDefault(keys?: EffectKey[]): boolean {
+        return keys ? !keys.some(key => this.values.has(key)) : !this.values.size;
     }
 
     /**
@@ -575,12 +585,13 @@ export class Effects {
     // Defines getters for all EffectKey
     static {
         for (const key of Object.keys(effectMetadata) as EffectKey[]) {
-            const neutral = effectMetadata[key].type;
+            const neutral = Math.max(effectMetadata[key].type, 0);
             Object.defineProperty(this.prototype, key, {
                 get() {
                     return this.values.get(key) ?? neutral;
                 },
                 set(v: number) {
+                    // Works for type 0 and 1, -1 is never concerned since it should always be postive
                     if (v === neutral) this.values.delete(key);
                     else               this.values.set(key, v);
                 },

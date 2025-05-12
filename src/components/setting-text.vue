@@ -1,12 +1,12 @@
 <template>
     <span class="setting-entry" :class="{ hidden: hide && setting.value === setting.defaultValue }"
           role="spinbutton"
-          @keydown.up.shift.exact="setting.spin?.(10)"
-          @keydown.up.exact="setting.spin?.(1)"
-          @keydown.up.ctrl.exact="setting.spin?.(0.1)"
-          @keydown.down.ctrl.exact="setting.spin?.(-0.1)"
-          @keydown.down.exact="setting.spin?.(-1)"
-          @keydown.down.shift.exact="setting.spin?.(-10)"
+          @keydown.up.shift.exact="setting.spin?.(3)"
+          @keydown.up.exact="setting.spin?.(2)"
+          @keydown.up.ctrl.exact="setting.spin?.(1)"
+          @keydown.down.ctrl.exact="setting.spin?.(-1)"
+          @keydown.down.exact="setting.spin?.(-2)"
+          @keydown.down.shift.exact="setting.spin?.(-3)"
           >
         <label>
             <span v-if="tooltip" tabindex="0" class="tooltip-icon">

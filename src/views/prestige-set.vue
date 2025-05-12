@@ -22,6 +22,10 @@
                       v-model="eventPrestigeSetting"
                       label="Prestige event"
                       :small="true"/>
+        <setting-text id="event-duration"
+                      v-model="eventDurationSetting"
+                      label="Boost dur. event"
+                      :small="true"/>
 
     </section>
     <section id="inputs">
@@ -37,6 +41,14 @@
                                   { value: false, label: 'single-stige' },
                                   { value: true, label: 'multi-stige' },
                                   ]"/>
+        <span>
+            <span class="highlighted">{{ formatTime(boostTime) }}</span>
+            boosts
+        </span>
+        <span v-if="swapIHRSetting.value">
+            <span class="highlighted">×{{ formatNumber(ihrBonus) }}</span>
+            IHR set
+        </span>
     </section>
     <section class="settings">
         <setting-switch v-if="multistigeSetting.value" id="swapIHR"
@@ -131,8 +143,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import type { EffectKey } from '@/scripts/effects.ts';
-import { parseNumber, formatNumber, spinNumber, formatTime } from '@/scripts/utils.ts';
+import { parseNumber, formatNumber, spinNumber, spinBigNumber, formatTime, clamp } from '@/scripts/utils.ts';
 import { Effects } from '@/scripts/effects.ts';
 import { getImg, getDescription } from '@/scripts/boosts.ts';
 import { createSetting, createTextInputSetting } from '@/scripts/settings.ts';
@@ -141,7 +152,15 @@ import { prepareItems, searchSet } from '@/scripts/solvers.ts';
 
 const DEFAULT_EVENT_EARNINGS = 1;
 const DEFAULT_EVENT_PRESTIGE = 1;
-const DEFAULT_BUILD_TIME = 85;
+const DEFAULT_EVENT_DURATION = 1;
+const DEFAULT_BUILD_TIME = 85; // TODO: better default? guesstimate from user data?
+const DEFAULT_BOOST_IHR = 1000*100;
+
+/* Time spend with maxed IHR during build time
+ * Based on few experimental data from different skill levels
+ * Quite approximative
+ */
+const BUILD_IHR_TIME = 27;
 
 
 const onlineSetting = createSetting<boolean>({
@@ -161,11 +180,11 @@ const buildTimeSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_BUILD_TIME,
     parser: (s: string) => {
         const v = s ? parseNumber(s) : DEFAULT_BUILD_TIME;
-        if (v < 24 || v > 1511) throw new Error("Build time is out of range");
+        if (v < BUILD_IHR_TIME || v > 1511) throw new Error("Build time is out of range");
         return v;
     },
     formatter: formatNumber,
-    spinner: (x, inc) => x + inc,
+    spinner: spinNumber,
 });
 const eventEarningsSetting = createTextInputSetting<number>({
     localStorageKey: 'prestige-event-earnings',
@@ -173,7 +192,7 @@ const eventEarningsSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_EVENT_EARNINGS,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_EVENT_EARNINGS,
     formatter: formatNumber,
-    spinner: (x, inc) => x + inc,
+    spinner: spinNumber,
 });
 const eventPrestigeSetting = createTextInputSetting<number>({
     localStorageKey: 'prestige-event-prestige',
@@ -181,7 +200,19 @@ const eventPrestigeSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_EVENT_PRESTIGE,
     parser: (s: string) => s ? parseNumber(s) : DEFAULT_EVENT_PRESTIGE,
     formatter: formatNumber,
-    spinner: (x, inc) => x + inc,
+    spinner: spinNumber,
+});
+const eventDurationSetting = createTextInputSetting<number>({
+    localStorageKey: 'prestige-event-duration',
+    queryParamKey: 'duration_event',
+    defaultValue: DEFAULT_EVENT_DURATION,
+    parser: (s: string) => {
+        const v = s ? parseNumber(s) : DEFAULT_EVENT_DURATION;
+        if (v < 1 || v > 999) throw new Error("Build time is out of range");
+        return v;
+    },
+    formatter: formatNumber,
+    spinner: spinNumber,
 });
 const legCountSetting = createTextInputSetting<number|null>({
     localStorageKey: 'prestige-leg-count',
@@ -191,8 +222,10 @@ const legCountSetting = createTextInputSetting<number|null>({
             throw new Error("Invalid input, must be an integer between 1 and 99");
         return s ? parseNumber(s) : null;
     },
-    formatter: (x: number|null): string => formatNumber(x ?? legCount.value),
-    spinner: (x, inc) => x && inc ? x + inc : null,
+    // TODO: change text to auto once testing is complete
+    //formatter: (x: number|null): string => x ? formatNumber(x) : 'auto',
+    formatter: (x: number|null): string => formatNumber(x ?? getLegCount()),
+    spinner: (x, inc) => x && inc ? x + Math.sign(inc) : null,
 });
 const swapIHRSetting = createSetting<boolean>({
     localStorageKey: 'prestige-swap-ihr',
@@ -201,14 +234,11 @@ const swapIHRSetting = createSetting<boolean>({
 const startingPopulationSetting = createTextInputSetting<number|null>({
     localStorageKey: 'prestige-starting-population',
     defaultValue: null,
-    parser: (s: string): number|null => {
-        if (!s) return null;
-        const v = parseNumber(s);
-        if (v > 14.175e9) throw new Error("Starting population is out of range");
-        return v;
-    },
-    formatter: (x: number|null): string => formatNumber(x ?? startingPopulation.value),
-    spinner: (x, inc) => x && inc ? spinNumber(x, inc) : null,
+    parser: (s: string) => s ? parseNumber(s) : null,
+    // TODO: change text to auto once testing is complete
+    //formatter: (x: number|null): string => x ? formatNumber(x) : 'auto',
+    formatter: (x: number|null): string => formatNumber(x ?? getStartPopulation()),
+    spinner: (x, inc) => x && inc ? spinBigNumber(x, inc) : null,
 });
 
 
@@ -224,31 +254,37 @@ const setAIO = shallowRef<T.ArtifactSet|null>(null);
 
 
 
+const userEffects = computed(() => (userData.value?.maxedEffects ?? Effects.initial).set('egg_value_base', 100e12));
+const boostTime = computed<number>(() => 600*(setDili.value?.effects.boost_duration_mult ?? 1)
+                                            *eventDurationSetting.value);
+const ihrBonus = computed<number>(() => (setIHR.value?.effects.ihr_mult ?? 1)
+                                       *(setIHR.value?.effects.boost_mult ?? 1));
 
-const boostTime = computed<number>(() => 600*(setDili.value?.effects.boost_duration_mult ?? 1));
-const ihrBonus = computed<number>(() => (setIHR.value?.effects.ihr_mult ?? 1)*(setIHR.value?.effects.boost_mult ?? 1));
+function getStartPopulation(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
+    const min = 0;
+    const max = userEffects.value.hab_capacity;
 
-const startingPopulation = computed<number>(() => {
-    if (startingPopulationSetting.value)
-        return startingPopulationSetting.value;
-    let ihr = (userData.value?.maxedEffects.ihr ?? 496);
-    if (swapIHRSetting.value) ihr *= ihrBonus.value;
-    // TODO: better estimation of starting population
-    return ihr*1000*100*24;
-});
+    if (startingPopulationSetting.value) {
+        return clamp(startingPopulationSetting.value, min, max);
+    }
 
-const legCount = computed<number>(() => {
-    // best guess of optimal leg count, used for optimizing artifacts
-    if (legCountSetting.value)
-        return legCountSetting.value;
-    const eff = userData.value?.maxedEffects ?? Effects.initial;
-    const t = buildTimeSetting.value
-    const P = startingPopulation.value;
-    const C = (eff.hab_capacity ?? 11.34e9);
-    // Use ×1000 tachyon with ×50 boost beacon as baseline
-    // For 2bb it may change to 1 less leg
-    // For piggystige it may change to 1 or 2 more legs
-    const H = (onlineSetting.value ? eff.ihr : eff.ihr_away)*1000*50;
+    // estimate the population using BUILD_IHR_TIME seconds of IHR
+    const ihr = userEffects.value.ihr*(swapIHRSetting.value ? ihrBonus.value : 1);
+    return clamp(ihr*boostIHRBonus*BUILD_IHR_TIME, min, max);
+}
+
+function getLegCount(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
+    const min = 1;
+    const max = Math.floor(boostTime.value/buildTimeSetting.value);
+
+    if (legCountSetting.value) {
+        return clamp(legCountSetting.value, min, max);
+    }
+
+    const t = buildTimeSetting.value;
+    const P = getStartPopulation(boostIHRBonus);
+    const C = userEffects.value.hab_capacity;
+    const H = (onlineSetting.value ? userEffects.value.ihr : userEffects.value.ihr_away)*boostIHRBonus;
 
     // earning time that maximizes average SE/s, assuming habs don't get filled up
     const earningT0 =  (0.0172414*(-79*P + 21*H*t + Math.sqrt(6241*P**2 - 882*H*t*P + 441*H**2*t**2)))/H;
@@ -258,10 +294,13 @@ const legCount = computed<number>(() => {
     // Choose the correct time estimation
     let earningTime = earningT0 < (C-P)/H ? earningT0 : earningT1;
 
-    if (!onlineSetting.value) earningTime = Math.max(60, earningTime);
+    if (!onlineSetting.value) {
+        earningTime = Math.max(60, earningTime);
+    }
 
-    return Math.floor((boostTime.value + buildTimeSetting.value)/(earningTime + buildTimeSetting.value));
-});
+    const legCount = Math.floor((boostTime.value + buildTimeSetting.value)/(earningTime + buildTimeSetting.value));
+    return clamp(legCount, min, max);
+}
 
 
 
@@ -273,9 +312,9 @@ watch([userData,
        onlineSetting,
        multistigeSetting,
        buildTimeSetting,
-       startingPopulation,
-       legCount,
+       swapIHRSetting,
        boostTime,
+       ihrBonus,
       ], updateSets);
 
 
@@ -284,26 +323,23 @@ function updateBaseSets() {
 
     try {
         errorMessage.value = "";
-        const effects: EffectKey[] = [
+        const { artifacts, stones } = prepareItems(userData.value?.items ?? [], false, false, [
+            'ihr_base',
             'ihr_mult',
             'boost_mult',
             'boost_duration_mult',
-        ];
-        const { artifacts, stones } = prepareItems(userData.value?.items ?? [],
-                                                   (reslottingSetting.value & 2) === 2,
-                                                   (reslottingSetting.value & 1) === 1,
-                                                   effects);
+        ], [
+            'drone_frequency_mult',
+        ]);
 
-        // artificially constrains on dummy secondary values to speed up optimization
-        // It reduces the amount of equivalent optimal sets, especially with reslotting on
         setDili.value = searchSet(artifacts, stones, userData.value?.proPermit ? 4 : 2,
-                              (e) => [ e.boost_duration_mult, e.ihr, e.egg_value_mult ],
-                              { userEffects: userData.value?.maxedEffects ?? Effects.initial });
+                              (e) => [ e.boost_duration_mult, e.drone_frequency_mult, e.ihr ],
+                              { userEffects: userEffects.value });
         console.log(`Dili set (${formatTime(boostTime.value)}):`, setDili.value);
 
         setIHR.value = searchSet(artifacts, stones, userData.value?.proPermit ? 4 : 2,
-                              (e) => [ e.ihr*e.boost_mult, e.egg_value_mult ],
-                              { userEffects: userData.value?.maxedEffects ?? Effects.initial });
+                              (e) => [ e.ihr*e.boost_mult, e.drone_frequency_mult ],
+                              { userEffects: userEffects.value });
         console.log(`IHR set (×${ihrBonus.value}):`, setIHR.value);
 
     } catch (e) {
@@ -319,24 +355,28 @@ function updateSets() {
 
     try {
         errorMessage.value = "";
-        const effects: EffectKey[] = [
+        const { artifacts, stones } = prepareItems(userData.value?.items ?? [],
+                                                   (reslottingSetting.value & 2) == 2,
+                                                   (reslottingSetting.value & 1) == 1, [
+            'ihr_base',
             'ihr_mult',
             'ihr_away_mult',
             'hab_capacity_mult',
             'laying_rate',
+            'egg_value_base',
             'egg_value_mult',
             'earning_mult',
             'earning_mrcb_mult',
             'earning_away_mult',
+            'soul_eggs',
+            'prophecy_eggs',
             'soul_egg_bonus',
             'prophecy_egg_bonus',
-            'boost_mult',
             'prestige_earning_mult',
-        ];
-        const { artifacts, stones } = prepareItems(userData.value?.items ?? [],
-                                                   (reslottingSetting.value & 2) == 2,
-                                                   (reslottingSetting.value & 1) == 1,
-                                                   effects);
+            'prestige_mult',
+            'boost_mult',
+        ], [
+        ]);
 
         // Assumes starts at maxed population
         setPreload.value = searchSet(artifacts, stones, userData.value?.proPermit ? 4 : 2,
@@ -348,15 +388,15 @@ function updateSets() {
                          e.eb *
                          e.boost_mult**2 *
                          e.prestige_earning_mult ],
-                { userEffects: userData.value?.maxedEffects ?? Effects.initial });
+                { userEffects: userEffects.value });
         console.log("Preload set:", setPreload.value);
 
         // Takes 2bb combo as reference
         setAIO.value = searchSet(artifacts, stones, userData.value?.proPermit ? 4 : 2,
-                (e) => [ integrateTimeCapacity(startingPopulation.value,
+                (e) => [ integrateTimeCapacity(getStartPopulation(),
                                                e.hab_capacity,
-                                               (onlineSetting.value ? e.ihr : e.ihr_away)*e.boost_mult*1000*100,
-                                               multistigeSetting.value ? legCount.value : 1) *
+                                               (onlineSetting.value ? e.ihr : e.ihr_away)*e.boost_mult*DEFAULT_BOOST_IHR,
+                                               multistigeSetting.value ? getLegCount() : 1) *
                          e.laying_rate *
                          e.egg_value *
                          e.earning_mult *
@@ -364,7 +404,7 @@ function updateSets() {
                          e.eb *
                          e.boost_mult**2 * // counted one more time in the integral when habs are not filled
                          e.prestige_earning_mult ],
-                { userEffects: userData.value?.maxedEffects ?? Effects.initial });
+                { userEffects: userEffects.value });
         console.log("AIO set:", setAIO.value);
 
     } catch (e) {
@@ -385,18 +425,10 @@ const infoPreload = computed<Info[]>(() => {
     const ret: Info[] = [];
     if (!setPreload.value) return ret;
 
-    const eff = new Effects(userData.value?.maxedEffects ?? Effects.initial, setPreload.value.effects);
+    const eff = new Effects(userEffects.value, setPreload.value.effects);
     eff.set('egg_value_base', 100e12);
 
-    let ihr = (userData.value?.maxedEffects ?? Effects.initial).ihr;
-    if (swapIHRSetting.value) ihr *= ihrBonus.value;
-
-    // On multi, counts 24s of boosted IHR. One tachyon and BB is counted here, multiplied later
-    // by correct numbers
-    const capacity = multistigeSetting.value ?
-                        startingPopulationSetting.value ?? ihr*1000*50*24 :
-                        eff.hab_capacity;
-
+    const multi: boolean = multistigeSetting.value;
 
     ret.push({
         boosts: [
@@ -406,7 +438,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.BOOST_50X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, capacity*2*3, 50*500*150**2),
+        value: calculateGains(eff, multi ? getStartPopulation(2000*150) : eff.hab_capacity, 50*500*150**2),
     });
 
     ret.push({
@@ -417,7 +449,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.BOOST_50X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, capacity*3*2, 100*500*100**2),
+        value: calculateGains(eff, multi ? getStartPopulation(3000*100) : eff.hab_capacity, 100*500*100**2),
     });
 
     ret.push({
@@ -428,7 +460,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.SOUL_500X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, capacity*4*1, 100*1000*50**2),
+        value: calculateGains(eff, multi ? getStartPopulation(4000*50) : eff.hab_capacity, 100*1000*50**2),
     });
 
     ret.push({
@@ -439,7 +471,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.SOUL_500X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, capacity*4*1, 150*500*50**2),
+        value: calculateGains(eff, multi ? getStartPopulation(4000*50) : eff.hab_capacity, 150*500*50**2),
     });
 
     ret.push({
@@ -450,7 +482,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.BOOST_10X10,
             T.Boost.BOOST_10X10,
         ],
-        value: calculateGains(eff, capacity*3*2, 100*500*20**2),
+        value: calculateGains(eff, multi ? getStartPopulation(3000*100) : eff.hab_capacity, 100*500*20**2),
     });
 
     return multistigeSetting.value ? ret.slice(0, 1) : ret;
@@ -460,9 +492,11 @@ const infoAIO = computed<Info[]>(() => {
     const ret: Info[] = [];
     if (!setAIO.value) return ret;
 
-    const eff = new Effects(userData.value?.maxedEffects ?? Effects.initial, setAIO.value.effects);
+    const eff = new Effects(userEffects.value, setAIO.value.effects);
     eff.set('egg_value_base', 100e12);
 
+    const multi: boolean = multistigeSetting.value;
+
     ret.push({
         boosts: [
             T.Boost.TACHYON_1000X10,
@@ -471,8 +505,7 @@ const infoAIO = computed<Info[]>(() => {
             T.Boost.BOOST_50X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multistigeSetting.value ? startingPopulation.value : 0,
-                              50*500*100**2, 1000*100),
+        value: calculateGains(eff, multi ? getStartPopulation(1000*100) : 0, 50*500*100**2, 1000*100),
     });
 
     ret.push({
@@ -483,8 +516,7 @@ const infoAIO = computed<Info[]>(() => {
             T.Boost.SOUL_500X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multistigeSetting.value ? startingPopulation.value : 0,
-                              100*500*50**2, 1000*50),
+        value: calculateGains(eff, multi ? getStartPopulation(1000*50) : 0, 100*500*50**2, 1000*50),
     });
 
     ret.push({
@@ -495,8 +527,7 @@ const infoAIO = computed<Info[]>(() => {
             T.Boost.BOOST_10X10,
             T.Boost.BOOST_10X10,
         ],
-        value: calculateGains(eff, multistigeSetting.value ? startingPopulation.value : 0,
-                              50*500*20**2, 1000*20),
+        value: calculateGains(eff, multi ? getStartPopulation(1000*20) : 0, 50*500*20**2, 1000*20),
     });
 
     return ret;
@@ -507,24 +538,7 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
 
     const ihr = (onlineSetting.value ? e.ihr : e.ihr_away)*e.boost_mult*ihrBoost;
 
-    let legs = legCountSetting.value;
-    if (!legs) {
-        // Estimate optimal leg count for specified ihrBoost
-        const t = buildTimeSetting.value
-        const P = startingPopulation.value;
-        const C = (e.hab_capacity ?? 11.34e9);
-
-        // earning time that maximizes average SE/s, assuming habs don't get filled up
-        const earningT0 = (-79*P + 21*ihr*t + Math.sqrt(6241*P**2 - 882*ihr*t*P + 441*ihr**2*t**2))
-                          * 0.0172414/ihr;
-        // earning time that maximizes average SE/s, assuming habs gets filled up
-        const earningT1 = (21*t*ihr*C + 50*C*C - 100*C*P + 50*P*P)/(79*C*ihr);
-        let earningTime = earningT0 < (C-P)/ihr ? earningT0 : earningT1;
-
-        if (!onlineSetting.value) earningTime = Math.max(60, earningTime);
-
-        legs = Math.floor((boostTime.value + buildTimeSetting.value)/(earningTime + buildTimeSetting.value));
-    }
+    const legs = getLegCount(ihrBoost);
 
     let bocks = integrateTimeCapacity(startPop, e.hab_capacity, ihr, multistigeSetting.value ? legs : 1);
     bocks *= e.laying_rate;
@@ -561,7 +575,6 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
 function integrateTimeCapacity(startPopulation: number, habCapacity: number, ihr: number, legs: number) {
     // helper for calculating the integral of population through boost time
     // Grows at rate IHR until it reaches habCapacity or boost ends
-    // TODO: check for custom legCount/build time if it works well
     const time = (boostTime.value + buildTimeSetting.value)/legs - buildTimeSetting.value;
     const maxPopulation = Math.min(habCapacity - startPopulation, time*ihr);
     return startPopulation*time + (time - maxPopulation/(2*ihr))*maxPopulation;

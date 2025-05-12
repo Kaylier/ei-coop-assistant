@@ -55,13 +55,27 @@ export function formatNumber(x: number, opts?: Intl.NumberFormatOptions): string
     return `${x.toLocaleString('en-us', opts)}${unit}`;
 }
 
+
+export function spinNumber(x: number, inc: number = 2): number {
+    const abs = Math.abs(inc);
+    if (abs <= 2) {
+        return x + Math.sign(inc);
+    }
+    return x + Math.sign(inc)*10;
+}
+
 /**
  * Smart increment/decrement a number in game format
  * Increments by a value x on the most significant digit
  */
-export function spinNumber(x: number, inc: number): number {
-    inc *= 10**Math.floor(Math.log10(x) - 1e-3);
-    return x + inc;
+export function spinBigNumber(x: number, inc: number = 2): number {
+    if (x <= 0) return x + 1e-3;
+    if (Math.abs(inc) > 2) {
+        return x*10**(inc < 0 ? inc+2 : inc-2);
+    }
+    const oom = Math.floor(Math.log10(x/(inc < 0 ? 2 : 1)));
+    const abs = Math.abs(inc);
+    return x + Math.sign(inc)*10**(oom-2+abs);
 }
 
 /**

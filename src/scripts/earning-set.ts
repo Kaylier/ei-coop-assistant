@@ -13,12 +13,17 @@ export function searchEBSet(items: T.Item[],
                             reslotting: 0|1|2|3): T.ArtifactSet | null {
 
     const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
-        'prophecy_egg_bonus',
+        'soul_eggs',
+        'prophecy_eggs',
         'soul_egg_bonus',
+        'prophecy_egg_bonus',
+    ], [
         'laying_rate',
+        'egg_value_base',
         'egg_value_mult',
-        'earning_mrcb_mult',
+        'earning_mult',
         'earning_away_mult',
+        'earning_mrcb_mult',
         'research_cost_mult',
         'team_earning_bonus',
     ]);
@@ -27,7 +32,7 @@ export function searchEBSet(items: T.Item[],
         const eb = effects.eb;
 
         const bonus = effects.laying_rate
-                    * effects.egg_value_mult
+                    * effects.egg_value
                     * effects.earning_mult
                     * (online ? effects.earning_mrcb_mult : effects.earning_away_mult)
                     / (countCube ? effects.research_cost_mult : 1);
@@ -64,13 +69,18 @@ export function searchEarningSet(items: T.Item[],
                                  reslotting: 0|1|2|3): T.ArtifactSet | null {
 
     const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
-        'prophecy_egg_bonus',
-        'soul_egg_bonus',
         'laying_rate',
+        'egg_value_base',
         'egg_value_mult',
-        'earning_mrcb_mult',
+        'earning_mult',
         'earning_away_mult',
+        'earning_mrcb_mult',
+        'soul_eggs',
+        'prophecy_eggs',
+        'soul_egg_bonus',
+        'prophecy_egg_bonus',
         'research_cost_mult',
+    ], [
         'team_earning_bonus',
     ]);
 
@@ -78,7 +88,7 @@ export function searchEarningSet(items: T.Item[],
         const eb = effects.eb;
 
         const bonus = effects.laying_rate
-                    * effects.egg_value_mult
+                    * effects.egg_value
                     * effects.earning_mult
                     * (online ? effects.earning_mrcb_mult : effects.earning_away_mult)
                     / (countCube ? effects.research_cost_mult : 1);
@@ -114,18 +124,18 @@ export function searchMirrorSet(items: T.Item[],
                                 reslotting: 0|1|2|3): T.ArtifactSet | null {
 
     const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
-        'prophecy_egg_bonus',
-        'soul_egg_bonus',
         'laying_rate',
+        'egg_value_base',
         'egg_value_mult',
-        'earning_mrcb_mult',
+        'earning_mult',
         'earning_away_mult',
+        'earning_mrcb_mult',
         'research_cost_mult',
     ]);
 
     function scoreFn(effects: Effects): number[] {
         const bonus = effects.laying_rate
-                    * effects.egg_value_mult
+                    * effects.egg_value
                     * effects.earning_mult
                     * (online ? effects.earning_mrcb_mult : effects.earning_away_mult)
                     / (countCube ? effects.research_cost_mult : 1);

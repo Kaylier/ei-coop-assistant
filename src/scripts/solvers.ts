@@ -32,13 +32,15 @@ type AnnotatedStone = {
  *      (false, true ): allows to insert new stones
  *      (true , false): ignores stones
  *      (true , true ): with reslotting
- *  If filteredEffects is given, artifacts are grouped by equivalence class on these effects
- *  and dominated ones are filtered out.
+ * mainEffects is a list of effect keys that must have a non-default value for an artifact to be considered.
+ * secondaryEffects is a list of effect keys that are considered for pruning dominated elements.
+ * If mainEffects or secondaryEffects are not set, use all effects
  */
 export function prepareItems(items: T.Item[],
                              unslot: boolean,
                              slot: boolean,
-                             filteredEffects?: EffectKey[]
+                             mainEffects?: EffectKey[],
+                             secondaryEffects?: EffectKey[],
                             ): {
                                 artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
                                 stones: Map<T.StoneFamily, AnnotatedStone[]>,
@@ -46,13 +48,17 @@ export function prepareItems(items: T.Item[],
     const artifacts = new Map<T.ArtifactFamily, AnnotatedArtifact[]>();
     const stones = new Map<T.StoneFamily, AnnotatedStone[]>();
 
+    // Make sure mainEffects are included in filteredEffects
+    const filteredEffects = secondaryEffects ? [...(mainEffects ?? []), ...secondaryEffects] : undefined;
+
     function addArtifact(artifact: T.Artifact) {
         const family = artifact.family;
         const stoneSlot = slot ? unslot ? artifact.stones.length : artifact.stones.filter(x => x === null).length : 0;
+
         const effects = getEffects(artifact, { recursive: !unslot, targets: filteredEffects });
 
         // If no effect detected and there's no potential through stones, skip
-        if (stoneSlot == 0 && effects.isDefault()) return;
+        if (stoneSlot == 0 && effects.isDefault(mainEffects)) return;
 
         for (let i = 0; i < artifact.stones.length; i++) {
             const stone = artifact.stones[i];
@@ -71,7 +77,7 @@ export function prepareItems(items: T.Item[],
         const family = stone.family;
         const effects = getEffects(stone, { recursive: !unslot, targets: filteredEffects });
 
-        if (effects.isDefault()) return;
+        if (effects.isDefault(mainEffects)) return;
 
         if (!stones.has(family)) {
             stones.set(family, []);

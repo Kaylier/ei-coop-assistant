@@ -113,7 +113,7 @@ const sets = shallowRef<SetEntry[]>([
         ],
     },
     {
-        title: "AIO RCB Prestige",
+        title: "AIO/multi RCB Prestige",
         effects: [
             'prophecy_egg_bonus',
             'boost_mult',
@@ -144,38 +144,7 @@ const sets = shallowRef<SetEntry[]>([
         ],
     },
     {
-        title: "Multi RCB Prestige",
-        effects: [
-            'prophecy_egg_bonus',
-            'boost_mult',
-            'laying_rate',
-            'prestige_earning_mult',
-            'ihr_mult',
-            'egg_value_mult',
-            'earning_mrcb_mult',
-            'soul_egg_bonus',
-        ],
-        scoreFn: (e) => {
-            let score = 1;
-            score *= e.ihr_mult;
-            score *= e.laying_rate;
-            score *= e.egg_value_mult;
-            score *= e.earning_mult;
-            score *= e.earning_mrcb_mult;
-            score *= e.eb;
-            score *= e.boost_mult**3;
-            score *= e.prestige_earning_mult;
-            return [ score ];
-        },
-        boosts: [
-            T.BoostCategory.BIRD_FEED,
-            T.BoostCategory.SOUL_BEACON,
-            T.BoostCategory.TACHYON_PRISM,
-            T.BoostCategory.BOOST_BEACON,
-        ],
-    },
-    {
-        title: "Preloaded Lunar Prestige",
+        title: "Preloaded/AIO Lunar Prestige",
         effects: [
             'prophecy_egg_bonus',
             'boost_mult',
@@ -201,40 +170,6 @@ const sets = shallowRef<SetEntry[]>([
         boosts: [
             T.BoostCategory.BIRD_FEED,
             T.BoostCategory.SOUL_BEACON,
-            T.BoostCategory.BOOST_BEACON,
-        ],
-    },
-    {
-        title: "AIO Lunar Prestige",
-        effects: [
-            'prophecy_egg_bonus',
-            'boost_mult',
-            'laying_rate',
-            'prestige_earning_mult',
-            'ihr_mult',
-            'hab_capacity_mult',
-            'egg_value_mult',
-            'earning_away_mult',
-            'soul_egg_bonus',
-        ],
-        scoreFn: (e) => {
-            let score = 1;
-            //score *= e.ihr_mult; // only counted the first couple minutes, we ignore it
-            //score *= e.ihr_away_mult; // only counted the first couple minutes, we ignore it
-            score *= e.hab_capacity_mult;
-            score *= e.laying_rate;
-            score *= e.egg_value_mult;
-            score *= e.earning_mult;
-            score *= e.earning_away_mult;
-            score *= e.eb;
-            score *= e.boost_mult**2;
-            score *= e.prestige_earning_mult;
-            return [ score ];
-        },
-        boosts: [
-            T.BoostCategory.BIRD_FEED,
-            T.BoostCategory.SOUL_BEACON,
-            T.BoostCategory.TACHYON_PRISM,
             T.BoostCategory.BOOST_BEACON,
         ],
     },
