@@ -347,6 +347,7 @@ button.invalid {
     font-size: 0.75rem;
     font-family: sans-serif;
     font-weight: normal;
+    z-index: 1;
 }
 
 .tooltip-icon:hover .tooltip-text,

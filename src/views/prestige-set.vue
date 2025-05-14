@@ -45,7 +45,7 @@
             <span class="highlighted">{{ formatTime(boostTime) }}</span>
             boosts
         </span>
-        <span v-if="swapIHRSetting.value">
+        <span v-if="multistigeSetting.value && swapIHRSetting.value">
             <span class="highlighted">×{{ formatNumber(ihrBonus) }}</span>
             IHR set
         </span>
@@ -63,7 +63,8 @@
                       v-model="buildTimeSetting"
                       label="Build time (seconds)"
                       tooltip="Boost time spent without significant<br/>
-                               earnings during a leg."
+                               earnings during a leg.<br/>
+                               Note that boost time is paused when changing eggs."
                       :small="true"
                       inputmode="numeric"/>
         <setting-text v-if="multistigeSetting.value" id="leg-count"
@@ -100,14 +101,32 @@
             <h3>
                 Estimated SE gains
             </h3>
-            <span v-for="{ boosts, value } in infoAIO" class="info-entry">
-                <img v-for="boost in boosts" :src="getImg(boost)" :alt="boost" :title="getDescription(boost)"/>
+            <div v-if="buildTimeSetting.value === DEFAULT_BUILD_TIME" class="warning-text">
+                No build time entered
+            </div>
+            <div v-else v-for="info in infoAIO" class="info-entry">
+                <img v-for="boost in info.boosts" :src="getImg(boost)" :alt="boost" :title="getDescription(boost)"/>
                  
-                <span class="highlighted">{{ formatNumber(value[0]) }}</span>
-                <template v-if="value[1]>1">
-                    (<span class="highlighted">{{value[1]}}</span> legs)
-                </template>
-            </span>
+                <span class="highlighted">{{ formatNumber(info.gains) }}</span>
+                <span tabindex="0" class="tooltip-icon">
+                    <span v-if="info.legs > 1">
+                        (<span class="highlighted">{{ info.legs }}</span> legs)
+                    </span>
+                    <span class="tooltip-text">
+                        <span class="highlighted">{{ info.legs }}</span>
+                        legs of
+                        <span class="highlighted">{{ formatTime(info.legTime) }}</span>
+                        <br/>
+                        Start earning after
+                        <span class="highlighted">{{ formatTime(info.buildTime) }}</span>
+                        (<span class="highlighted">{{ formatNumber(info.startPop) }}</span> chickens)
+                        <br/>
+                        Prestige
+                        <span class="highlighted">{{ formatTime(info.earningTime) }}</span>
+                        later (<span class="highlighted">{{ formatNumber(info.endPop) }}</span> chickens)
+                    </span>
+                </span>
+            </div>
         </artifact-set-card>
 
         <artifact-set-card v-if="setPreload"
@@ -125,13 +144,31 @@
             <h3>
                 Estimated SE gains
             </h3>
-            <span v-for="{ boosts, value } in infoPreload" class="info-entry">
-                <img v-for="boost in boosts" :src="getImg(boost)" :alt="boost" :title="getDescription(boost)"/>
+            <span v-if="buildTimeSetting.value === DEFAULT_BUILD_TIME" class="warning-text">
+                No build time entered
+            </span>
+            <span v-else v-for="info in infoPreload" class="info-entry">
+                <img v-for="boost in info.boosts" :src="getImg(boost)" :alt="boost" :title="getDescription(boost)"/>
                  
-                <span class="highlighted">{{ formatNumber(value[0]) }}</span>
-                <template v-if="value[1]>1">
-                    (<span class="highlighted">{{value[1]}}</span> legs)
-                </template>
+                <span class="highlighted">{{ formatNumber(info.gains) }}</span>
+                <span tabindex="0" class="tooltip-icon">
+                    <span v-if="info.legs > 1">
+                        (<span class="highlighted">{{ info.legs }}</span> legs)
+                    </span>
+                    <span class="tooltip-text">
+                        <span class="highlighted">{{ info.legs }}</span>
+                        legs of
+                        <span class="highlighted">{{ formatTime(info.legTime) }}</span>
+                        <br/>
+                        Start earning after
+                        <span class="highlighted">{{ formatTime(info.buildTime) }}</span>
+                        (<span class="highlighted">{{ formatNumber(info.startPop) }}</span> chickens)
+                        <br/>
+                        Prestige
+                        <span class="highlighted">{{ formatTime(info.earningTime) }}</span>
+                        later (<span class="highlighted">{{ formatNumber(info.endPop) }}</span> chickens)
+                    </span>
+                </span>
             </span>
         </artifact-set-card>
 
@@ -153,7 +190,7 @@ import { prepareItems, searchSet } from '@/scripts/solvers.ts';
 const DEFAULT_EVENT_EARNINGS = 1;
 const DEFAULT_EVENT_PRESTIGE = 1;
 const DEFAULT_EVENT_DURATION = 1;
-const DEFAULT_BUILD_TIME = 85; // TODO: better default? guesstimate from user data?
+const DEFAULT_BUILD_TIME = 0;
 const DEFAULT_BOOST_IHR = 1000*100;
 
 /* Time spend with maxed IHR during build time
@@ -208,7 +245,7 @@ const eventDurationSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_EVENT_DURATION,
     parser: (s: string) => {
         const v = s ? parseNumber(s) : DEFAULT_EVENT_DURATION;
-        if (v < 1 || v > 999) throw new Error("Build time is out of range");
+        if (v <= 0 || v > 999) throw new Error("Build time is out of range");
         return v;
     },
     formatter: formatNumber,
@@ -222,10 +259,8 @@ const legCountSetting = createTextInputSetting<number|null>({
             throw new Error("Invalid input, must be an integer between 1 and 99");
         return s ? parseNumber(s) : null;
     },
-    // TODO: change text to auto once testing is complete
-    //formatter: (x: number|null): string => x ? formatNumber(x) : 'auto',
-    formatter: (x: number|null): string => formatNumber(x ?? getLegCount()),
-    spinner: (x, inc) => x && inc ? x + Math.sign(inc) : null,
+    formatter: (x: number|null): string => x ? formatNumber(x) : 'auto',
+    spinner: (x, inc) => x ? x + Math.sign(inc)*(Math.abs(inc)-1) : null,
 });
 const swapIHRSetting = createSetting<boolean>({
     localStorageKey: 'prestige-swap-ihr',
@@ -235,9 +270,7 @@ const startingPopulationSetting = createTextInputSetting<number|null>({
     localStorageKey: 'prestige-starting-population',
     defaultValue: null,
     parser: (s: string) => s ? parseNumber(s) : null,
-    // TODO: change text to auto once testing is complete
-    //formatter: (x: number|null): string => x ? formatNumber(x) : 'auto',
-    formatter: (x: number|null): string => formatNumber(x ?? getStartPopulation()),
+    formatter: (x: number|null): string => x ? formatNumber(x) : 'auto',
     spinner: (x, inc) => x && inc ? spinBigNumber(x, inc) : null,
 });
 
@@ -275,7 +308,7 @@ function getStartPopulation(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
 
 function getLegCount(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
     const min = 1;
-    const max = Math.floor(boostTime.value/buildTimeSetting.value);
+    const max = Math.min(Math.floor(boostTime.value/buildTimeSetting.value), 99);
 
     if (legCountSetting.value) {
         return clamp(legCountSetting.value, min, max);
@@ -287,12 +320,13 @@ function getLegCount(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
     const H = (onlineSetting.value ? userEffects.value.ihr : userEffects.value.ihr_away)*boostIHRBonus;
 
     // earning time that maximizes average SE/s, assuming habs don't get filled up
-    const earningT0 =  (0.0172414*(-79*P + 21*H*t + Math.sqrt(6241*P**2 - 882*H*t*P + 441*H**2*t**2)))/H;
+    const earningT0 = (-79*P + 21*H*t + Math.sqrt(6241*P**2 - 882*H*t*P + 441*H**2*t**2))/H/58;
     // earning time that maximizes average SE/s, assuming habs gets filled up
     const earningT1 = (21*t*H*C + 50*C*C - 100*C*P + 50*P*P)/(79*C*H);
 
     // Choose the correct time estimation
-    let earningTime = earningT0 < (C-P)/H ? earningT0 : earningT1;
+    // The curves intersect T = (C-P)/H, so we can just take the min
+    let earningTime = Math.min(earningT0, earningT1);
 
     if (!onlineSetting.value) {
         earningTime = Math.max(60, earningTime);
@@ -418,7 +452,13 @@ function updateSets() {
 
 type Info = {
     boosts: T.Boost[],
-    value: [number, number], // SE and leg count
+    gains: number,
+    legs: number,
+    legTime: number,
+    buildTime: number,
+    earningTime: number,
+    startPop: number,
+    endPop: number,
 };
 
 const infoPreload = computed<Info[]>(() => {
@@ -438,7 +478,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.BOOST_50X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(2000*150) : eff.hab_capacity, 50*500*150**2),
+        ...calculateGains(eff, multi ? getStartPopulation(2000*150) : eff.hab_capacity, 50*500*150**2),
     });
 
     ret.push({
@@ -449,7 +489,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.BOOST_50X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(3000*100) : eff.hab_capacity, 100*500*100**2),
+        ...calculateGains(eff, multi ? getStartPopulation(3000*100) : eff.hab_capacity, 100*500*100**2),
     });
 
     ret.push({
@@ -460,7 +500,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.SOUL_500X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(4000*50) : eff.hab_capacity, 100*1000*50**2),
+        ...calculateGains(eff, multi ? getStartPopulation(4000*50) : eff.hab_capacity, 100*1000*50**2),
     });
 
     ret.push({
@@ -471,7 +511,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.SOUL_500X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(4000*50) : eff.hab_capacity, 150*500*50**2),
+        ...calculateGains(eff, multi ? getStartPopulation(4000*50) : eff.hab_capacity, 150*500*50**2),
     });
 
     ret.push({
@@ -482,7 +522,7 @@ const infoPreload = computed<Info[]>(() => {
             T.Boost.BOOST_10X10,
             T.Boost.BOOST_10X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(3000*100) : eff.hab_capacity, 100*500*20**2),
+        ...calculateGains(eff, multi ? getStartPopulation(3000*100) : eff.hab_capacity, 100*500*20**2),
     });
 
     return multistigeSetting.value ? ret.slice(0, 1) : ret;
@@ -505,7 +545,7 @@ const infoAIO = computed<Info[]>(() => {
             T.Boost.BOOST_50X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(1000*100) : 0, 50*500*100**2, 1000*100),
+        ...calculateGains(eff, multi ? getStartPopulation(1000*100) : 0, 50*500*100**2, 1000*100),
     });
 
     ret.push({
@@ -516,7 +556,7 @@ const infoAIO = computed<Info[]>(() => {
             T.Boost.SOUL_500X10,
             T.Boost.BOOST_50X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(1000*50) : 0, 100*500*50**2, 1000*50),
+        ...calculateGains(eff, multi ? getStartPopulation(1000*50) : 0, 100*500*50**2, 1000*50),
     });
 
     ret.push({
@@ -527,20 +567,20 @@ const infoAIO = computed<Info[]>(() => {
             T.Boost.BOOST_10X10,
             T.Boost.BOOST_10X10,
         ],
-        value: calculateGains(eff, multi ? getStartPopulation(1000*20) : 0, 50*500*20**2, 1000*20),
+        ...calculateGains(eff, multi ? getStartPopulation(1000*20) : 0, 50*500*20**2, 1000*20),
     });
 
     return ret;
 });
 
-function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoost: number = 1): [number, number] {
+function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoost: number = 1) {
     startPop = Math.min(e.hab_capacity, startPop);
 
     const ihr = (onlineSetting.value ? e.ihr : e.ihr_away)*e.boost_mult*ihrBoost;
 
-    const legs = getLegCount(ihrBoost);
+    const legs = multistigeSetting.value ? getLegCount(ihrBoost) : 1;
 
-    let bocks = integrateTimeCapacity(startPop, e.hab_capacity, ihr, multistigeSetting.value ? legs : 1);
+    let bocks = integrateTimeCapacity(startPop, e.hab_capacity, ihr, legs);
     bocks *= e.laying_rate;
     bocks *= e.egg_value;
     bocks *= e.earning_mult;
@@ -562,13 +602,24 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
     gains *= e.prestige_mult;
     gains *= eventPrestigeSetting.value;
 
-    if (!multistigeSetting.value) return [gains, 1];
-
     let result = 0;
     for (let i = 0; i < legs; i++) {
-        result += gains*((e.soul_eggs + result)/e.soul_eggs)**0.21;
+        result += gains*(1 + result/e.soul_eggs)**0.21;
     };
-    return [result, legs];
+
+    const buildTime = buildTimeSetting.value;
+    const legTime = (boostTime.value + buildTimeSetting.value)/legs;
+    const earningTime = legTime - buildTimeSetting.value;
+    const endPop = Math.min(e.hab_capacity, startPop + earningTime*ihr);
+    return {
+        gains: result,
+        legs,
+        legTime,
+        buildTime,
+        earningTime,
+        startPop,
+        endPop,
+    };
 }
 
 

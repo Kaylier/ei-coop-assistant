@@ -65,7 +65,7 @@ export type TextInputSetting<T> = {
     value: Ref<T>,
     placeholder: Ref<string>,
     defaultValue: T,
-    spin?: (arg0: T) => void,
+    spin?: (arg0: -3|-2|-1|0|1|2|3) => void,
 };
 
 /**
@@ -96,7 +96,7 @@ export function createTextInputSetting<T>(options: {
     defaultValue: T,
     parser?: (arg0: string) => T,
     formatter?: (arg0: T) => string,
-    spinner?: (arg0: T, arg1: T) => T,
+    spinner?: (arg0: T, arg1: -3|-2|-1|0|1|2|3) => T,
 }): Reactive<TextInputSetting<T>> {
     const { localStorageKey, queryParamKey, defaultValue, parser, formatter, spinner } = options;
 
@@ -133,7 +133,7 @@ export function createTextInputSetting<T>(options: {
     updateValue(text.value, false);
     watch(text, (s) => updateValue(s, !ephemeral));
 
-    function spin(x: T) {
+    function spin(x: -3|-2|-1|0|1|2|3) {
         if (!text.value || !isValid.value) return;
         text.value = updateValue(formatValue(spinner!(value.value, x)), !ephemeral);
         updateValue(text.value, false);

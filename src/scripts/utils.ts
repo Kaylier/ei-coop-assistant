@@ -26,7 +26,7 @@ export function checkSID(eid: string): boolean {
 export function parseNumber(s: string): number {
     s = s.replace(/[\s,]+/g, '');
 
-    const match = s.match(/^(\d*\.?\d+(?:e-?[0-9]+)?)([a-zA-Z]+)?$/);
+    const match = s.match(/^(\d*\.?\d*(?:e-?[0-9]+)?)([a-zA-Z]+)?$/);
     if (!match) {
         throw new Error(`Invalid number format: ${s}`);
     }
@@ -55,18 +55,21 @@ export function formatNumber(x: number, opts?: Intl.NumberFormatOptions): string
     return `${x.toLocaleString('en-us', opts)}${unit}`;
 }
 
-
+/**
+ * Increment/decrement a number in game format
+ * When inc is -3 or 3, decrease or increases by 10
+ * When inc is -2 or 2, decrease or increases by 1
+ * When inc is -1 or 1, decrease or increases by 0.1
+ */
 export function spinNumber(x: number, inc: number = 2): number {
-    const abs = Math.abs(inc);
-    if (abs <= 2) {
-        return x + Math.sign(inc);
-    }
-    return x + Math.sign(inc)*10;
+    return x + Math.sign(inc)*10**(Math.abs(inc)-2)
 }
 
 /**
  * Smart increment/decrement a number in game format
- * Increments by a value x on the most significant digit
+ * When inc is -3 or 3, divides or multiply by 10
+ * When inc is -2 or 2, decrease or increases the most significant digit by 1
+ * When inc is -1 or 1, decrease or increases the second most significant digit by 1
  */
 export function spinBigNumber(x: number, inc: number = 2): number {
     if (x <= 0) return x + 1e-3;
@@ -155,6 +158,10 @@ export function formatTime(x: number, timeUnit: string = 's'): string {
             break;
         default:
             throw new Error(`invalid unit: '${timeUnit}'`);
+    }
+    if (x < 60) {
+        const seconds = Math.floor(x%60);
+        return `${seconds}s`;
     }
     if (x < 60*60) {
         const minutes = Math.floor(x/60);
