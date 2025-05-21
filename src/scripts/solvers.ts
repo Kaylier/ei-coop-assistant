@@ -183,6 +183,12 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
         return itemCompare(itb, ita);
     });
 
+    // Create upper bound effects in each families (max reachable on every keys)
+    const upperBound = new Map<T.ArtifactFamily, Effects>()
+    for (const [family, values] of artifacts) {
+        upperBound.set(family, Effects.getBound(...values.map(x => x.effects)));
+    }
+
 
     let solutions: { artifacts: AnnotatedArtifact[], stones: AnnotatedStone[] }[] = []
     let bestScore: number[] = minimumScore ?? [];
@@ -213,7 +219,8 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
         }
 
         // evaluate current score upper bound and early-abort if bestScore cannot be reached
-        baseEffects.merge(getUpperBound(1, artifactFamilies.slice(idx)));
+        const boundEffects = Effects.getBound(...artifactFamilies.slice(idx).map(f => upperBound.get(f) ?? new Effects()));
+        for (let i = current.length; i < maxSlot; i++) baseEffects.merge(boundEffects);
         const { effects } = findStones(baseEffects, stoneCount + (maxSlot - current.length)*3);
         const scoreMax = scoreFn(effects);
         if (arrayCompare(scoreMax, bestScore) < 0) {
@@ -285,35 +292,6 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
     };
 }
 
-
-/**
- * Return an upperbound Effects of missing artifacts
- * consider artifactSlot amount of artifacts in families, and stoneSlot stones added in current artifacts
- */
-function getUpperBound(artifactSlot: number, families: T.ArtifactFamily[]): Effects {
-    const ret = new Effects();
-
-    if (artifactSlot > 0) {
-        if (families.includes(T.ArtifactFamily.BOOK_OF_BASAN))        ret.apply('prophecy_egg_bonus', 0.012);
-        if (families.includes(T.ArtifactFamily.TACHYON_DEFLECTOR))    ret.apply('team_laying_bonus', 0.2);
-        if (families.includes(T.ArtifactFamily.SHIP_IN_A_BOTTLE))     ret.apply('team_earning_bonus', 1.0);
-        if (families.includes(T.ArtifactFamily.TITANIUM_ACTUATOR))    ret.apply('hatching_rate', 15);
-        if (families.includes(T.ArtifactFamily.DILITHIUM_MONOCLE))    ret.apply('boost_mult', 1.3);
-        if (families.includes(T.ArtifactFamily.QUANTUM_METRONOME))    ret.apply('laying_rate', 1.35);
-        if (families.includes(T.ArtifactFamily.PHOENIX_FEATHER))      ret.apply('prestige_earning_mult', 15);
-        if (families.includes(T.ArtifactFamily.CHALICE))              ret.apply('ihr_mult', 1.4);
-        if (families.includes(T.ArtifactFamily.INTERSTELLAR_COMPASS)) ret.apply('shipping_mult', 1.5);
-        if (families.includes(T.ArtifactFamily.MERCURYS_LENS))        ret.apply('farm_value_mult', 3);
-        if (families.includes(T.ArtifactFamily.GUSSET))               ret.apply('hab_capacity_mult', 1.25);
-        if (families.includes(T.ArtifactFamily.TUNGSTEN_ANKH))        ret.apply('egg_value_mult', 2.5);
-        if (families.includes(T.ArtifactFamily.DEMETERS_NECKLACE))    ret.apply('egg_value_mult', 3);
-        if (families.includes(T.ArtifactFamily.VIAL_OF_MARTIAN_DUST)) ret.apply('earning_mrcb_mult', 500);
-        if (families.includes(T.ArtifactFamily.LUNAR_TOTEM))          ret.apply('earning_away_mult', 200);
-        if (families.includes(T.ArtifactFamily.PUZZLE_CUBE))          ret.apply('research_cost_mult', 0.4);
-    }
-
-    return ret;
-}
 
 
 /**

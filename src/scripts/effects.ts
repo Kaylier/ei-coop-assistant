@@ -525,11 +525,11 @@ export class Effects {
     /**
      * Apply an effect for a key
      */
-    apply<K extends EffectKey>(key: K, value: number): this {
+    apply<K extends EffectKey>(key: K, value: number, repeat: number = 1): this {
         switch (effectMetadata[key].type) {
             case-1: this.set(key, Math.max(this.get(key), value)); break;
-            case 0: this.set(key, this.get(key) + value); break;
-            case 1: this.set(key, this.get(key) * value); break;
+            case 0: this.set(key, this.get(key) + value*repeat); break;
+            case 1: this.set(key, this.get(key) * value**repeat); break;
         }
         return this;
     }
@@ -565,6 +565,20 @@ export class Effects {
      */
     getScore<K extends EffectKey>(key: K): number {
         return "minimize" in effectMetadata[key] && effectMetadata[key].minimize ? -this.get(key) : this.get(key);
+    }
+
+    static getBound(...effects: Effects[]): Effects {
+        const ret = new Effects();
+        for (const other of effects) {
+            for (const [k, v] of other.values) {
+                if ("minimize" in effectMetadata[k] && effectMetadata[k].minimize) {
+                    ret.set(k, Math.min(ret.get(k), v));
+                } else {
+                    ret.set(k, Math.max(ret.get(k), v));
+                }
+            }
+        }
+        return ret;
     }
 
     /**
