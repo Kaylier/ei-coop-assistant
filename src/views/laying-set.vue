@@ -18,10 +18,12 @@
                         label="Reslotting"
                         tooltip="Allow reslotting stones in artifacts.<br/>
                                  Stone-holder artifacts are interchangeable and<br/>
-                                 stones may be arbitrarily rearranged."
+                                 stones may be arbitrarily rearranged.<br/>
+                                 Select 'add' to keep already slotted stones."
                         :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
+                                  { value: 0, label: 'no' },
+                                  { value: 1, label: 'add' },
+                                  { value: 3, label: 'swap' },
                                   ]"/>
         <setting-switch id="gusset"
                         v-model="allowedGussetSetting"
@@ -104,17 +106,17 @@
                     </div>
                 </div>
                 <div class="entry-sets">
-                    <inventory-frame v-if="entry.artifactSet"
-                                     :artifacts="entry.artifactSet"
+                    <inventory-frame v-if="entry.set.artifacts"
+                                     :artifacts="entry.set.artifacts"
                                      :isSet="true"
                                      :deflectorBonus="entry.optiThreshold"
                                      :userData="userData"
                                      :column="4" :row="1"
-                                     :style="entry.artifactSet.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
+                                     :style="entry.set.rainbowed ? 'background: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);' : ''"
                                      />
                     <inventory-frame v-if="showVariantsSetting.value" v-for="subentry in entry.variants"
                                      :key="JSON.stringify(subentry)"
-                                     :artifacts="subentry"
+                                     :artifacts="subentry.artifacts"
                                      :isSet="true"
                                      :deflectorBonus="entry.optiThreshold"
                                      :userData="userData"
@@ -161,12 +163,12 @@ import * as T from '@/scripts/types.ts';
 import { parseRate, formatRate } from '@/scripts/utils.ts';
 import { createTextInputSetting, createSetting, focusRef } from '@/scripts/settings.ts';
 import { Effects } from '@/scripts/effects.ts';
-import { getOptimalGussets, computeOptimalSetsWithReslotting, computeOptimalSetsWithoutReslotting } from '@/scripts/laying-set.ts';
-import type { ArtifactSet } from '@/scripts/laying-set.ts';
+import { getOptimalGussets, computeOptimalSets } from '@/scripts/laying-set.ts';
+import type { AnnotatedSet } from '@/scripts/laying-set.ts';
 
 type EntryType = {
-    artifactSet: (ArtifactSet<T.Artifact | null> & { rainbowed: boolean }),
-    variants: (ArtifactSet<T.Artifact | null> & { rainbowed: boolean })[],
+    set: (AnnotatedSet<T.Artifact | null> & { rainbowed: boolean }),
+    variants: (AnnotatedSet<T.Artifact | null> & { rainbowed: boolean })[],
     hidden: boolean,
     lowerThreshold: number,
     lowerRate: number,
@@ -183,9 +185,9 @@ const deflectorModeSetting = createSetting<T.DeflectorMode>({
     localStorageKey: 'laying-deflector-mode',
     defaultValue: T.DeflectorMode.TEAMWORK,
 });
-const reslottingSetting = createSetting<boolean>({
+const reslottingSetting = createSetting<0|1|2|3>({
     localStorageKey: 'laying-reslotting',
-    defaultValue: false,
+    defaultValue: 0,
 });
 const showVariantsSetting = createSetting<boolean>({
     localStorageKey: 'laying-variants',
@@ -216,7 +218,7 @@ const allowedGussetOptions = computed(() => {
         [
             T.AllowedGusset.ANY,
             T.AllowedGusset.NONE,
-            ...getOptimalGussets(userData.value?.items ?? [], !reslottingSetting.value)
+            ...getOptimalGussets(userData.value?.items ?? [], reslottingSetting.value === 0)
         ];
 
     // Force selected option to show up
@@ -259,14 +261,15 @@ function updateEntries() {
     console.log("Update entries");
 
     const maxSlot: number = userData.value?.proPermit ? 4 : 2;
-    let sets: ArtifactSet<T.Artifact | null>[][];
+    let sets: AnnotatedSet<T.Artifact | null>[][];
     try {
         errorMessage.value = "";
-        sets = reslottingSetting.value ?
-               computeOptimalSetsWithReslotting(userData.value?.items ?? [], deflectorModeSetting.value, maxSlot,
-               allowedGussetSetting.value) :
-               computeOptimalSetsWithoutReslotting(userData.value?.items ?? [], deflectorModeSetting.value, maxSlot,
-               allowedGussetSetting.value);
+
+        sets = computeOptimalSets(userData.value?.items ?? [],
+                                  maxSlot,
+                                  reslottingSetting.value,
+                                  deflectorModeSetting.value,
+                                  allowedGussetSetting.value);
     } catch (e) {
         errorMessage.value = "An error occured.\nTry to clear your browser cache and reload your inventory.\nIf the error persist, contact the developper.\n\n"+(e instanceof Error ? e.message : String(e));
         entries.value = [];
@@ -275,7 +278,7 @@ function updateEntries() {
 
     // A set is optimal when the deflector bonus received is shippingBonus/maxLayingBonus
     // Sort them by optimal received deflector bonus
-    const sortKey = (x: ArtifactSet<T.Artifact | null>[]) => x[0]?.shippingBonus/(x[0]?.maxLayingBonus ?? x[0]?.layingBonus ?? 0);
+    const sortKey = (x: AnnotatedSet<T.Artifact | null>[]) => x[0]?.shippingBonus/x[0]?.layingBonus;
     sets.sort((a, b) => sortKey(a) - sortKey(b));
 
     // Key for determining which artifact sets are considered the same when showVariants is on
@@ -286,8 +289,8 @@ function updateEntries() {
         T.ArtifactFamily.INTERSTELLAR_COMPASS,
         T.ArtifactFamily.GUSSET,
     ]
-    function generateKey(set: ArtifactSet<T.Artifact | null>) {
-        return set.map(artifact => {
+    function generateKey(set: AnnotatedSet<T.Artifact | null>) {
+        return set.artifacts.map(artifact => {
             if (!artifact) return "null";
             const artiKey = contractFamilies.includes(artifact.family) ?
                 `${artifact.category}-${artifact.family}-${artifact.tier}-${artifact.rarity}` :
@@ -303,29 +306,29 @@ function updateEntries() {
     // Update the artifacts shown on the view
     entries.value = [];
     for (const equivalentSets of sets) {
-        const set = equivalentSets[0] as ArtifactSet<T.Artifact | null> & { rainbowed: boolean };
-        if (!set || set.length === 0) continue;
+        const set = equivalentSets[0] as AnnotatedSet<T.Artifact | null> & { rainbowed: boolean };
+        if (!set || set.artifacts.length === 0) continue;
 
         // LoE is invalid, because stones have no effect outside of enlightenment
         // Maybe the user knows more than me
         // Is it the secret of the soul?
-        set.rainbowed = set.some(artifact => artifact && artifact.family === 0);
+        set.rainbowed = set.artifacts.some(artifact => artifact && artifact.family === 0);
 
         const seen = new Set();
         seen.add(generateKey(set));
         const variants = [];
         for (const eqSet of equivalentSets) {
-            const variant = eqSet as ArtifactSet<T.Artifact | null> & { rainbowed: boolean };
+            const variant = eqSet as AnnotatedSet<T.Artifact | null> & { rainbowed: boolean };
             const key = generateKey(variant);
             if (seen.has(key)) continue;
             seen.add(key);
-            variant.rainbowed = variant.some(artifact => artifact && artifact.family === 0);
+            variant.rainbowed = variant.artifacts.some(artifact => artifact && artifact.family === 0);
             variants.push(variant);
             if (seen.size >= 6) break;
         }
 
         entries.value.push({
-            artifactSet: set,
+            set: set,
             variants: variants,
             hidden: false,
             lowerThreshold: NaN,
@@ -353,9 +356,8 @@ function updateThresholds() {
 
     for (const idx in entries.value) {
         const entry = entries.value[idx];
-        const shippingRate = baseShippingRate.value * entry.artifactSet.shippingBonus;
-        const layingRate = baseLayingRate.value * (entry.artifactSet.maxLayingBonus ??
-        entry.artifactSet.layingBonus ?? 0);
+        const shippingRate = baseShippingRate.value * entry.set.shippingBonus;
+        const layingRate = baseLayingRate.value * entry.set.layingBonus;
 
         const lowerThreshold = prevShippingRate/layingRate - 1;
         const optimalBonus = shippingRate/layingRate - 1;

@@ -384,5 +384,40 @@ export function* product<T>(...arrays: T[][]): Generator<T[], void, void> {
     yield* aux(0, []);
 }
 
+/**
+ * Sort object in a topological order.
+ * graph is a mapping of successor nodes when predecessor is false,
+ * and of predecessors if predecessor is true.
+ */
+export function topologicalSort<T>(graph: Map<T, T[]>, predecessor: boolean = false): T[] {
+
+    if (predecessor) {
+        const reverted = new Map<T, T[]>();
+        for (const [node, deps] of graph) {
+            if (!reverted.has(node)) reverted.set(node, []);
+            for (const dep of deps) {
+                if (!reverted.has(dep)) reverted.set(dep, []);
+                reverted.get(dep)!.push(node);
+            }
+        }
+        graph = reverted;
+    }
+
+    const visited = new Set<T>();
+    const result: T[] = [];
+
+    function visit(node: T) {
+        if (visited.has(node)) return;
+        visited.add(node);
+        (graph.get(node) || []).forEach(visit);
+        result.push(node);
+    }
+
+    for (const node of graph.keys()) {
+        visit(node);
+    }
+
+    return result.reverse();
+}
 
 

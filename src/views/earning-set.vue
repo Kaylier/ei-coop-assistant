@@ -17,7 +17,7 @@
                         tooltip="Allow reslotting stones in artifacts.<br/>
                                  Stone-holder artifacts are interchangeable and<br/>
                                  stones may be arbitrarily rearranged.<br/>
-                                 Select 'fill' to keep already slotted stones."
+                                 Select 'add' to keep already slotted stones."
                         :options="[
                                   { value: 0, label: 'no' },
                                   { value: 1, label: 'add' },

@@ -122,6 +122,14 @@ export function prepareItems(items: T.Item[],
         artifacts.set(family, filteredArtifacts);
     }
 
+    for (const stoneList of stones.values()) {
+        const effectList = Array.from(new Set(stoneList.flatMap(x => [...x.effects.keys()])));
+        if (effectList.length !== 1) continue;
+
+        const eff = effectList[0];
+        stoneList.sort((a,b) => b.effects.getScore(eff) - a.effects.getScore(eff));
+    }
+
     return { artifacts, stones };
 }
 
