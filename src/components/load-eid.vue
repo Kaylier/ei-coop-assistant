@@ -90,7 +90,9 @@ onMounted(async () => {
         }
     }
 
-    if (loaded) {
+    // TODO: remove the tests for baseEffects and maxedEffects in the future
+    // This is for forcing transition for old inventories
+    if (loaded && loaded.baseEffects && loaded.maxedEffects) {
         // User data found in localStorage, use it
         userData.value = loaded;
     } else if (checkEID(eid.value)) {
