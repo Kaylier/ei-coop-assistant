@@ -204,6 +204,15 @@ export function isclose(a: number, b: number, rel_tol: number = 1e-09, abs_tol: 
 
 
 /**
+ * Return true if the value a is strictly lower than b, with floating-point comparison.
+ * If isclose(a,b) is true, consider a and b equal and returns false.
+ */
+export function fcmp(a: number, b: number, rel_tol: number = 1e-09, abs_tol: number = 0.0): boolean {
+    return a < b && !isclose(a, b, rel_tol, abs_tol);
+}
+
+
+/**
  * Lexicographical comparison function between arrays
  * For backward compatibility, act like normal comparison if numbers are given
  */

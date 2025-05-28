@@ -1,9 +1,10 @@
 import * as T from '@/scripts/types.ts';
 import type { EffectKey } from '@/scripts/effects.ts';
 import { getEffects, copyItem } from '@/scripts/artifacts.ts';
-import { isclose, extractParetoFrontier, product, topologicalSort } from '@/scripts/utils.ts';
+import { isclose, fcmp, extractParetoFrontier, product, topologicalSort } from '@/scripts/utils.ts';
 
 
+const MAX_SET_STONE_AMOUNT = 12;
 
 type AnnotatedArtifact = {
     artifacts: T.Artifact[],
@@ -81,8 +82,8 @@ function countSlotted(artifacts: T.Artifact[]): number {
 /*
  * Count the amount of items in a list, adding all quantities
  */
-function countQuantity(items: T.Item[]): number {
-    return items.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+function countQuantity(items: (T.Item|null)[]): number {
+    return items.reduce((sum, item) => sum + (item ? item.quantity ?? 1 : 0), 0);
 }
 
 
@@ -238,9 +239,9 @@ export function computeOptimalSets(items: T.Item[],
                 shippingBonus *= stone.shippingBonus;
                 bonus.push({ layingBonus, shippingBonus });
                 queue.push(stone.stone);
-                if (bonus.length > 12) break;
+                if (bonus.length > MAX_SET_STONE_AMOUNT) break;
             }
-            if (bonus.length > 12) break;
+            if (bonus.length > MAX_SET_STONE_AMOUNT) break;
         }
         stonesBonus.set(family, bonus);
         stonesQueue.set(family, queue);
@@ -256,16 +257,18 @@ export function computeOptimalSets(items: T.Item[],
     ];
 
     const sets: AnnotatedSet<AnnotatedArtifact>[] = [];
-    let cnt = 0;
+    let cnt0 = 0, cnt1 = 0, cnt2 = 0;
     for (const familySet of getFamilyCombinations(requiredFamilies, optionalFamilies, maxSlot, artifacts)) {
-        cnt++;
+        cnt0++;
         for (const set of product(...familySet.map(family => artifacts.get(family) ?? []))) {
             const layingBonus    = set.reduce((tot, cur) => tot * cur.layingBonus   , 1);
             const shippingBonus  = set.reduce((tot, cur) => tot * cur.shippingBonus , 1);
             const deflectorBonus = set.reduce((tot, cur) => tot + cur.deflectorBonus, 0);
             const stoneSlot      = set.reduce((tot, cur) => tot + cur.stoneSlot     , 0);
+            cnt1++;
 
             for (const stoneComb of getStoneCombinations(stonesBonus, stoneSlot)) {
+                cnt2++;
                 sets.push({
                     artifacts: set,
                     layingBonus: layingBonus * stoneComb.layingBonus,
@@ -277,7 +280,7 @@ export function computeOptimalSets(items: T.Item[],
             }
         }
     }
-    console.log(cnt, "family sets expanded to", sets.length, "candidate sets");
+    console.log(cnt0, "family combinations,", cnt1, "artifact sets,", cnt2, "slotted artifact sets");
 
     // Extract non-dominated sets
     // This is the slow part, which is why we reduced the amount of family sets and artifact sets beforehand
@@ -290,33 +293,50 @@ export function computeOptimalSets(items: T.Item[],
     // each group is an array of equivalent sets regarding max laying rate and shipping rate,
     // each set is an array of annotated artifacts (equivalent artifacts)
     // We expand artifact groups so we now have sets with actual artifacts
-    let optimalSets: AnnotatedSet<T.Artifact | null>[][] = paretoSets.map(group => group.flatMap(set =>
-        [...product(...set.artifacts.map(x => x.artifacts))].map(x => ({
-            artifacts: x.map(copyItem) as T.Artifact[],
-            layingBonus: set.layingBonus,
-            shippingBonus: set.shippingBonus,
-            deflectorBonus: set.deflectorBonus,
-            stoneSlot: set.stoneSlot,
-            stoneCount: set.stoneCount,
-        }))));
+    let optimalSets: AnnotatedSet<T.Artifact | null>[][] = paretoSets.map(group => {
+        const bestDeflectorBonus = Math.max(...group.map(x => x.deflectorBonus));
+        const result: AnnotatedSet<T.Artifact | null>[] = [];
+        for (const set of group) {
+            // Ignore this set if there are better alternative regarding deflectors
+            if (!isclose(set.deflectorBonus, bestDeflectorBonus)) continue
 
-    // Only keep highest deflectors
-    optimalSets = optimalSets.map(group => {
-        const bestBonus = Math.max(...group.map(x => x.deflectorBonus));
-        return group.filter(x => isclose(x.deflectorBonus, bestBonus));
+            for (const x of product(...set.artifacts.map(x => x.artifacts))) {
+                result.push({
+                    artifacts: x,
+                    layingBonus: set.layingBonus,
+                    shippingBonus: set.shippingBonus,
+                    deflectorBonus: set.deflectorBonus,
+                    stoneSlot: set.stoneSlot,
+                    stoneCount: set.stoneCount,
+                });
+            }
+        }
+        return result;
     });
 
     // Assign stones to optimalSets
-    console.log(optimalSets.reduce((tot, cur) => tot+cur.length, 0), "reslotting options");
-    for (const group of optimalSets) {
+    let cnt3 = 0;
+    optimalSets = optimalSets.map(group => {
+        let result: AnnotatedSet<T.Artifact | null>[] = [];
+        let bestReslottedAmount = Infinity;
         for (const set of group) {
+            cnt3++;
             const pickedStones: T.Stone[] = [...set.stoneCount.entries()]
                 .flatMap(([fam, n]) => (stonesQueue.get(fam) ?? []).slice(0, n));
-            assignStones(set as AnnotatedSet<T.Artifact>, pickedStones);
+            const reslottedSet = assignStones(set as AnnotatedSet<T.Artifact>, pickedStones, bestReslottedAmount);
+            if (!reslottedSet) continue;
+            if (reslottedSet.reslotted! < bestReslottedAmount) {
+                bestReslottedAmount = reslottedSet.reslotted!;
+                result = [reslottedSet];
+            } else if (reslottedSet.reslotted! === bestReslottedAmount) {
+                result.push(reslottedSet);
+            } else {
+            }
         }
-        const minReslotted = Math.min(...group.map(x => x.reslotted ?? Infinity));
-        group.splice(0, group.length, ...group.filter(x => (x.reslotted ?? Infinity) === minReslotted));
-    }
+        return result;
+    });
+    console.log(optimalSets.length, "solution groups,", cnt3, "reslotting tested");
+    console.log("Solution groups sizes:", optimalSets.map(x => x.length));
 
 
     // Sort sets by family and fill empty slots with null
@@ -324,8 +344,9 @@ export function computeOptimalSets(items: T.Item[],
          set.artifacts.sort((a,b) => a!.family - b!.family);
          while (set.artifacts.length < maxSlot) set.artifacts.push(null);
     }));
+    // Sort solutions with most common artifacts first (usually prefered for stone holding)
+    optimalSets.forEach(group => group.sort((a,b) => countQuantity(b.artifacts) - countQuantity(a.artifacts)));
 
-    console.log("Amount of equivalent set for each solution:", optimalSets.map(x => x.length));
 
     return optimalSets;
 }
@@ -364,21 +385,44 @@ function* getFamilyCombinations(requiredFamilies: T.ArtifactFamily[],
         for (const b of lb) {
             let isDominated = false;
             for (const a of la) {
+                // Use the t4 of tachyon and quantum stones to calculate maximum potential of artifacts once
+                // slotted. We check if the best case for b is beaten by worst case for a
+                // We assume infinite availability of t2 stones
+                const stoneBonus = 1.05**Math.max(0, b.stoneSlot - a.stoneSlot)
+                                 / 1.02**Math.max(0, a.stoneSlot - b.stoneSlot);
+
+                // If a strictly worse on one stat, stay on isDominated = false and go to next a
+                if (fcmp(a.layingBonus, b.layingBonus*stoneBonus)) continue;
+                if (fcmp(a.shippingBonus, b.shippingBonus*stoneBonus)) continue;
+                if (fcmp(a.deflectorBonus, b.deflectorBonus)) continue;
+
+                // If a is strictly better on one stat, set isDominated to true and break the loop
+                isDominated = true;
+                if (fcmp(b.layingBonus*stoneBonus, a.layingBonus)) break;
+                if (fcmp(b.shippingBonus*stoneBonus, a.shippingBonus)) break;
+                if (fcmp(b.deflectorBonus, a.deflectorBonus)) break;
+
+                // If a is equivalent on all stats, reset isDominated to false for next a
+                isDominated = false;
+
+                // Generic version that doesn't use hardcoded stone values and assumptions
+                /*
                 // If a strictly worse on one stat, stay on isDominated = false and go to next a
                 if (a.stoneSlot < b.stoneSlot) continue;
-                if (a.layingBonus < b.layingBonus && !isclose(a.layingBonus, b.layingBonus)) continue;
-                if (a.shippingBonus < b.shippingBonus && !isclose(a.shippingBonus, b.shippingBonus)) continue;
-                if (a.deflectorBonus < b.deflectorBonus && !isclose(a.deflectorBonus, b.deflectorBonus)) continue;
+                if (fcmp(a.layingBonus < b.layingBonus)) continue;
+                if (fcmp(a.shippingBonus < b.shippingBonus)) continue;
+                if (fcmp(a.deflectorBonus < b.deflectorBonus)) continue;
 
                 // If a is strictly better on one stat, set isDominated to true and break the loop
                 isDominated = true;
                 if (a.stoneSlot > b.stoneSlot) break;
-                if (a.layingBonus > b.layingBonus && !isclose(a.layingBonus, b.layingBonus)) break;
-                if (a.shippingBonus > b.shippingBonus && !isclose(a.shippingBonus, b.shippingBonus)) break;
-                if (a.deflectorBonus > b.deflectorBonus && !isclose(a.deflectorBonus, b.deflectorBonus)) break;
+                if (fcmp(b.layingBonus < a.layingBonus)) continue;
+                if (fcmp(b.shippingBonus < a.shippingBonus)) continue;
+                if (fcmp(b.deflectorBonus < a.deflectorBonus)) continue;
 
                 // If a is equivalent on all stats, reset isDominated to false for next a
                 isDominated = false;
+                */
             }
             if (!isDominated) {
                 return false;
@@ -393,6 +437,10 @@ function* getFamilyCombinations(requiredFamilies: T.ArtifactFamily[],
             if (family === other) continue;
             if (dominates(other, family)) {
                 dominations.get(family)!.push(other);
+            }
+            if (dominations.get(family)!.length >= 4) {
+                // Max slot is 4, so we can stop early once we have 4 dependencies
+                break;
             }
         }
     }
@@ -460,7 +508,10 @@ function* getStoneCombinations(bonuses: Map<T.StoneFamily, { layingBonus: number
     }
 }
 
-function assignStones(set: AnnotatedSet<T.Artifact>, stones: T.Stone[]): AnnotatedSet<T.Artifact> {
+function assignStones(set: AnnotatedSet<T.Artifact>,
+                      stones: T.Stone[],
+                      maxReslotAmount: number = Infinity,
+                     ): AnnotatedSet<T.Artifact> | null {
     const stoneKey = (s: T.Stone | null) => s ? `${s.category}-${s.family}-${s.tier}` : "null";
 
     const stoneCount = new Map<string, number>();
@@ -469,28 +520,39 @@ function assignStones(set: AnnotatedSet<T.Artifact>, stones: T.Stone[]): Annotat
         stoneCount.set(key, (stoneCount.get(key) || 0) + 1);
     }
 
-    const slotsToFill: Array<{ artifact: T.Artifact; index: number }> = [];
+    const slotsToFill: Array<{ artiIdx: number, stoneIdx: number }> = [];
+    const slotsToKeep: Array<{ artiIdx: number, stoneIdx: number }> = [];
 
-    for (const artifact of set.artifacts) {
+    for (const [artiIdx, artifact] of set.artifacts.entries()) {
         for (let i = 0; i < (artifact.stones?.length ?? 0); i++) {
             const stone = artifact.stones[i];
             const key = stoneKey(stone);
             if (stone && !stone.reslotted) continue;
             if (stone === null) {
                 // Stone to change in priority
-                slotsToFill.push({ artifact, index: i });
+                slotsToFill.unshift({ artiIdx, stoneIdx: i });
             } else if ((stoneCount.get(key) || 0) > 0) {
                 // Stone to keep
                 stoneCount.set(key, stoneCount.get(key)! - 1);
-                stone.reslotted = false;
+                slotsToKeep.push({ artiIdx, stoneIdx: i });
             } else {
                 // Stone to change in last
-                slotsToFill.push({ artifact, index: i });
+                slotsToFill.push({ artiIdx, stoneIdx: i });
             }
         }
     }
 
-    set.reslotted = slotsToFill.length;
+    if (slotsToFill.length > maxReslotAmount) return null;
+
+    const result: AnnotatedSet<T.Artifact> = {
+        artifacts: set.artifacts.map(copyItem) as T.Artifact[],
+        layingBonus: set.layingBonus,
+        shippingBonus: set.shippingBonus,
+        deflectorBonus: set.deflectorBonus,
+        stoneSlot: set.stoneSlot,
+        stoneCount: new Map(),
+        reslotted: (set.reslotted ?? 0) + slotsToFill.length,
+    }
 
     const remainingStones: T.Stone[] = [];
     for (const stone of stones) {
@@ -501,13 +563,17 @@ function assignStones(set: AnnotatedSet<T.Artifact>, stones: T.Stone[]): Annotat
         }
     }
 
-    for (let i = 0; i < slotsToFill.length && i < remainingStones.length; i++) {
-        const { artifact, index } = slotsToFill[i];
-        artifact.stones[index] = remainingStones[i];
-        artifact.stones[index].reslotted = true;
-        artifact.reslotted = (artifact.reslotted ?? 0) + 1;
+    for (const { artiIdx, stoneIdx } of slotsToKeep) {
+        result.artifacts[artiIdx].stones[stoneIdx]!.reslotted = false;
     }
 
-    return set;
+    for (let i = 0; i < slotsToFill.length && i < remainingStones.length; i++) {
+        const { artiIdx, stoneIdx } = slotsToFill[i];
+        result.artifacts[artiIdx].stones[stoneIdx] = remainingStones[i];
+        result.artifacts[artiIdx].stones[stoneIdx].reslotted = true;
+        result.artifacts[artiIdx].reslotted = (result.artifacts[artiIdx].reslotted ?? 0) + 1;
+    }
+
+    return result;
 }
 
