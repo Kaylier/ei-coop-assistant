@@ -14,7 +14,7 @@
                              />
         </div>
         <div v-if="grid.length" class="grid-container" id="artifacts">
-            <div class="grid">
+            <div class="grid" :style="`width: ${column*4}rem;`">
                 <inventory-frame :artifacts="grid" :column="column" />
             </div>
         </div>

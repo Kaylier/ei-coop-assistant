@@ -178,7 +178,9 @@ async function updateSandboxLink() {
 .subframe {
     background: var(--bg-alt-color);
     border-radius: 1em;
-    aspect-ratio: 1;
+    max-width: 4.5rem;
+    max-height: 4.5rem;
+    aspect-ratio: 1/1;
 }
 
 .subframe.focused {

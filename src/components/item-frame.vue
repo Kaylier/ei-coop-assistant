@@ -82,6 +82,9 @@ function onFocusLeave() {
     height: 100%;
     width: 100%;
     border-radius: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .highlighted.item-frame.common    { background: var(--common-color   ); }
@@ -93,13 +96,17 @@ function onFocusLeave() {
     position: absolute;
     top: 0;
     right: 0;
-    font: 0.80em always-together;
+    font: 0.75em always-together;
+    font-weight: bold;
     line-height: 1.6em;
     fill: #e0e0e0;
 }
 
 .item-image, .sparkle-image {
     max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    aspect-ratio: 1/1;
 }
 
 .stones-frame {
