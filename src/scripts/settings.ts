@@ -37,12 +37,17 @@ export function createSetting<T>(options: {
     const parseValue = parser || JSON.parse;
     const formatValue = formatter || JSON.stringify;
 
+    function tryParse(s: string): null|T {
+        try { return parseValue(s); }
+        catch { return null; }
+    }
+
     const storedText = localStorageKey ? localStorage.getItem(localStorageKey) : null;
-    const storedValue = storedText ? parseValue(storedText) : null;
+    const storedValue = storedText ? tryParse(storedText) : null;
 
     const urlParams = new URLSearchParams(window.location.search);
     const queryText = queryParamKey ? urlParams.get(queryParamKey) : null;
-    const queryValue = queryText ? parseValue(queryText) : null;
+    const queryValue = queryText ? tryParse(queryText) : null;
 
     const value = shallowRef<T>(queryValue ?? storedValue ?? defaultValue);
 

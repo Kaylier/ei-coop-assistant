@@ -183,6 +183,8 @@ const reslottingSetting = createSetting<0|1|2|3>({
 const swappingSetting = createSetting<null|T.ArtifactFamily[]>({
     localStorageKey: 'boosting-gusset-swap',
     defaultValue: null,
+    parser: (s) => (JSON.parse(s) as T.ArtifactFamily[])?.filter(x =>
+                    x === T.ArtifactFamily.TACHYON_DEFLECTOR || x === T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? null,
 });
 const allowedGussetSetting = createSetting<T.AllowedGusset>({
     localStorageKey: 'boosting-gusset-target',
