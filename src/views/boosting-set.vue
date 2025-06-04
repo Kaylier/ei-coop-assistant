@@ -63,6 +63,14 @@
                                   { value: true, label: 'offline' },
                                   { value: false, label: 'online' },
                                   ]"/>
+        <setting-switch :hide="!showExtraSettings"
+                        id="duration-bonus"
+                        v-model="durationBonusSetting"
+                        label="Boost duration"
+                        :options="[
+                                  { value: 1, label: '×1' },
+                                  { value: 2, label: '×2' },
+                                  ]"/>
         <setting-text :hide="!showExtraSettings"
                       id="starting-population"
                       v-model="startingPopulationSetting"
@@ -142,7 +150,7 @@
         <boost-set-card v-for="{ id, boosts } in shownBoostSets"
                         :key="id"
                         :boosts="boosts"
-                        :dili="diliBonus"
+                        :dili="durationBonus"
                         :stats="boostSetCardStats"
                         :startPopulation="startingPopulationSetting.value"
                         :pinned="showAllBoostSets ? pinnedBoostSetting.value.has(id) : undefined"
@@ -193,6 +201,10 @@ const allowedGussetSetting = createSetting<T.AllowedGusset>({
 const ihcSetting = createSetting<boolean>({
     localStorageKey: 'boosting-offline',
     defaultValue: true,
+});
+const durationBonusSetting = createSetting<number>({
+    localStorageKey: 'boosting-duration-bonus',
+    defaultValue: 1,
 });
 const startingPopulationSetting = createTextInputSetting<number>({
     localStorageKey: 'boosting-starting-population',
@@ -275,7 +287,7 @@ function changePin(id: string, checked: boolean) {
 
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
-const diliBonus = computed(() => setDili.value?.effects.boost_duration_mult ?? 1);
+const durationBonus = computed(() => (setDili.value?.effects.boost_duration_mult ?? 1)*durationBonusSetting.value);
 const baseEffects = computed(() => userData.value?.maxedEffects ?? Effects.initial);
 const boostSetCardStats = computed(() => {
     const ret = [];
@@ -300,8 +312,8 @@ const IHRMilestones = computed(() => {
     if (setIHR.value?.at(0)) effects.merge(setIHR.value.at(0)!.effects);
     const ihrbonus = 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
-        { population: ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
-        { population: ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
+        { population: ihrbonus*50*10*durationBonus.value, time: 60*10*durationBonus.value },
+        { population: ihrbonus*50*240*durationBonus.value, time: 60*240*durationBonus.value },
     ];
 
 });
@@ -310,8 +322,8 @@ const slowIHRMilestones = computed(() => {
     if (setSlow.value) effects.merge(setSlow.value.effects);
     const ihrbonus = 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
-        { population: ihrbonus*50*10*diliBonus.value, time: 60*10*diliBonus.value },
-        { population: ihrbonus*50*240*diliBonus.value, time: 60*240*diliBonus.value },
+        { population: ihrbonus*50*10*durationBonus.value, time: 60*10*durationBonus.value },
+        { population: ihrbonus*50*240*durationBonus.value, time: 60*240*durationBonus.value },
     ];
 });
 
