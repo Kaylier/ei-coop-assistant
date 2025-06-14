@@ -101,7 +101,7 @@
             <h3>
                 Estimated SE gains
             </h3>
-            <div v-if="buildTimeSetting.value === DEFAULT_BUILD_TIME" class="warning-text">
+            <div v-if="multistigeSetting.value && buildTimeSetting.value === DEFAULT_BUILD_TIME" class="warning-text">
                 No build time entered
             </div>
             <div v-else v-for="info in infoAIO" class="info-entry">
@@ -144,7 +144,7 @@
             <h3>
                 Estimated SE gains
             </h3>
-            <span v-if="buildTimeSetting.value === DEFAULT_BUILD_TIME" class="warning-text">
+            <span v-if="multistigeSetting.value && buildTimeSetting.value === DEFAULT_BUILD_TIME" class="warning-text">
                 No build time entered
             </span>
             <span v-else v-for="info in infoPreload" class="info-entry">
@@ -170,6 +170,9 @@
                     </span>
                 </span>
             </span>
+            <span v-if="multistigeSetting.value && !swapIHRSetting.value" class="warning-text">
+                IHR set not used
+            </span>
         </artifact-set-card>
 
     </section>
@@ -193,13 +196,6 @@ const DEFAULT_EVENT_DURATION = 1;
 const DEFAULT_BUILD_TIME = 0;
 const DEFAULT_BOOST_IHR = 1000*100;
 
-/* Time spend with maxed IHR during build time
- * Based on few experimental data from different skill levels
- * Quite approximative
- */
-const BUILD_IHR_TIME = 27;
-
-
 const onlineSetting = createSetting<boolean>({
     localStorageKey: 'earning-online',
     defaultValue: true,
@@ -217,7 +213,7 @@ const buildTimeSetting = createTextInputSetting<number>({
     defaultValue: DEFAULT_BUILD_TIME,
     parser: (s: string) => {
         const v = s ? parseNumber(s) : DEFAULT_BUILD_TIME;
-        if (v < BUILD_IHR_TIME || v > 1511) throw new Error("Build time is out of range");
+        if (v < 25 || v > 1511) throw new Error("Build time is out of range");
         return v;
     },
     formatter: formatNumber,
@@ -301,9 +297,14 @@ function getStartPopulation(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
         return clamp(startingPopulationSetting.value, min, max);
     }
 
-    // estimate the population using BUILD_IHR_TIME seconds of IHR
+    // estimate the population using ihr_time seconds of IHR
+    // Guesstimate based on personal experience
+    let ihr_time = 16;
+    if (onlineSetting.value && swapIHRSetting.value) ihr_time += 4; // additional time for swapping artifacts
+    if (!onlineSetting.value) ihr_time += 9; // additional time for buying vehicles and prestiging
+
     const ihr = userEffects.value.ihr*(swapIHRSetting.value ? ihrBonus.value : 1);
-    return clamp(ihr*boostIHRBonus*BUILD_IHR_TIME, min, max);
+    return clamp(ihr*boostIHRBonus*ihr_time, min, max);
 }
 
 function getLegCount(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
