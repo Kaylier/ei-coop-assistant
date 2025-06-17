@@ -58,7 +58,7 @@
     <section v-if="!errorMessage && userData" id="main-sets">
 
         <template v-if="mergeEBEarningSets">
-        <artifact-set-card v-if="optimalEBSet"
+        <artifact-set-card v-if="optimalEarningSet"
             title="EB/Earning set"
             description="Maximize your earnings<br/>and increase your EB<br/>to help teammates<br/>mirroring you"
             :userData="userData"
@@ -68,7 +68,7 @@
             :substats="['rcb', 'away', 'ihr', 'hab', 'lay', 'ship']"
             >
             <div v-html="graphTitleHtml"/>
-            <research-chart size="80%" :data="generateChartData(optimalEBSet)" />
+            <research-chart size="80%" :data="generateChartData(optimalEarningSet)" />
         </artifact-set-card>
         </template>
         <template v-else>
@@ -253,7 +253,7 @@ function updateSet() {
         const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
         console.log("Cube:", cubeBonus, cube);
         optimalCube.value = cube;
-        swappedCubeMult.value = cubeBonus*(userData.value?.baseEffects.research_cost_mult ?? 1);
+        swappedCubeMult.value = cubeBonus*(userData.value?.maxedEffects.research_cost_mult ?? 1);
 
         mergeEBEarningSets.value = isclose(getEBMultiplier(optimalEBSet.value), getEBMultiplier(optimalEarningSet.value));
 
@@ -263,7 +263,7 @@ function updateSet() {
         optimalEarningSet.value = null;
         optimalMirrorSet.value = null;
         optimalCube.value = null;
-        swappedCubeMult.value = userData.value?.baseEffects.research_cost_mult ?? 1;
+        swappedCubeMult.value = userData.value?.maxedEffects.research_cost_mult ?? 1;
         mergeEBEarningSets.value = false;
         return;
     }

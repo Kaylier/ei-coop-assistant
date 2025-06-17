@@ -21,7 +21,6 @@ main .invalid-text {
     background: #333333;
     border-radius: 1.4em;
     max-width: 50vw;
-    width: max(18em, 14vw);
 }
 
 .grid {
