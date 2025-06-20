@@ -321,7 +321,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const epicResearches: Map<string, number> = new Map(backup.game?.epicResearch?.map((er: any) => [er.id, er.level]));
 
     const protoBuffDimension = proto.lookupEnum('GameModifier.GameDimension');
-    const colleggtibleBuffs = getColleggtibleBuffs(proto, backup);
+    const colleggs = getColleggtibleBuffs(proto, backup);
 
 
     /*
@@ -374,15 +374,15 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     /*
      * Colleggtibles
      */
-    userEffects.apply('earning_mult'      , colleggtibleBuffs.get(protoBuffDimension.values.EARNINGS              ) ?? 1);
-    userEffects.apply('earning_away_mult' , colleggtibleBuffs.get(protoBuffDimension.values.AWAY_EARNINGS         ) ?? 1);
-    userEffects.apply('ihr_mult'          , colleggtibleBuffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1);
-    userEffects.apply('laying_rate'       , colleggtibleBuffs.get(protoBuffDimension.values.EGG_LAYING_RATE       ) ?? 1);
-    userEffects.apply('shipping_mult'     , colleggtibleBuffs.get(protoBuffDimension.values.SHIPPING_CAPACITY     ) ?? 1);
-    userEffects.apply('hab_capacity_mult' , colleggtibleBuffs.get(protoBuffDimension.values.HAB_CAPACITY          ) ?? 1);
-    userEffects.apply('vehicle_cost_mult' , colleggtibleBuffs.get(protoBuffDimension.values.VEHICLE_COST          ) ?? 1);
-    userEffects.apply('hab_cost_mult'     , colleggtibleBuffs.get(protoBuffDimension.values.HAB_COST              ) ?? 1);
-    userEffects.apply('research_cost_mult', colleggtibleBuffs.get(protoBuffDimension.values.RESEARCH_COST         ) ?? 1);
+    userEffects.apply('earning_mult'      , colleggs.buffs.get(protoBuffDimension.values.EARNINGS              ) ?? 1);
+    userEffects.apply('earning_away_mult' , colleggs.buffs.get(protoBuffDimension.values.AWAY_EARNINGS         ) ?? 1);
+    userEffects.apply('ihr_mult'          , colleggs.buffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1);
+    userEffects.apply('laying_rate'       , colleggs.buffs.get(protoBuffDimension.values.EGG_LAYING_RATE       ) ?? 1);
+    userEffects.apply('shipping_mult'     , colleggs.buffs.get(protoBuffDimension.values.SHIPPING_CAPACITY     ) ?? 1);
+    userEffects.apply('hab_capacity_mult' , colleggs.buffs.get(protoBuffDimension.values.HAB_CAPACITY          ) ?? 1);
+    userEffects.apply('vehicle_cost_mult' , colleggs.buffs.get(protoBuffDimension.values.VEHICLE_COST          ) ?? 1);
+    userEffects.apply('hab_cost_mult'     , colleggs.buffs.get(protoBuffDimension.values.HAB_COST              ) ?? 1);
+    userEffects.apply('research_cost_mult', colleggs.buffs.get(protoBuffDimension.values.RESEARCH_COST         ) ?? 1);
 
 
 
@@ -471,6 +471,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
         items, sets,
         proPermit,
         baseEffects, maxedEffects,
+        colleggtibles: Object.fromEntries(colleggs.tiers),
         date: new Date(backup.approxTime*1000),
         ephemeral: checkSID(eid),
     };
@@ -546,7 +547,7 @@ function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[]
     return [ [...items.values()], sets ];
 }
 
-function getColleggtibleBuffs(proto: any, backup: any): Map<any, number> {
+function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, number>, buffs: Map<any, number> } {
     /*
      * Iterate through contracts to find colleggtibles. This is the only way to know as far as I know...
      * For ongoing contracts, assumes the population is maxed
@@ -572,7 +573,8 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<any, number> {
         }
     }
 
-    const colleggtibleBuffs = new Map<any, number>();
+    const buffs = new Map<any, number>();
+    const tiers = new Map<string, number>();
 
     if (backup.contracts?.customEggInfo) {
         for (const customEgg of backup.contracts?.customEggInfo) {
@@ -582,13 +584,14 @@ function getColleggtibleBuffs(proto: any, backup: any): Map<any, number> {
                 if (farmSizeThresholds[i] <= (maxFarmSizeReached.get(customEgg.identifier) ?? 0)) {
                     const buff = customEgg.buffs[i];
                     finalBuffs.set(buff.dimension, buff.value);
+                    tiers.set(customEgg.identifier, i);
                 }
             }
-            finalBuffs.forEach((value, key) => colleggtibleBuffs.set(key, (colleggtibleBuffs.get(key) ?? 1)*value));
+            finalBuffs.forEach((value, key) => buffs.set(key, (buffs.get(key) ?? 1)*value));
         }
     }
 
-    return colleggtibleBuffs;
+    return { tiers, buffs };
 }
 
 
@@ -662,6 +665,7 @@ export async function getSandboxLink(artifacts: T.Artifact[],
             boostBeaconActive: boosts?.includes(T.BoostCategory.BOOST_BEACON) ?? false,
             proPermit: userData?.proPermit ?? true,
             tachyonDeflectorBonus: deflectorBonus ?? 0,
+            colleggtibleTiers: userData?.colleggtibles,
         }
     }
 

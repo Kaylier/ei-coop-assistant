@@ -110,6 +110,7 @@ export type UserData = null | {
     proPermit: boolean,
     baseEffects: Effects,
     maxedEffects: Effects,
+    colleggtibles: Record<string, number>, // egg identifier -> level
     date: Date,
     ephemeral?: boolean,
 };
