@@ -38,7 +38,9 @@ import { formatNumber } from '@/scripts/utils.ts';
 import { getImageSource, getEffects } from '@/scripts/artifacts.ts';
 import { Effects, getEffectText } from '@/scripts/effects.ts';
 
-type StatKey = 'eb' | 'rcb' | 'away' | 'sercb' | 'seaway' | 'cr' | 'dili' | 'ihr' | 'hab' | 'lay' | 'ship';
+type StatKey = 'eb' | 'earn' | 'rcb' | 'away'
+                    | 'se' | 'sercb' | 'seaway'
+                    | 'cr' | 'dili' | 'ihr' | 'hab' | 'lay' | 'ship';
 
 const props = defineProps<{
     title: string,
@@ -95,18 +97,19 @@ const entries = computed<Entry[]>(() => {
     /** Earnings
      * Baseline is online without running chickens, this allows direct comparison between online and offline sets
      */
-    const earnings_mrcb = clothedEff.laying_rate      / nakedEff.laying_rate
-                        * clothedEff.egg_value        / nakedEff.egg_value
-                        * clothedEff.earning_mult     / nakedEff.earning_mult
-                        * clothedEff.earning_mrcb_mult
-                        * clothedEff.eb               / nakedEff.eb
-                        * (hasBF ? clothedEff.boost_mult / nakedEff.boost_mult : 1);
-    const earnings_away = clothedEff.laying_rate      / nakedEff.laying_rate
-                        * clothedEff.egg_value        / nakedEff.egg_value
-                        * clothedEff.earning_mult     / nakedEff.earning_mult
-                        * clothedEff.earning_away_mult
-                        * clothedEff.eb               / nakedEff.eb
-                        * (hasBF ? clothedEff.boost_mult / nakedEff.boost_mult : 1);
+    const earnings = clothedEff.laying_rate      / nakedEff.laying_rate
+                   * clothedEff.egg_value        / nakedEff.egg_value
+                   * clothedEff.earning_mult     / nakedEff.earning_mult
+                   * clothedEff.eb               / nakedEff.eb
+                   * (hasBF ? clothedEff.boost_mult / nakedEff.boost_mult : 1);
+    const earnings_mrcb = earnings * clothedEff.earning_mrcb_mult;
+    const earnings_away = earnings * clothedEff.earning_away_mult;
+    ret.set('earn', {
+        img: hasBF ? ["/img/boosts/earning_50x10.png"] : undefined,
+        text: "earnings",
+        valueUpd: `×${formatNumber(earnings)}`,
+        relevant: earnings > 7,
+    });
     ret.set('rcb', {
         img: hasBF ? ["/img/boosts/earning_50x10.png"] : undefined,
         text: "earnings (with rcb)",
@@ -124,14 +127,20 @@ const entries = computed<Entry[]>(() => {
     /** Soul Egg Gains
      * using 0.21 exponent approximation
      */
-    const vearnings_mrcb = earnings_mrcb
-                         * clothedEff.prestige_earning_mult / nakedEff.prestige_earning_mult
-                         * (hasSB ? clothedEff.boost_mult / nakedEff.boost_mult : 1);
-    const vearnings_away = earnings_away
-                         * clothedEff.prestige_earning_mult / nakedEff.prestige_earning_mult
-                         * (hasSB ? clothedEff.boost_mult / nakedEff.boost_mult : 1);
+    const vearnings = earnings
+                    * clothedEff.prestige_earning_mult / nakedEff.prestige_earning_mult
+                    * (hasSB ? clothedEff.boost_mult / nakedEff.boost_mult : 1);
+    const vearnings_mrcb = vearnings * clothedEff.earning_mrcb_mult;
+    const vearnings_away = vearnings * clothedEff.earning_away_mult;
+    const soulegg = Math.pow(vearnings, 0.21);
     const soulegg_mrcb = Math.pow(vearnings_mrcb, 0.21);
     const soulegg_away = Math.pow(vearnings_away, 0.21);
+    ret.set('se', {
+        img: [...(hasBF ? ["/img/boosts/earning_50x10.png"] : []), ...(hasSB ? ["/img/boosts/soul_500x10.png"] : [])],
+        text: "SE gains",
+        valueUpd: `×${formatNumber(soulegg)}`,
+        relevant: soulegg > 1.5,
+    });
     ret.set('sercb', {
         img: [...(hasBF ? ["/img/boosts/earning_50x10.png"] : []), ...(hasSB ? ["/img/boosts/soul_500x10.png"] : [])],
         text: "SE gains (with rcb)",
