@@ -29,6 +29,17 @@
                                   { value: true, label: 'online' },
                                   { value: false, label: 'offline' },
                                   ]"/>
+        <setting-switch id="includes"
+                        v-model="includesSetting"
+                        label="Includes"
+                        tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
+                        type="checkbox"
+                        :options="[
+                                  { value: T.ArtifactFamily.TACHYON_DEFLECTOR, label: 'Deflector',
+                                    img: '/img/items/artifact-tachyon_deflector-3.png' },
+                                  { value: T.ArtifactFamily.SHIP_IN_A_BOTTLE, label: 'Ship in a Bottle',
+                                    img: '/img/items/artifact-ship_in_a_bottle-3.png' },
+                                  ]"/>
     </section>
     <section id="inputs">
         <setting-text id="egg-value"
@@ -70,6 +81,11 @@
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalEarningSet)" />
         </artifact-set-card>
+        <span v-else class="invalid-text">
+            You don't have enough artifacts<br/>
+            to build an EB/Earning set<br/>
+            with the selected constraints
+        </span>
         </template>
         <template v-else>
         <artifact-set-card v-if="optimalEBSet"
@@ -84,6 +100,11 @@
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalEBSet)" />
         </artifact-set-card>
+        <span v-else class="invalid-text">
+            You don't have enough artifacts<br/>
+            to build an EB set<br/>
+            with the selected constraints
+        </span>
 
         <artifact-set-card v-if="optimalEarningSet"
             title="Earning set"
@@ -97,6 +118,11 @@
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalEarningSet)" />
         </artifact-set-card>
+        <span v-else class="invalid-text">
+            You don't have enough artifacts<br/>
+            to build an Earning set<br/>
+            with the selected constraints
+        </span>
         </template>
 
         <artifact-set-card v-if="optimalMirrorSet"
@@ -112,6 +138,11 @@
             <div v-html="graphTitleHtml"/>
             <research-chart size="80%" :data="generateChartData(optimalMirrorSet, true)" />
         </artifact-set-card>
+        <span v-else class="invalid-text">
+            You don't have enough artifacts<br/>
+            to build a Mirror set<br/>
+            with the selected constraints
+        </span>
     </section>
 </template>
 
@@ -171,6 +202,12 @@ const onlineSetting = createSetting<boolean>({
     localStorageKey: 'earning-online',
     defaultValue: true,
 });
+const includesSetting = createSetting<(T.ArtifactFamily)[]>({
+    localStorageKey: 'earning-including',
+    defaultValue: [],
+    parser: (s) => (JSON.parse(s) as T.ArtifactFamily[]).filter(x =>
+                    x === T.ArtifactFamily.TACHYON_DEFLECTOR || x === T.ArtifactFamily.SHIP_IN_A_BOTTLE),
+});
 const eggValueSetting = createTextInputSetting<number>({
     localStorageKey: 'earning-egg-value',
     queryParamKey: 'egg_value',
@@ -213,7 +250,7 @@ const mergeEBEarningSets = ref<boolean>(false);
 
 
 // Watchers for triggering recomputations
-watch([userData, swapCubeSetting, reslottingSetting, onlineSetting], updateSet);
+watch([userData, swapCubeSetting, reslottingSetting, onlineSetting, includesSetting], updateSet);
 
 
 /**
@@ -229,6 +266,7 @@ function updateSet() {
         optimalEBSet.value = searchEBSet(userData.value?.items ?? [],
                                          maxSlot,
                                          userData.value?.maxedEffects ?? Effects.initial,
+                                         includesSetting.value,
                                          !swapCubeSetting.value,
                                          false, // countMonocle
                                          onlineSetting.value,
@@ -237,6 +275,7 @@ function updateSet() {
         optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
                                                    maxSlot,
                                                    userData.value?.maxedEffects ?? Effects.initial,
+                                                   includesSetting.value,
                                                    !swapCubeSetting.value,
                                                    false, // countMonocle
                                                    onlineSetting.value,
@@ -245,6 +284,7 @@ function updateSet() {
         optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
                                                  maxSlot,
                                                  userData.value?.maxedEffects ?? Effects.initial,
+                                                 includesSetting.value,
                                                  !swapCubeSetting.value,
                                                  false, // countMonocle
                                                  onlineSetting.value,

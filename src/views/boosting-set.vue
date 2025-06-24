@@ -3,7 +3,7 @@
     <section class="settings">
         <setting-switch id="includes"
                         v-model="includesSetting"
-                        label="Including"
+                        label="Includes"
                         tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
                         type="checkbox"
                         :options="[

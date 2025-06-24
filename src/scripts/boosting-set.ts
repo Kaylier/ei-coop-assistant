@@ -32,8 +32,7 @@ export function searchDiliSet(items: T.Item[],
     }
 
     const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()]
-        .filter(x => !requiredFamilies.includes(x)
-                  && (allowedGusset !== T.AllowedGusset.NONE || x !== T.ArtifactFamily.GUSSET));
+        .filter(x => allowedGusset !== T.AllowedGusset.NONE || x !== T.ArtifactFamily.GUSSET);
 
     function scoreFn(effects: Effects): number[] {
         return [
@@ -103,7 +102,7 @@ export function searchIHRSets(items: T.Item[],
     const ret = [];
     let set = searchSet(artifacts, stones, maxSlot, scoreFn, {
         requiredFamilies,
-        optionalFamilies: [...artifacts.keys()].filter(x => !requiredFamilies.includes(x)),
+        optionalFamilies: [...artifacts.keys()],
         userEffects,
     });
 
@@ -111,7 +110,7 @@ export function searchIHRSets(items: T.Item[],
     if (targetGusset !== T.AllowedGusset.ANY && targetGusset !== T.AllowedGusset.NONE) {
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }
-    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
+    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()];
 
     while (set !== null) {
         ret.push(set);
@@ -182,7 +181,7 @@ export function searchSlowIHRSet(items: T.Item[],
         requiredFamilies.push(T.ArtifactFamily.GUSSET);
     }
 
-    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()].filter(x => !requiredFamilies.includes(x));
+    const optionalFamilies: T.ArtifactFamily[] = [...artifacts.keys()];
 
     function scoreFn(effects: Effects): number[] {
         return [

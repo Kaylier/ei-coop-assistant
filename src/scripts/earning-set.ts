@@ -1,4 +1,5 @@
 import * as T from '@/scripts/types.ts';
+import { isclose } from '@/scripts/utils.ts';
 import { getEffects } from '@/scripts/artifacts.ts';
 import { prepareItems, searchSet } from '@/scripts/solvers.ts';
 import { Effects } from '@/scripts/effects.ts';
@@ -7,6 +8,7 @@ import { Effects } from '@/scripts/effects.ts';
 export function searchEBSet(items: T.Item[],
                             maxSlot: number,
                             userEffects: Effects,
+                            includedFamilies: T.ArtifactFamily[],
                             countCube: boolean,
                             countMonocle: boolean,
                             online: boolean,
@@ -17,6 +19,8 @@ export function searchEBSet(items: T.Item[],
         'prophecy_eggs',
         'soul_egg_bonus',
         'prophecy_egg_bonus',
+        'team_laying_bonus',
+        'team_earning_bonus',
     ], [
         'laying_rate',
         'egg_value_base',
@@ -45,7 +49,20 @@ export function searchEBSet(items: T.Item[],
         ];
     }
 
+    // Restrict to the highest deflector and ship bonus
+    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
+    const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
+    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
+    const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
+    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+
+
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
+        requiredFamilies: [...includedFamilies],
         optionalFamilies: [...artifacts.keys()],
         stoneFamilies: [
             T.StoneFamily.PROPHECY_STONE,
@@ -63,6 +80,7 @@ export function searchEBSet(items: T.Item[],
 export function searchEarningSet(items: T.Item[],
                                  maxSlot: number,
                                  userEffects: Effects,
+                                 includedFamilies: T.ArtifactFamily[],
                                  countCube: boolean,
                                  countMonocle: boolean,
                                  online: boolean,
@@ -80,6 +98,8 @@ export function searchEarningSet(items: T.Item[],
         'soul_egg_bonus',
         'prophecy_egg_bonus',
         'research_cost_mult',
+        'team_laying_bonus',
+        'team_earning_bonus',
     ], [
         'team_earning_bonus',
     ]);
@@ -100,7 +120,20 @@ export function searchEarningSet(items: T.Item[],
         ];
     }
 
+    // Restrict to the highest deflector and ship bonus
+    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
+    const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
+    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
+    const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
+    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+
+
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
+        requiredFamilies: [...includedFamilies],
         optionalFamilies: [...artifacts.keys()],
         stoneFamilies: [
             T.StoneFamily.PROPHECY_STONE,
@@ -118,6 +151,7 @@ export function searchEarningSet(items: T.Item[],
 export function searchMirrorSet(items: T.Item[],
                                 maxSlot: number,
                                 userEffects: Effects,
+                                includedFamilies: T.ArtifactFamily[],
                                 countCube: boolean,
                                 countMonocle: boolean,
                                 online: boolean,
@@ -131,6 +165,8 @@ export function searchMirrorSet(items: T.Item[],
         'earning_away_mult',
         'earning_mrcb_mult',
         'research_cost_mult',
+        'team_laying_bonus',
+        'team_earning_bonus',
     ]);
 
     function scoreFn(effects: Effects): number[] {
@@ -143,7 +179,20 @@ export function searchMirrorSet(items: T.Item[],
         return [ bonus, 1/effects.research_cost_mult ];
     }
 
+    // Restrict to the highest deflector and ship bonus
+    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
+    const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
+    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
+    const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
+    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+
+
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
+        requiredFamilies: [...includedFamilies],
         optionalFamilies: [...artifacts.keys()],
         stoneFamilies: [
             T.StoneFamily.PROPHECY_STONE,

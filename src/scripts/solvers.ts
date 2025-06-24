@@ -176,7 +176,9 @@ export function searchSet(artifacts: Map<T.ArtifactFamily, AnnotatedArtifact[]>,
     requiredFamilies = requiredFamilies || [];
     const requiredIdx = requiredFamilies.length;
     optionalFamilies = optionalFamilies || [...artifacts.keys()];
-    optionalFamilies = optionalFamilies.filter(x => artifacts.has(x) && artifacts.get(x)!.length > 0);
+    optionalFamilies = optionalFamilies.filter(x => artifacts.has(x)
+                                                 && artifacts.get(x)!.length > 0
+                                                 && !requiredFamilies.includes(x));
     optionalFamilies.sort((a,b) => {
         const ita = artifacts.get(a)![0], itb = artifacts.get(b)![0];
         return itemCompare(itb, ita) || itb.stoneSlot - ita.stoneSlot;
