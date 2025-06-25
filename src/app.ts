@@ -49,7 +49,7 @@ app.component('boost-set-card', BoostSetCard);
 const routes = [
     {
         path: '/',
-        redirect: '/laying-set'
+        component: () => import('@/views/index-view.vue'),
     },
     {
         path: '/hoa',
@@ -121,7 +121,7 @@ router.beforeEach((to, from) => {
 
 router.afterEach((to) => {
     nextTick(() => {
-        document.title = (to.meta.title + " — " || "") + "Coop Assistant";
+        document.title = (to.meta.title ? to.meta.title + " — " : "") + "Coop Assistant";
     });
 });
 
