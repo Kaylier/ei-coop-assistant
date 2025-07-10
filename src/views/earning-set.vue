@@ -1,16 +1,6 @@
 <template>
     <load-eid v-model="userData"/>
     <section class="settings">
-        <setting-switch id="swap-cube"
-                        v-model="swapCubeSetting"
-                        label="Cube swapping"
-                        tooltip="Swap to your best cube before<br/>
-                                 buying research,<br/>
-                                 or stay with the same set"
-                        :options="[
-                                  { value: false, label: 'no' },
-                                  { value: true, label: 'yes' },
-                                  ]"/>
         <setting-switch id="reslotting"
                         v-model="reslottingSetting"
                         label="Reslotting"
@@ -23,13 +13,8 @@
                                   { value: 1, label: 'add' },
                                   { value: 3, label: 'swap' },
                                   ]"/>
-        <setting-switch id="online"
-                        v-model="onlineSetting"
-                        :options="[
-                                  { value: true, label: 'online' },
-                                  { value: false, label: 'offline' },
-                                  ]"/>
-        <setting-switch id="includes"
+        <setting-switch :hide="!showExtraSettings"
+                        id="includes"
                         v-model="includesSetting"
                         label="Includes"
                         tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
@@ -40,6 +25,48 @@
                                   { value: T.ArtifactFamily.SHIP_IN_A_BOTTLE, label: 'Ship in a Bottle',
                                     img: '/img/items/artifact-ship_in_a_bottle-3.png' },
                                   ]"/>
+        <setting-switch :hide="!showExtraSettings"
+                        id="gusset"
+                        v-model="allowedGussetSetting"
+                        label="Gusset"
+                        tooltip="Target a specific gusset with your IHR sets<br/>
+                                 If swapping is enabled, this is the highest gusset<br/>
+                                 Disabled on 'any'"
+                        :options="allowedGussetOptions"
+                        @focusin="allowedGussetOptionsAll = allowedGussetOptionsAll"
+                        @focusout="allowedGussetOptionsAll = false">
+            <template #option="{ label, img, cls }">
+                <img v-if="img" :src="img" :alt="label" :class="cls"/>
+                <span v-else v-html="label"/>
+            </template>
+            <template #extra>
+                <button v-if="allowedGussetOptions.length < 10"
+                   href="#"
+                   class="switch-option extra-gusset-button"
+                   @click="allowedGussetOptionsAll = true">
+                    …
+                </button>
+            </template>
+        </setting-switch>
+        <setting-switch id="online"
+                        v-model="onlineSetting"
+                        :options="[
+                                  { value: true, label: 'online' },
+                                  { value: false, label: 'offline' },
+                                  ]"/>
+        <setting-switch id="swap-cube"
+                        v-model="swapCubeSetting"
+                        label="Swap cube"
+                        tooltip="Swap to your best cube before<br/>
+                                 buying research,<br/>
+                                 or stay with the same set"
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
+        <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
+            more settings
+        </a>
     </section>
     <section id="inputs">
         <setting-text id="egg-value"
@@ -149,11 +176,12 @@
 <style scoped src="@/styles/earning-set.css"></style>
 
 <script setup lang="ts">
-import { ref, shallowRef, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { clamp, isclose, parseNumber, formatNumber, spinNumber } from '@/scripts/utils.ts';
-import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
+import { createTextInputSetting, createSetting, focusRef } from '@/scripts/settings.ts';
 import { searchEBSet, searchEarningSet, searchMirrorSet, searchCube } from '@/scripts/earning-set.ts';
+import { getOptimalGussets } from '@/scripts/laying-set.ts';
 import { Effects } from '@/scripts/effects.ts';
 
 
@@ -208,6 +236,10 @@ const includesSetting = createSetting<(T.ArtifactFamily)[]>({
     parser: (s) => (JSON.parse(s) as T.ArtifactFamily[]).filter(x =>
                     x === T.ArtifactFamily.TACHYON_DEFLECTOR || x === T.ArtifactFamily.SHIP_IN_A_BOTTLE),
 });
+const allowedGussetSetting = createSetting<T.AllowedGusset>({
+    localStorageKey: 'boosting-gusset-target',
+    defaultValue: T.AllowedGusset.ANY,
+});
 const eggValueSetting = createTextInputSetting<number>({
     localStorageKey: 'earning-egg-value',
     queryParamKey: 'egg_value',
@@ -235,7 +267,31 @@ const miscBonusSetting = createTextInputSetting<number>({
 });
 
 
+// When true, show every possible gussets
+const allowedGussetOptionsAll = focusRef(0, 500);
+const allowedGussetOptions = computed(() => {
+    const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
+        [
+            T.AllowedGusset.ANY,
+            T.AllowedGusset.NONE,
+            ...getOptimalGussets(userData.value?.items ?? [], reslottingSetting.value === 0)
+        ];
 
+    // Force selected option to show up
+    if (!choices.includes(allowedGussetSetting.value)) {
+        choices.push(allowedGussetSetting.value);
+    }
+
+    const ret = choices.sort().map(x => {
+        if (x === T.AllowedGusset.ANY)  return { value: x, label: "any" };
+        if (x === T.AllowedGusset.NONE) return { value: x, label: "Ø" };
+        return { value: x, label: getGussetName(x), img: getGussetImage(x), cls: getGussetClass(x) };
+    });
+    return ret;
+});
+
+
+const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
 
 
@@ -250,7 +306,7 @@ const mergeEBEarningSets = ref<boolean>(false);
 
 
 // Watchers for triggering recomputations
-watch([userData, swapCubeSetting, reslottingSetting, onlineSetting, includesSetting], updateSet);
+watch([userData, swapCubeSetting, reslottingSetting, onlineSetting, includesSetting, allowedGussetSetting], updateSet);
 
 
 /**
@@ -270,7 +326,8 @@ function updateSet() {
                                          !swapCubeSetting.value,
                                          false, // countMonocle
                                          onlineSetting.value,
-                                         reslottingSetting.value);
+                                         reslottingSetting.value,
+                                         allowedGussetSetting.value);
         console.log("EB set:", optimalEBSet.value);
         optimalEarningSet.value = searchEarningSet(userData.value?.items ?? [],
                                                    maxSlot,
@@ -279,7 +336,8 @@ function updateSet() {
                                                    !swapCubeSetting.value,
                                                    false, // countMonocle
                                                    onlineSetting.value,
-                                                   reslottingSetting.value);
+                                                   reslottingSetting.value,
+                                                   allowedGussetSetting.value);
         console.log("Earning set:", optimalEarningSet.value);
         optimalMirrorSet.value = searchMirrorSet(userData.value?.items ?? [],
                                                  maxSlot,
@@ -288,7 +346,8 @@ function updateSet() {
                                                  !swapCubeSetting.value,
                                                  false, // countMonocle
                                                  onlineSetting.value,
-                                                 reslottingSetting.value);
+                                                 reslottingSetting.value,
+                                                 allowedGussetSetting.value);
         console.log("Mirror set:", optimalMirrorSet.value);
         const [cube, cubeBonus] = searchCube(userData.value?.items ?? []);
         console.log("Cube:", cubeBonus, cube);
@@ -425,6 +484,24 @@ function generateChartData(set: T.ArtifactSet, mirroring: boolean = false) {
         hasMissing: missing > 1.5,
         hasBoosts: boostBonus > 1.5,
     };
+}
+
+function getGussetName(gusset: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [category,family,tier,rarity] = gusset.split('-');
+    return `t${tier}${"crel"[Number(rarity)]}`
+}
+
+function getGussetImage(gusset: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [category,family,tier,rarity] = gusset.split('-');
+    return `/img/items/${category}-${family}-${tier}.png`
+}
+
+function getGussetClass(gusset: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [category,family,tier,rarity] = gusset.split('-');
+    return ["common", "rare", "epic", "legendary"][Number(rarity)];
 }
 
 

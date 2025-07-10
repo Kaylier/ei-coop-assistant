@@ -2,17 +2,6 @@
     <load-eid v-model="userData"/>
 
     <section class="settings">
-        <setting-switch id="deflector-mode"
-                        v-model="deflectorModeSetting"
-                        label="Deflector"
-                        tooltip="none: do not force a deflector<br/>
-                                 contribution: deflector that maximizes user contribution<br/>
-                                 teamwork: deflector that maximizes teamwork"
-                        :options="[
-                                  { value: T.DeflectorMode.NONE, label: 'none' },
-                                  { value: T.DeflectorMode.CONTRIBUTION, label: 'contribution' },
-                                  { value: T.DeflectorMode.TEAMWORK, label: 'teamwork' },
-                                  ]"/>
         <setting-switch id="reslotting"
                         v-model="reslottingSetting"
                         label="Reslotting"
@@ -24,6 +13,17 @@
                                   { value: 0, label: 'no' },
                                   { value: 1, label: 'add' },
                                   { value: 3, label: 'swap' },
+                                  ]"/>
+        <setting-switch id="deflector-mode"
+                        v-model="deflectorModeSetting"
+                        label="Deflector"
+                        tooltip="none: do not force a deflector<br/>
+                                 contribution: deflector that maximizes user contribution<br/>
+                                 teamwork: deflector that maximizes teamwork"
+                        :options="[
+                                  { value: T.DeflectorMode.NONE, label: 'none' },
+                                  { value: T.DeflectorMode.CONTRIBUTION, label: 'contribution' },
+                                  { value: T.DeflectorMode.TEAMWORK, label: 'teamwork' },
                                   ]"/>
         <setting-switch id="gusset"
                         v-model="allowedGussetSetting"

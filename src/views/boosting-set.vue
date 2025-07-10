@@ -1,17 +1,6 @@
 <template>
     <load-eid v-model="userData"/>
     <section class="settings">
-        <setting-switch id="includes"
-                        v-model="includesSetting"
-                        label="Includes"
-                        tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
-                        type="checkbox"
-                        :options="[
-                                  { value: T.ArtifactFamily.TACHYON_DEFLECTOR, label: 'Deflector',
-                                    img: '/img/items/artifact-tachyon_deflector-3.png' },
-                                  { value: T.ArtifactFamily.SHIP_IN_A_BOTTLE, label: 'Ship in a Bottle',
-                                    img: '/img/items/artifact-ship_in_a_bottle-3.png' },
-                                  ]"/>
         <setting-switch id="reslotting"
                         v-model="reslottingSetting"
                         label="Reslotting"
@@ -24,9 +13,20 @@
                                   { value: 1, label: 'add' },
                                   { value: 3, label: 'swap' },
                                   ]"/>
+        <setting-switch id="includes"
+                        v-model="includesSetting"
+                        label="Includes"
+                        tooltip="Include a Deflector and/or a Ship in a Bottle<br/>in your IHR sets"
+                        type="checkbox"
+                        :options="[
+                                  { value: T.ArtifactFamily.TACHYON_DEFLECTOR, label: 'Deflector',
+                                    img: '/img/items/artifact-tachyon_deflector-3.png' },
+                                  { value: T.ArtifactFamily.SHIP_IN_A_BOTTLE, label: 'Ship in a Bottle',
+                                    img: '/img/items/artifact-ship_in_a_bottle-3.png' },
+                                  ]"/>
         <setting-switch id="swapping"
                         v-model="swappingSetting"
-                        label="Gusset swapping"
+                        label="Swaps gusset"
                         tooltip="Allow swapping gusset mid-boost<br/>
                                  for a higher IHR at lower population<br/>
                                  Select deflector or ship in a bottle<br/>

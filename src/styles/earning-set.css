@@ -1,5 +1,17 @@
 
 
+.extra-gusset-button {
+    background-color: var(--bg-hover-color);
+    padding: 0;
+    font-size: 0.75rem;
+}
+
+.extra-gusset-button:focus,
+.extra-gusset-button:hover {
+    background-color: var(--bg-alt-hover-color);
+}
+
+
 #inputs {
     display: flex;
     flex-flow: row wrap;

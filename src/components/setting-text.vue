@@ -1,5 +1,5 @@
 <template>
-    <span class="setting-entry" :class="{ hidden: hide && setting.value === setting.defaultValue }"
+    <span class="setting-entry" :class="{ hidden: hide && isEqual(unref(setting.value), setting.defaultValue) }"
           role="spinbutton"
           @keydown.up.shift.exact="setting.spin?.(3)"
           @keydown.up.exact="setting.spin?.(2)"
@@ -40,6 +40,10 @@ defineProps<{
     hide?: boolean,
     small?: boolean,
 }>();
+
+function isEqual<T>(a: T, b: T): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+}
 
 </script>
 

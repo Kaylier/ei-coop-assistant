@@ -12,13 +12,23 @@ export function searchEBSet(items: T.Item[],
                             countCube: boolean,
                             countMonocle: boolean,
                             online: boolean,
-                            reslotting: 0|1|2|3): T.ArtifactSet | null {
+                            reslotting: 0|1|2|3,
+                            allowedGusset: T.AllowedGusset
+                           ): T.ArtifactSet | null {
 
-    const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
+    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+        if (x.category !== T.ItemCategory.ARTIFACT) return true;
+        if (x.family !== T.ArtifactFamily.GUSSET) return true;
+        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+    });
+
+    const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'soul_eggs',
         'prophecy_eggs',
         'soul_egg_bonus',
         'prophecy_egg_bonus',
+        // needed for include requirements:
+        'hab_capacity_mult',
         'team_laying_bonus',
         'team_earning_bonus',
     ], [
@@ -60,9 +70,13 @@ export function searchEBSet(items: T.Item[],
     const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
+    const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
+    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
 
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
-        requiredFamilies: [...includedFamilies],
+        requiredFamilies,
         optionalFamilies: [...artifacts.keys()],
         stoneFamilies: [
             T.StoneFamily.PROPHECY_STONE,
@@ -84,9 +98,16 @@ export function searchEarningSet(items: T.Item[],
                                  countCube: boolean,
                                  countMonocle: boolean,
                                  online: boolean,
-                                 reslotting: 0|1|2|3): T.ArtifactSet | null {
+                                 reslotting: 0|1|2|3,
+                                 allowedGusset: T.AllowedGusset
+                                ): T.ArtifactSet | null {
+    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+        if (x.category !== T.ItemCategory.ARTIFACT) return true;
+        if (x.family !== T.ArtifactFamily.GUSSET) return true;
+        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+    });
 
-    const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
+    const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'laying_rate',
         'egg_value_base',
         'egg_value_mult',
@@ -98,6 +119,8 @@ export function searchEarningSet(items: T.Item[],
         'soul_egg_bonus',
         'prophecy_egg_bonus',
         'research_cost_mult',
+        // needed for include requirements:
+        'hab_capacity_mult',
         'team_laying_bonus',
         'team_earning_bonus',
     ], [
@@ -131,9 +154,13 @@ export function searchEarningSet(items: T.Item[],
     const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
+    const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
+    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
 
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
-        requiredFamilies: [...includedFamilies],
+        requiredFamilies,
         optionalFamilies: [...artifacts.keys()],
         stoneFamilies: [
             T.StoneFamily.PROPHECY_STONE,
@@ -155,9 +182,16 @@ export function searchMirrorSet(items: T.Item[],
                                 countCube: boolean,
                                 countMonocle: boolean,
                                 online: boolean,
-                                reslotting: 0|1|2|3): T.ArtifactSet | null {
+                                reslotting: 0|1|2|3,
+                                allowedGusset: T.AllowedGusset
+                               ): T.ArtifactSet | null {
+    const filteredItems = allowedGusset === T.AllowedGusset.ANY ? items : items.filter(x => {
+        if (x.category !== T.ItemCategory.ARTIFACT) return true;
+        if (x.family !== T.ArtifactFamily.GUSSET) return true;
+        return allowedGusset === `artifact-gusset-${x.tier}-${x.rarity}`;
+    });
 
-    const { artifacts, stones } = prepareItems(items, (reslotting & 2) === 2, (reslotting & 1) === 1, [
+    const { artifacts, stones } = prepareItems(filteredItems, (reslotting & 2) === 2, (reslotting & 1) === 1, [
         'laying_rate',
         'egg_value_base',
         'egg_value_mult',
@@ -165,6 +199,8 @@ export function searchMirrorSet(items: T.Item[],
         'earning_away_mult',
         'earning_mrcb_mult',
         'research_cost_mult',
+        // needed for include requirements:
+        'hab_capacity_mult',
         'team_laying_bonus',
         'team_earning_bonus',
     ]);
@@ -190,9 +226,13 @@ export function searchMirrorSet(items: T.Item[],
     const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
     artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
+    const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
+    if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
+        requiredFamilies.push(T.ArtifactFamily.GUSSET);
+    }
 
     return searchSet(artifacts, stones, maxSlot, scoreFn, {
-        requiredFamilies: [...includedFamilies],
+        requiredFamilies,
         optionalFamilies: [...artifacts.keys()],
         stoneFamilies: [
             T.StoneFamily.PROPHECY_STONE,

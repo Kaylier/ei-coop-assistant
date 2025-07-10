@@ -1,6 +1,6 @@
 <template>
     <span class="setting-entry"
-          :class="{ hidden: hide && unref(setting.value) === setting.defaultValue && !focused  }"
+          :class="{ hidden: hide && isEqual(unref(setting.value), setting.defaultValue) && !focused  }"
           @focusin="focused = true" @focusout="focused = false"
           >
         <label v-if="label || tooltip">
@@ -51,6 +51,10 @@ defineProps<{
 // When changing from default option to non-default one, the focus flickering hides the setting
 // We need debouncing to mitigate this
 const focused = focusRef();
+
+function isEqual<T>(a: T, b: T): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+}
 
 </script>
 
