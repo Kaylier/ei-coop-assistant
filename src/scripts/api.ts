@@ -275,8 +275,10 @@ async function queryBackup(eid: string, proto: any) {
         body: new URLSearchParams({ 'data': base64Data }),
     });
 
-    if (!response.ok)
-        throw new Error(`Network response was not ok: ${response.statusText}`);
+    if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(`Network response was not ok: ${errJson.details || errJson.error || `HTTP ${errJson.status}`}`);
+    }
     const responseText = await response.text();
 
     const binaryResponse = Uint8Array.from(atob(responseText), c => c.charCodeAt(0));
