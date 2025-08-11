@@ -221,14 +221,23 @@ function getItemFromSpec(spec: any, proto: any): T.Item {
 }
 
 
+let lastBackupTime = 0;
+const BACKUP_COOLDOWN_MS = 1000;
+
 /**
  * Request a FirstContact to the API, and returns the Backup proto object
  */
 async function queryBackup(eid: string, proto: any) {
 
+    const now = Date.now();
+    if (now - lastBackupTime < BACKUP_COOLDOWN_MS) {
+        throw new Error(`Backup request is cooling down. Try again later.`);
+    }
+    lastBackupTime = now;
+
     const EggIncFirstContactRequest = proto.lookupType('ei.EggIncFirstContactRequest');
     const EggIncFirstContactResponse = proto.lookupType('ei.EggIncFirstContactResponse');
-    //const Platform = proto.lookupEnum('ei.Platform');
+    const Platform = proto.lookupEnum('ei.Platform');
 
     const payload = {
         rinfo: {
@@ -236,7 +245,7 @@ async function queryBackup(eid: string, proto: any) {
             clientVersion: CLIENT_VERSION,
             version: APP_VERSION,
             build: APP_BUILD,
-            //platform: 'DROID',
+            platform: 'DROID',
             //country: ,
             //language: ,
             //debug: ,
@@ -247,7 +256,7 @@ async function queryBackup(eid: string, proto: any) {
         device_id: DEVICE_ID,
         //username: ,
         clientVersion: CLIENT_VERSION,
-        //platform: Platform.values.DROID,
+        platform: Platform.values.DROID,
     }
 
     const error = EggIncFirstContactRequest.verify(payload);
