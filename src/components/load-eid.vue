@@ -163,6 +163,7 @@ async function load(eid: string) {
     color: transparent;
     text-shadow: 0 0 .5em var(--text-color);
     text-align: center;
+    -webkit-text-security: disc;
 }
 
 #eid button {
