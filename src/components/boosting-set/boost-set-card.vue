@@ -104,7 +104,7 @@
 import * as T from '@/scripts/types.ts';
 import { ref, computed, onUnmounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { formatNumber, formatTime, clamp } from '@/scripts/utils.ts';
+import { formatNumber, formatTime } from '@/scripts/utils.ts';
 import { focusRef } from '@/scripts/settings.ts';
 import * as Boost from '@/scripts/boosts.ts';
 import type { Ref } from 'vue';
@@ -125,6 +125,7 @@ const props = defineProps<{
     dili: number,
     startPopulation?: number,
     pinned?: boolean, // not shown if undefined
+    showOverfill?: boolean, // not shown if undefined
 }>();
 
 // When a timer is started, the current state is frozen
@@ -170,7 +171,7 @@ const geCost = computed(() => {
 type Milestone = {
     time: number,
     population: number,
-    speed: 'fast'|'slow',
+    speed: 'fast'|'slow'|'over',
     type: 'artiswap'|'boostswap'|'boostend'|'filled',
 };
 
@@ -193,12 +194,16 @@ const milestones = computed<Milestone[]>(() => {
 
     let nextStatIdx = 0;
     let ihr = 0, habCapacity = 0;
+    let filled = false;
 
     // At each time threshold, calculate the increased population
     let population = Math.max(startPopulation.value ?? 0, 0), prevTime = 0;
 
     while (population >= habCapacity) {
-        if (nextStatIdx === stats.value.length) return ret;
+        if (nextStatIdx === stats.value.length) {
+            habCapacity = population;
+            break;
+        }
         ihr = stats.value[nextStatIdx].ihr;
         habCapacity = stats.value[nextStatIdx].habCapacity;
         nextStatIdx++;
@@ -220,7 +225,6 @@ const milestones = computed<Milestone[]>(() => {
         // no more tachyons? we're done.
         if (!totalTachyon) break;
         const boostBonus = (totalTachyon || 1)*(totalBoost || 1);
-        const speed = totalBoost ? 'fast' : 'slow';
 
 
         while (true) {
@@ -233,11 +237,21 @@ const milestones = computed<Milestone[]>(() => {
 
             if (nextStatIdx === stats.value.length) {
                 // Milestone: We're out of IHR sets, we're done
-                ret.push({ population: habCapacity, time: filledTime*dili.value, speed, type: 'filled' });
-                return ret;
+                if (!filled) {
+                    // Only register the first time we fill habs
+                    const speed = filled ? 'over' : (totalBoost ? 'fast' : 'slow');
+                    ret.push({ population: habCapacity, time: filledTime*dili.value, speed, type: 'filled' });
+                    filled = true;
+                }
+                if (props.showOverfill) {
+                    break;
+                } else {
+                    return ret;
+                }
             }
 
             // Milestone: Move to next IHR set
+            const speed = filled ? 'over' : (totalBoost ? 'fast' : 'slow');
             ret.push({ population: habCapacity, time: filledTime*dili.value, speed, type: 'artiswap' });
             ihr = stats.value[nextStatIdx].ihr;
             habCapacity = stats.value[nextStatIdx].habCapacity;
@@ -249,6 +263,7 @@ const milestones = computed<Milestone[]>(() => {
         prevTime = time;
 
         const type = startTimes.includes(time) ? 'boostswap' : 'boostend';
+        const speed = filled ? 'over' : (totalBoost ? 'fast' : 'slow');
         ret.push({ population, time: time*dili.value, speed, type });
     }
 
@@ -263,7 +278,7 @@ type Segment = {
     population: number, // actual population
     time0: number, time1: number, // time ratios on the graph
     time: number, // actual time
-    speed: ''|'fast'|'slow',
+    speed: ''|'fast'|'slow'|'over',
     img?: string,
 };
 
@@ -272,9 +287,9 @@ const segments = computed<Segment[]>(() => {
     if (milestones.value.length === 0) return ret;
 
     const maxTime = milestones.value.at(-1)!.time;
-    const maxPopulation = stats.value.at(-1)!.habCapacity; // stats not empty when milestones not empty
+    const maxPopulation = Math.max(props.stats.at(-1)!.habCapacity, milestones.value.at(-1)!.population);
 
-    let prevTime = 0, prevPopulation = clamp(startPopulation.value ?? 0, 0, maxPopulation);
+    let prevTime = 0, prevPopulation = Math.max(startPopulation.value ?? 0, 0);
 
     if (prevPopulation > 0) {
         ret.push({
@@ -553,6 +568,8 @@ img {
 .details-graph-segment.fast:hover { fill: #384; }
 .details-graph-segment.slow       { fill: #3878; }
 .details-graph-segment.slow:hover { fill: #387; }
+.details-graph-segment.over       { fill: #7848; }
+.details-graph-segment.over:hover { fill: #784; }
 
 .details-graph-progress-segment {
     fill: #8884;
@@ -564,6 +581,7 @@ img {
 .details-graph-bar      { fill: #888; }
 .details-graph-bar.fast { fill: #384; }
 .details-graph-bar.slow { fill: #387; }
+.details-graph-bar.over { fill: #784; }
 
 svg image {
     pointer-events: none;

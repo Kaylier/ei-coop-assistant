@@ -75,6 +75,14 @@
                       id="starting-population"
                       v-model="startingPopulationSetting"
                       label="Starting population"/>
+        <setting-switch :hide="!showExtraSettings"
+                        id="show-overfill"
+                        v-model="showOverfillSetting"
+                        label="Show overfill"
+                        :options="[
+                                  { value: false, label: 'no' },
+                                  { value: true, label: 'yes' },
+                                  ]"/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
@@ -154,6 +162,7 @@
                         :stats="boostSetCardStats"
                         :startPopulation="startingPopulationSetting.value"
                         :pinned="showAllBoostSets ? pinnedBoostSetting.value.has(id) : undefined"
+                        :showOverfill="showOverfillSetting.value"
                         @changed="changePin(id, $event)"
                         />
     </section>
@@ -212,6 +221,10 @@ const startingPopulationSetting = createTextInputSetting<number>({
     parser: (s: string) => s ? parseNumber(s) : 0,
     formatter: formatNumber,
     spinner: spinNumber,
+});
+const showOverfillSetting = createSetting<boolean>({
+    localStorageKey: 'boosting-show-overfill',
+    defaultValue: false,
 });
 const pinnedBoostSetting = createSetting<Set<string>>({
     localStorageKey: 'boosting-favourite-boost-sets',
