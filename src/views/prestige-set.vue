@@ -66,14 +66,14 @@
                                earnings during a leg.<br/>
                                Note that boost time is paused when changing eggs."
                       :small="true"
-                      inputmode="numeric"/>
+                      inputmode="decimal"/>
         <setting-text v-if="multistigeSetting.value" id="leg-count"
                       v-model="legCountSetting"
                       label="Legs count"
                       tooltip="Amount of legs during multis.<br/>
                                Leave empty for best overall guess."
                       :small="true"
-                      inputmode="numeric"/>
+                      inputmode="decimal"/>
         <setting-text v-if="multistigeSetting.value" id="starting-population"
                       v-model="startingPopulationSetting"
                       label="Start population"

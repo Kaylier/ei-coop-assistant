@@ -73,7 +73,7 @@
                       v-model="eggValueSetting"
                       label="Egg value"
                       tooltip="Used to evaluate time to buy researches."
-                      inputmode="numeric"/>
+                      inputmode="decimal"/>
         <setting-text id="mirror-eb"
                       v-model="mirrorSetting"
                       label="Mirror EB%"
@@ -88,7 +88,7 @@
                                coop earning and laying bonuses<br/>
                                and contract modifiers.<br/>
                                Default to 4"
-                      inputmode="numeric"/>
+                      inputmode="decimal"/>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
