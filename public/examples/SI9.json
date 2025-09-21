@@ -1235,22 +1235,42 @@
             }
         ],
         "savedArtifactSets": [
-        ]
+        ],
+        "virtueAfsDb": {
+            "inventoryItems": [
+            ]
+        }
     },
     "game": {
         "permitLevel": 1,
         "hyperloopStation": true,
         "epicResearch": [
-            { "id": "epic_egg_laying", "level": 20 },
-            { "id": "transportation_lobbyist", "level": 30 }
+            { "id": "hold_to_hatch", "level": 15},
+            { "id": "epic_hatchery", "level": 20},
+            { "id": "epic_internal_incubators", "level": 20},
+            { "id": "video_doubler_time", "level": 12},
+            { "id": "epic_clucking", "level": 20},
+            { "id": "epic_multiplier", "level": 100},
+            { "id": "cheaper_contractors", "level": 10},
+            { "id": "bust_unions", "level": 10},
+            { "id": "cheaper_research", "level": 10},
+            { "id": "silo_capacity", "level": 20},
+            { "id": "int_hatch_sharing", "level": 10},
+            { "id": "int_hatch_calm", "level": 20},
+            { "id": "accounting_tricks", "level": 20},
+            { "id": "soul_eggs", "level": 140},
+            { "id": "prestige_bonus", "level": 20},
+            { "id": "drone_rewards", "level": 20},
+            { "id": "epic_egg_laying", "level": 20},
+            { "id": "transportation_lobbyist", "level": 30},
+            { "id": "prophecy_bonus", "level": 5},
+            { "id": "hold_to_research", "level": 20},
+            { "id": "afx_mission_time", "level": 60},
+            { "id": "afx_mission_capacity", "level": 10}
         ]
     },
     "contracts": {
         "archive": [
-            {
-                "contract": { "egg": 200, "customEggId": "carbon-fiber" },
-                "maxFarmSizeReached": 10000000000
-            },
             {
                 "contract": { "egg": 200, "customEggId": "chocolate" },
                 "maxFarmSizeReached": 10000000000
@@ -1260,11 +1280,11 @@
                 "maxFarmSizeReached": 10000000000
             },
             {
-                "contract": { "egg": 200, "customEggId": "firework" },
+                "contract": { "egg": 200, "customEggId": "waterballoon" },
                 "maxFarmSizeReached": 10000000000
             },
             {
-                "contract": { "egg": 200, "customEggId": "lithium" },
+                "contract": { "egg": 200, "customEggId": "firework" },
                 "maxFarmSizeReached": 10000000000
             },
             {
@@ -1272,20 +1292,27 @@
                 "maxFarmSizeReached": 10000000000
             },
             {
-                "contract": { "egg": 200, "customEggId": "waterballoon" },
+                "contract": { "egg": 200, "customEggId": "carbon-fiber" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "lithium" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "flame-retardant" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "wood" },
+                "maxFarmSizeReached": 10000000000
+            },
+            {
+                "contract": { "egg": 200, "customEggId": "silicon" },
                 "maxFarmSizeReached": 10000000000
             }
         ],
         "customEggInfo": [
-            {
-                "identifier": "carbon-fiber",
-                "buffs": [
-                    { "dimension": 5, "value": 1.01 },
-                    { "dimension": 5, "value": 1.02 },
-                    { "dimension": 5, "value": 1.03 },
-                    { "dimension": 5, "value": 1.05 }
-                ]
-            },
             {
                 "identifier": "chocolate",
                 "buffs": [
@@ -1305,21 +1332,21 @@
                 ]
             },
             {
+                "identifier": "waterballoon",
+                "buffs": [
+                    { "dimension": 9, "value": 0.99 },
+                    { "dimension": 9, "value": 0.98 },
+                    { "dimension": 9, "value": 0.97 },
+                    { "dimension": 9, "value": 0.95 }
+                ]
+            },
+            {
                 "identifier": "firework",
                 "buffs": [
                     { "dimension": 1, "value": 1.01 },
                     { "dimension": 1, "value": 1.02 },
                     { "dimension": 1, "value": 1.03 },
                     { "dimension": 1, "value": 1.05 }
-                ]
-            },
-            {
-                "identifier": "lithium",
-                "buffs": [
-                    { "dimension": 7, "value": 0.98 },
-                    { "dimension": 7, "value": 0.96 },
-                    { "dimension": 7, "value": 0.93 },
-                    { "dimension": 7, "value": 0.9 }
                 ]
             },
             {
@@ -1332,12 +1359,48 @@
                 ]
             },
             {
-                "identifier": "waterballoon",
+                "identifier": "carbon-fiber",
                 "buffs": [
-                    { "dimension": 9, "value": 0.99 },
-                    { "dimension": 9, "value": 0.98 },
-                    { "dimension": 9, "value": 0.97 },
-                    { "dimension": 9, "value": 0.95 }
+                    { "dimension": 5, "value": 1.01 },
+                    { "dimension": 5, "value": 1.02 },
+                    { "dimension": 5, "value": 1.03 },
+                    { "dimension": 5, "value": 1.05 }
+                ]
+            },
+            {
+                "identifier": "lithium",
+                "buffs": [
+                    { "dimension": 7, "value": 0.98 },
+                    { "dimension": 7, "value": 0.96 },
+                    { "dimension": 7, "value": 0.93 },
+                    { "dimension": 7, "value": 0.9 }
+                ]
+            },
+            {
+                "identifier": "flame-retardant",
+                "buffs": [
+                    { "dimension": 8, "value": 0.98 },
+                    { "dimension": 8, "value": 0.96 },
+                    { "dimension": 8, "value": 0.93 },
+                    { "dimension": 8, "value": 0.9 }
+                ]
+            },
+            {
+                "identifier": "wood",
+                "buffs": [
+                    { "dimension": 2, "value": 0.98 },
+                    { "dimension": 2, "value": 0.96 },
+                    { "dimension": 2, "value": 0.93 },
+                    { "dimension": 2, "value": 0.9 }
+                ]
+            },
+            {
+                "identifier": "silicon",
+                "buffs": [
+                    { "dimension": 4, "value": 0.98 },
+                    { "dimension": 4, "value": 0.96 },
+                    { "dimension": 4, "value": 0.93 },
+                    { "dimension": 4, "value": 0.9 }
                 ]
             }
         ]
