@@ -3,6 +3,14 @@ main .invalid-text {
     margin: auto;
 }
 
+#inputs {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1em 3em;
+    font-size: 0.8rem;
+    font-weight: bold;
+    align-items: center;
+}
 
 .main {
     display: flex;

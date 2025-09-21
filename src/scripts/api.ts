@@ -325,7 +325,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
         throw Error(`No artifact found in backup for EID: ${eid}`);
     }
 
-    const [items, sets] = getInventory(proto, backup);
+    const [items, sets, virtueItems] = getInventory(proto, backup.artifactsDb);
 
     const proPermit = (backup.game?.permitLevel === 1);
 
@@ -355,7 +355,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
      */
     userEffects.set('soul_eggs', backup.game?.soulEggsD ?? 0);
     userEffects.set('prophecy_eggs', backup.game?.eggsOfProphecy ?? 0);
-    userEffects.set('truth_eggs', backup.virtue?.eovEarned?.reduce((p, a) => p + a, 0) ?? 0);
+    userEffects.set('truth_eggs', backup.virtue?.eovEarned?.reduce((p: number, a: number) => p + a, 0) ?? 0);
 
     /*
      * Epic researches
@@ -480,7 +480,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const maxedEffects = new Effects(baseEffects, farmEffects);
 
     return {
-        items, sets,
+        items, sets, virtueItems,
         proPermit,
         baseEffects, maxedEffects,
         colleggtibles: Object.fromEntries(colleggs.tiers),
@@ -489,11 +489,12 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     };
 }
 
-function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[][]] {
+function getInventory(proto: any, artifactsDb: any): [T.Item[], (T.Artifact | null)[][], T.Item[]] {
     const itemIdMap: Map<number, T.Item> = new Map();
     const items: Map<string, T.Item> = new Map();
+    const virtueItems: Map<string, T.Item> = new Map();
 
-    for (const eiItem of backup.artifactsDb.inventoryItems) {
+    for (const eiItem of artifactsDb.inventoryItems) {
 
         const item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
         let key: string;
@@ -538,7 +539,7 @@ function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[]
     }
 
     const sets: (T.Artifact | null)[][] = [];
-    for (const eiSet of backup.artifactsDb.savedArtifactSets) {
+    for (const eiSet of artifactsDb.savedArtifactSets) {
         const set: (T.Artifact | null)[] = [];
         for (const eiSlot of eiSet.slots) {
             if (eiSlot.occupied) {
@@ -556,7 +557,51 @@ function getInventory(proto: any, backup: any): [T.Item[], (T.Artifact | null)[]
     }
     sets.reverse();
 
-    return [ [...items.values()], sets ];
+    for (const eiItem of (artifactsDb.virtueAfxDb?.inventoryItems ?? [])) {
+
+        const item: T.Item = getItemFromSpec(eiItem.artifact.spec, proto);
+        let key: string;
+        item.quantity = eiItem.quantity as number;
+        item.id = eiItem.itemId as number;
+
+        if (item.category === T.ItemCategory.ARTIFACT) {
+            const stones: (T.Stone | null)[] = []
+            for (const eiStone of eiItem.artifact.stones) {
+                const { category, family, tier } = getItemFromSpec(eiStone, proto);
+
+                if (category != T.ItemCategory.STONE) {
+                    console.warn("Item: ", eiItem, "Stone: ", eiStone);
+                    throw Error("An item is equipped with something strange");
+                }
+
+                const stone: T.Stone = {
+                    category: category,
+                    family: family,
+                    tier: tier,
+                };
+                stones.push(stone);
+            }
+
+            const maxStoneCount = getSlotCount(item as T.Artifact);
+            while (stones.length < maxStoneCount) {
+                stones.push(null);
+            }
+
+            (item as T.Artifact).stones = stones;
+            key = [getSortId(item), ...stones.map(getSortId).sort()].join('/');
+        } else {
+            key = getSortId(item);
+        }
+
+        if (virtueItems.has(key)) {
+            virtueItems.get(key)!.quantity! += item.quantity;
+        } else {
+            virtueItems.set(key, item);
+        }
+        itemIdMap.set(eiItem.itemId, virtueItems.get(key)!);
+    }
+
+    return [ [...items.values()], sets, [...virtueItems.values()] ];
 }
 
 function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, number>, buffs: Map<any, number> } {

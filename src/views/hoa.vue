@@ -3,7 +3,18 @@
 
     <a class="quick-link smartphone-only" href="#artifacts">go to artifacts</a>
 
-    <section v-if="userData" class="main">
+    <section class="inputs">
+        <setting-switch :hide="!virtueGrid.length"
+                        label="Path of"
+                        id="farm"
+                        v-model="farmSetting"
+                        :options="[
+                                  { value: 0, label: 'Enlightenment' },
+                                  { value: 1, label: 'Virtue' },
+                                  ]"/>
+    </section>
+
+    <section v-if="userData && farmSetting.value == 0" class="main">
         <div v-if="sets.length" class="sets" id="sets">
             <inventory-frame v-for="set in sets"
                              :key="JSON.stringify(set)"
@@ -19,6 +30,14 @@
             </div>
         </div>
     </section>
+
+    <section v-if="userData && farmSetting.value == 1" class="main">
+        <div v-if="virtueGrid.length" class="grid-container" id="artifacts">
+            <div class="grid" :style="`width: ${virtueColumn*4}rem;`">
+                <inventory-frame :artifacts="virtueGrid" :column="virtueColumn" />
+            </div>
+        </div>
+    </section>
 </template>
 
 <style scoped src="@/styles/hoa.css"></style>
@@ -26,6 +45,13 @@
 <script setup lang="ts">
 import { shallowRef, ref, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
+import { createSetting } from '@/scripts/settings.ts';
+
+
+const farmSetting = createSetting<number>({
+    localStorageKey: 'hoa-farm',
+    defaultValue: 0,
+});
 
 
 // Template variables declarations and default values
@@ -33,6 +59,8 @@ const userData = shallowRef<T.UserData>();
 const grid     = ref<(T.Item | null)[]>([]);
 const sets     = ref<(T.Item | null)[][]>([]);
 const column   = ref<number>(16);
+const virtueGrid   = ref<(T.Item | null)[]>([]);
+const virtueColumn = ref<number>(16);
 
 
 watch(userData, updateView);
@@ -70,8 +98,38 @@ function countStones(item: T.Item): number {
  * Update the view through grid and sets variables
  */
 function updateView() {
+    const sortedGroups = itemsToGrid(userData.value?.items ?? []);
+    column.value = Math.max(...Object.values(sortedGroups).map(arr => arr.length));
 
-    const items: T.Item[] = [...userData.value?.items ?? []].sort((a, b) =>
+    grid.value = [];
+    for (const group of sortedGroups) {
+        for (const item of group) {
+            grid.value.push(item);
+        }
+        while (grid.value.length % column.value) {
+            grid.value.push(null);
+        }
+    }
+
+    const virtueSortedGroups = itemsToGrid(userData.value?.virtueItems ?? []);
+    virtueColumn.value = Math.max(...Object.values(virtueSortedGroups).map(arr => arr.length));
+
+    virtueGrid.value = [];
+    for (const group of virtueSortedGroups) {
+        for (const item of group) {
+            virtueGrid.value.push(item);
+        }
+        while (virtueGrid.value.length % virtueColumn.value) {
+            virtueGrid.value.push(null);
+        }
+    }
+
+    sets.value = userData.value?.sets ?? [];
+}
+
+function itemsToGrid(items: T.Item[]): T.Item[][] {
+
+    items = [...items ?? []].sort((a, b) =>
            a.category - b.category
         || a.family - b.family
         || b.tier - a.tier
@@ -94,19 +152,7 @@ function updateView() {
          || countRarity(b, T.Rarity.RARE) - countRarity(a, T.Rarity.RARE)
          || countRarity(b, null) - countRarity(a, null));
 
-    column.value = Math.max(...Object.values(sortedGroups).map(arr => arr.length));
-
-    grid.value = [];
-    for (const group of sortedGroups) {
-        for (const item of group) {
-            grid.value.push(item);
-        }
-        while (grid.value.length % column.value) {
-            grid.value.push(null);
-        }
-    }
-
-    sets.value = userData.value?.sets ?? [];
+    return sortedGroups;
 }
 
 </script>

@@ -107,6 +107,7 @@ export type ArtifactSet = {
 export type UserData = null | {
     items: Item[],
     sets: (Artifact | null)[][],
+    virtueItems: Item[],
     proPermit: boolean,
     baseEffects: Effects,
     maxedEffects: Effects,
