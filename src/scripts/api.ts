@@ -355,7 +355,9 @@ export async function getUserData(eid: string): Promise<T.UserData> {
      */
     userEffects.set('soul_eggs', backup.game?.soulEggsD ?? 0);
     userEffects.set('prophecy_eggs', backup.game?.eggsOfProphecy ?? 0);
-    userEffects.set('truth_eggs', backup.virtue?.eovEarned?.reduce((p: number, a: number) => p + a, 0) ?? 0);
+    const truthEggs = backup.virtue?.eovEarned?.reduce((p: number, a: number) => p + a, 0) ?? 0;
+    userEffects.set('truth_eggs', truthEggs);
+    userEffects.apply('ihr_mult', Math.pow(1.01, truthEggs));
 
     /*
      * Epic researches
