@@ -353,8 +353,9 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     /*
      * Mystical Eggs
      */
-    userEffects.set('prophecy_eggs', backup.game?.eggsOfProphecy ?? 0);
     userEffects.set('soul_eggs', backup.game?.soulEggsD ?? 0);
+    userEffects.set('prophecy_eggs', backup.game?.eggsOfProphecy ?? 0);
+    userEffects.set('truth_eggs', backup.virtue?.eovEarned?.reduce((p, a) => p + a, 0) ?? 0);
 
     /*
      * Epic researches

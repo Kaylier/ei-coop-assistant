@@ -247,11 +247,12 @@ const effectMetadata = {
     earning_mrcb_mult     : { type: 0, init: 5, text: "max running chicken bonus" },
 
     /** EB or Earning Bonus
-     * eb = soul_eggs * soul_egg_bonus * prophecy_egg_bonus^prophecy_eggs
+     * eb = soul_eggs * soul_egg_bonus * prophecy_egg_bonus^prophecy_eggs * 1.01^truth_eggs
      *
      * Comprise multiple components:
      *  - `soul_eggs`: amount of Soul Eggs owned
      *  - `prophecy_eggs`: amount of Eggs of Prophecy owned
+     *  - `truth_eggs`: amount of Eggs of Truth owned
      *  - `soul_egg_bonus`: bonus brought by soul eggs
      *  - `prophecy_egg_bonus`: bonus brought by prophecy eggs
      * Note: the game shows the intermediate value `soul_egg_bonus * prophecy_egg_bonus^prophecy_eggs`
@@ -274,6 +275,7 @@ const effectMetadata = {
      */
     soul_eggs             : { type: 0, init: 0, text: "soul eggs" },
     prophecy_eggs         : { type: 0, init: 0, text: "eggs of prophecy" },
+    truth_eggs            : { type: 0, init: 0, text: "eggs of truth" },
     soul_egg_bonus        : { type: 0, init: 0.1, text: "soul egg bonus" },
     prophecy_egg_bonus    : { type: 0, init: 1.05, text: "egg of prophecy bonus" },
 
@@ -625,7 +627,7 @@ export class Effects {
     get max_laying_rate() { return this.hab_capacity * this.laying_rate; }
     get shipping_rate() { return this.shipping_base * this.shipping_mult; }
     get egg_value() { return this.egg_value_base * this.egg_value_mult; }
-    get eb() { return 1 + this.soul_eggs * this.soul_egg_bonus * Math.pow(this.prophecy_egg_bonus, this.prophecy_eggs); }
+    get eb() { return 1 + this.soul_eggs * this.soul_egg_bonus * Math.pow(this.prophecy_egg_bonus, this.prophecy_eggs) * Math.pow(1.01, this.truth_eggs); }
 
 
 
