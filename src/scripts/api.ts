@@ -19,9 +19,9 @@ import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
 // A CORS proxy is deployed at this url
 const ENDPOINT = "/auxbrain_api";
 
-const CLIENT_VERSION = 68;
-const APP_VERSION = '1.34.1';
-const APP_BUILD = '111300';
+const CLIENT_VERSION = 70;
+const APP_VERSION = '1.35';
+const APP_BUILD = '111313';
 const DEVICE_ID = 'ei-coop-assistant';
 
 
