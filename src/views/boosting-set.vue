@@ -112,7 +112,7 @@
             :boosts="[T.BoostCategory.TACHYON_PRISM]"
             >
             <span>
-                <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
+                <img v-for="_ in boostAmount" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
             </span>
             <span v-for="{ population, time } in slowIHRMilestones">
                 <span class="highlighted">+{{ formatNumber(population) }}</span>
@@ -136,7 +136,7 @@
             >
             <template v-if="i === 0">
             <span>
-                <img v-for="_ in 5" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
+                <img v-for="_ in boostAmount" src="/img/boosts/tachyon_10x240.png" style="height: 0.75em"/>
             </span>
             <span v-for="{ population, time } in IHRMilestones">
                 <span class="highlighted">+{{ formatNumber(population) }}</span>
@@ -302,6 +302,7 @@ const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const durationBonus = computed(() => (setDili.value?.effects.boost_duration_mult ?? 1)*durationBonusSetting.value);
 const baseEffects = computed(() => userData.value?.maxedEffects ?? Effects.initial);
+const boostAmount = computed(() => userData.value?.proPermit ? 5 : 2);
 const boostSetCardStats = computed(() => {
     const ret = [];
     for (const set of setIHR.value) {
@@ -325,8 +326,8 @@ const IHRMilestones = computed(() => {
     if (setIHR.value?.at(0)) effects.merge(setIHR.value.at(0)!.effects);
     const ihrbonus = 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
-        { population: ihrbonus*50*10*durationBonus.value, time: 60*10*durationBonus.value },
-        { population: ihrbonus*50*240*durationBonus.value, time: 60*240*durationBonus.value },
+        { population: ihrbonus*boostAmount.value*10*10*durationBonus.value, time: 60*10*durationBonus.value },
+        { population: ihrbonus*boostAmount.value*10*240*durationBonus.value, time: 60*240*durationBonus.value },
     ];
 
 });
@@ -335,8 +336,8 @@ const slowIHRMilestones = computed(() => {
     if (setSlow.value) effects.merge(setSlow.value.effects);
     const ihrbonus = 60 * (ihcSetting.value ? effects.ihr_away : effects.ihr) * effects.boost_mult;
     return [
-        { population: ihrbonus*50*10*durationBonus.value, time: 60*10*durationBonus.value },
-        { population: ihrbonus*50*240*durationBonus.value, time: 60*240*durationBonus.value },
+        { population: ihrbonus*boostAmount.value*10*10*durationBonus.value, time: 60*10*durationBonus.value },
+        { population: ihrbonus*boostAmount.value*10*240*durationBonus.value, time: 60*240*durationBonus.value },
     ];
 });
 
