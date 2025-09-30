@@ -1379,28 +1379,28 @@
             {
                 "identifier": "flame-retardant",
                 "buffs": [
-                    { "dimension": 8, "value": 0.98 },
-                    { "dimension": 8, "value": 0.96 },
-                    { "dimension": 8, "value": 0.93 },
-                    { "dimension": 8, "value": 0.9 }
+                    { "dimension": 8, "value": 0.99 },
+                    { "dimension": 8, "value": 0.95 },
+                    { "dimension": 8, "value": 0.88 },
+                    { "dimension": 8, "value": 0.75 }
                 ]
             },
             {
                 "identifier": "wood",
                 "buffs": [
-                    { "dimension": 2, "value": 0.98 },
-                    { "dimension": 2, "value": 0.96 },
-                    { "dimension": 2, "value": 0.93 },
-                    { "dimension": 2, "value": 0.9 }
+                    { "dimension": 2, "value": 1.1 },
+                    { "dimension": 2, "value": 1.25 },
+                    { "dimension": 2, "value": 1.5 },
+                    { "dimension": 2, "value": 2 }
                 ]
             },
             {
                 "identifier": "silicon",
                 "buffs": [
-                    { "dimension": 4, "value": 0.98 },
-                    { "dimension": 4, "value": 0.96 },
-                    { "dimension": 4, "value": 0.93 },
-                    { "dimension": 4, "value": 0.9 }
+                    { "dimension": 4, "value": 1.01 },
+                    { "dimension": 4, "value": 1.02 },
+                    { "dimension": 4, "value": 1.03 },
+                    { "dimension": 4, "value": 1.05 }
                 ]
             }
         ]
