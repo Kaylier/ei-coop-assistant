@@ -456,11 +456,17 @@ function* getFamilyCombinations(requiredFamilies: T.ArtifactFamily[],
         } else if (current.length > maxSlot) {
             return;
         }
+        let done = true;
         for (let i = index; i < optionalFamilies.length; i++) {
             if (dominations.get(optionalFamilies[i])!.some(x => !current.includes(x))) continue;
             current.push(optionalFamilies[i]);
             yield* aux(i+1, current);
+            done = false;
             current.pop();
+        }
+        if (done) {
+            // No additional family can improve our sets, we yield our partial sets
+            yield [...current];
         }
     }
     yield* aux();
