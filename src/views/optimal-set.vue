@@ -14,6 +14,14 @@
                                   { value: 1, label: 'add' },
                                   { value: 3, label: 'swap' },
                                   ]"/>
+        <setting-switch id="virtue"
+                        v-model="virtueSetting"
+                        label="Inventory"
+                        tooltip="Use Main or Virtue inventory"
+                        :options="[
+                                  { value: false, label: 'main' },
+                                  { value: true, label: 'virtue' },
+                                  ]"/>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
@@ -76,6 +84,10 @@ type SetEntry = {
 const reslottingSetting = createSetting<0|1|2|3>({
     localStorageKey: 'optimal-reslotting',
     defaultValue: 0,
+});
+const virtueSetting = createSetting<boolean>({
+    localStorageKey: 'optimal-virtue',
+    defaultValue: false,
 });
 
 const errorMessage = ref<string>("");
@@ -206,6 +218,68 @@ const sets = shallowRef<SetEntry[]>([
         ],
     },
     {
+        title: "Virtue away earnings",
+        effects: [
+            'laying_rate',
+            'hab_capacity_mult',
+            'egg_value_mult',
+            'earning_away_mult',
+        ],
+        scoreFn: (e) => {
+            let score = 1;
+            score *= e.hab_capacity_mult;
+            score *= e.laying_rate;
+            score *= e.egg_value_mult;
+            score *= e.earning_mult;
+            score *= e.earning_away_mult;
+            return [ score ];
+        },
+        boosts: [],
+    },
+    {
+        title: "Virtue away earnings (shipping capped)",
+        effects: [
+            'shipping_mult',
+            'hab_capacity_mult',
+            'egg_value_mult',
+            'earning_away_mult',
+        ],
+        scoreFn: (e) => {
+            let score = 1;
+            score *= e.hab_capacity_mult;
+            score *= e.shipping_mult;
+            score *= e.egg_value_mult;
+            score *= e.earning_mult;
+            score *= e.earning_away_mult;
+            return [ score ];
+        },
+        boosts: [],
+    },
+    {
+        title: "Laying > Shipping",
+        effects: [
+            'laying_rate',
+            'shipping_mult',
+            'hab_capacity_mult',
+        ],
+        scoreFn: (e) => {
+            return [ e.hab_capacity_mult*e.laying_rate, e.shipping_mult ];
+        },
+        boosts: [],
+    },
+    {
+        title: "Shipping > Laying",
+        effects: [
+            'laying_rate',
+            'shipping_mult',
+            'hab_capacity_mult',
+        ],
+        scoreFn: (e) => {
+            return [ e.shipping_mult, e.hab_capacity_mult*e.laying_rate ];
+        },
+        boosts: [],
+    },
+    {
         title: "Dilithium",
         effects: ['boost_duration_mult'],
         scoreFn: (e) => [ e.boost_duration_mult ],
@@ -257,7 +331,7 @@ const sets = shallowRef<SetEntry[]>([
 ]);
 
 
-watch([userData, reslottingSetting], updateSets);
+watch([userData, reslottingSetting, virtueSetting], updateSets);
 
 
 function updateSets() {
@@ -288,7 +362,8 @@ function updateSet(setEntry: SetEntry) {
 
     try {
         errorMessage.value = "";
-        const { artifacts, stones } = prepareItems(userData.value?.items ?? [],
+        const items = virtueSetting.value ? userData.value?.virtueItems : userData.value?.items;
+        const { artifacts, stones } = prepareItems(items ?? [],
                                                    (reslottingSetting.value & 2) === 2,
                                                    (reslottingSetting.value & 1) === 1,
                                                    setEntry.effects);
