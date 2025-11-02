@@ -77,7 +77,7 @@ function isArtifact(item: T.Item): item is T.Artifact {
 function countRarity(items: T.Item[], rarity: T.Rarity | null): number {
     let c = 0;
     for (const item of items) {
-        if (rarity !== null && item.category !== T.ItemCategory.ARTIFACT) continue;
+        if (rarity !== null && !isArtifact(item)) continue;
         if (rarity !== null && (item as T.Artifact).rarity !== rarity) continue;
         c += item.quantity ?? 1;
     }
@@ -88,7 +88,7 @@ function countRarity(items: T.Item[], rarity: T.Rarity | null): number {
  * Count the amount of stones slotted in an item
  */
 function countStones(item: T.Item): number {
-    if (item.category !== T.ItemCategory.ARTIFACT) return 0;
+    if (!isArtifact(item)) return 0;
     return (item as T.Artifact).stones.reduce((tot: number, stone: T.Stone | null) =>
                                               tot = (stone === null) ? tot : tot + 1,
                                               0);
@@ -139,7 +139,6 @@ function itemsToGrid(items: T.Item[]): T.Item[][] {
 
     const groups = new Map<string, T.Item[]>();
     for (const item of items) {
-        if (item.category != T.ItemCategory.ARTIFACT) continue;
         const key = `${item.category}-${item.family}`;
         if (!groups.has(key))
             groups.set(key, []);
@@ -147,7 +146,8 @@ function itemsToGrid(items: T.Item[]): T.Item[][] {
     }
 
     const sortedGroups: T.Item[][] = [...groups.values()].sort((a, b) =>
-            countRarity(b, T.Rarity.LEGENDARY) - countRarity(a, T.Rarity.LEGENDARY)
+            a[0].category - b[0].category
+         || countRarity(b, T.Rarity.LEGENDARY) - countRarity(a, T.Rarity.LEGENDARY)
          || countRarity(b, T.Rarity.EPIC) - countRarity(a, T.Rarity.EPIC)
          || countRarity(b, T.Rarity.RARE) - countRarity(a, T.Rarity.RARE)
          || countRarity(b, null) - countRarity(a, null));
