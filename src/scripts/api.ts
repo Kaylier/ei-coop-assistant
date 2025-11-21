@@ -662,9 +662,10 @@ export async function getSandboxLink(artifacts: T.Artifact[],
                                      options?: {
                                          deflectorBonus?: number,
                                          enlightenment?: boolean,
+                                         virtue?: boolean,
                                          boosts?: T.BoostCategory[],
                                      }) {
-    const { deflectorBonus, enlightenment, boosts } = options ?? {};
+    const { deflectorBonus, enlightenment, virtue, boosts } = options ?? {};
 
     const proto = await protobuf.parse(sandboxProto).root;
     const protoBuilds = proto.lookupType('Builds')
@@ -713,8 +714,10 @@ export async function getSandboxLink(artifacts: T.Artifact[],
         config: {
             prophecyEggs: userEffects.prophecy_eggs,
             soulEggs: userEffects.soul_eggs,
+            truthEggs: userEffects.truth_eggs,
             soulEggsInput: formatNumber(userEffects.soul_eggs),
             isEnlightenment: enlightenment ?? false,
+            isVirtue: virtue ?? false,
             missingSoulFood: Math.round(150 - userEffects.soul_egg_bonus*100),
             missingProphecyBonus: Math.round(110 - userEffects.prophecy_egg_bonus*100),
             missingEpicMultiplier: Math.round(270 - userEffects.earning_mrcb_mult/2),
