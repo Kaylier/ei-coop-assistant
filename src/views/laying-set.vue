@@ -58,18 +58,6 @@
                                   { value: false, label: 'no' },
                                   { value: true, label: 'yes' },
                                   ]"/>
-        <setting-text :hide="!showExtraSettings"
-                      id="base-laying-rate"
-                      v-model="baseLayingRateSetting"
-                      label="Base laying rate"
-                      tooltip="Maximum laying rate with full habs<br/>
-                               without any artifact equipped."/>
-        <setting-text :hide="!showExtraSettings"
-                      id="base-shipping-rate"
-                      v-model="baseShippingRateSetting"
-                      label="Base shipping rate"
-                      tooltip="Maximum shipping rate<br/>
-                               without any artifact equipped."/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
@@ -197,18 +185,6 @@ const allowedGussetSetting = createSetting<T.AllowedGusset>({
     localStorageKey: 'laying-gusset-target',
     defaultValue: T.AllowedGusset.ANY,
 });
-const baseLayingRateSetting = createTextInputSetting<number|null>({
-    localStorageKey: 'laying-base-laying-rate',
-    defaultValue: null,
-    parser: (s: string) => s ? parseRate(s) : null,
-    formatter: (x: number|null): string => formatRate(x ?? baseLayingRate.value),
-});
-const baseShippingRateSetting = createTextInputSetting<number|null>({
-    localStorageKey: 'laying-base-shipping-rate',
-    defaultValue: null,
-    parser: (s: string) => s ? parseRate(s) : null,
-    formatter: (x: number|null): string => formatRate(x ?? baseShippingRate.value),
-});
 
 
 // When true, show every possible gussets
@@ -240,7 +216,7 @@ const allowedGussetOptions = computed(() => {
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const baseLayingRate = computed<number>(() => (userData.value?.maxedEffects ?? Effects.initial).max_laying_rate);
-const baseShippingRate = computed<number>(() =>(userData.value?.maxedEffects ?? Effects.initial).shipping_rate);
+const baseShippingRate = computed<number>(() => (userData.value?.maxedEffects ?? Effects.initial).shipping_rate);
 
 
 // Data variables
