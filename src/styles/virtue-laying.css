@@ -1,0 +1,26 @@
+
+main .invalid-text {
+    margin: auto;
+}
+
+
+.main {
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    align-items: flex-start;
+    text-align: center;
+}
+
+
+.sets {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: min(0.5vw, 0.4em);
+    padding: 0.4em;
+    overflow: auto;
+    background: #333333;
+    border-radius: 1.4em;
+    max-width: 50vw;
+}
+

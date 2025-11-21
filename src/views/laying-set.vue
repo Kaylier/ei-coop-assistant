@@ -148,8 +148,8 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { parseRate, formatRate } from '@/scripts/utils.ts';
-import { createTextInputSetting, createSetting, focusRef } from '@/scripts/settings.ts';
+import { formatRate } from '@/scripts/utils.ts';
+import { createSetting, focusRef } from '@/scripts/settings.ts';
 import { Effects } from '@/scripts/effects.ts';
 import { getOptimalGussets, computeOptimalSets } from '@/scripts/laying-set.ts';
 import type { AnnotatedSet } from '@/scripts/laying-set.ts';

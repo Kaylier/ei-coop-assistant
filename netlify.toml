@@ -35,6 +35,11 @@
   status = 200
 
 [[redirects]]
+  from = "/virtue-laying"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/optimal-set"
   to = "/index.html"
   status = 200

@@ -59,9 +59,14 @@ const pages = ref<Page[]>([
         title: 'Prestige',
         img: "/img/icons/prestige-set.png",
         path: '/prestige-set',
-        description: "Temporary page for helping preparing prestiges<br/>\
+        description: "Helper for preparing prestiges<br/>\
                       Recommended artifacts for multiple strategies<br/>\
                       Estimation of your Soul Egg gains",
+    }, {
+        title: 'Virtue Laying',
+        img: "/img/icons/laying-set.png",
+        path: '/virtue-laying',
+        description: "Find your recommended artifacts for laying virtue eggs",
     },
 ]);
 

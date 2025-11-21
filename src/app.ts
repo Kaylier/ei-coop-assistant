@@ -82,6 +82,11 @@ const routes = [
         meta: { title: "Prestige" }
     },
     {
+        path: '/virtue-laying',
+        component: () => import('@/views/virtue-laying.vue'),
+        meta: { title: "Virtue Laying" }
+    },
+    {
         path: '/error',
         name: 'error',
         component: () => import('@/views/error.vue'),
