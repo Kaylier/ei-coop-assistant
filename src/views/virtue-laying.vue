@@ -14,13 +14,21 @@
                                   { value: 1, label: 'add' },
                                   { value: 3, label: 'swap' },
                                   ]"/>
+        <setting-text id="base-laying-rate"
+                      v-model="baseLayingRateSetting"
+                      label="Base laying rate"
+                      tooltip="Laying rate without artifacts equipped."/>
+        <setting-text id="base-shipping-rate"
+                      v-model="baseShippingRateSetting"
+                      label="Base shipping rate"
+                      tooltip="Maximum shipping rate without artifacts equipped."/>
     </section>
 
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
     <section class="main">
         <div v-if="entries.length" class="sets">
-            <inventory-frame v-for="entry in entries"
+            <inventory-frame v-for="entry in entries.slice(visibleIdx-visibleBefore, visibleIdx+1+visibleAfter)"
                              :key="JSON.stringify(entry.set.artifacts)"
                              :artifacts="entry.set.artifacts"
                              :isSet="true"
@@ -37,15 +45,17 @@
 <style scoped src="@/styles/virtue-laying.css"></style>
 
 <script setup lang="ts">
-import { ref, shallowRef, watch } from 'vue';
+import { ref, computed, shallowRef, watch } from 'vue';
 import * as T from '@/scripts/types.ts';
-import { createSetting } from '@/scripts/settings.ts';
+import { parseRate, formatRate } from '@/scripts/utils.ts';
+import { createTextInputSetting, createSetting } from '@/scripts/settings.ts';
+import { Effects } from '@/scripts/effects.ts';
 import { computeOptimalSets } from '@/scripts/laying-set.ts';
 import type { AnnotatedSet } from '@/scripts/laying-set.ts';
 
 type EntryType = {
-    set: (AnnotatedSet<T.Artifact | null> & { rainbowed: boolean }),
-    variants: (AnnotatedSet<T.Artifact | null> & { rainbowed: boolean })[],
+    set: AnnotatedSet<T.Artifact | null>,
+    variants: AnnotatedSet<T.Artifact | null>[],
 };
 
 
@@ -54,20 +64,40 @@ const reslottingSetting = createSetting<0|1|2|3>({
     localStorageKey: 'laying-reslotting',
     defaultValue: 0,
 });
+const baseLayingRateSetting = createTextInputSetting<number|null>({
+    localStorageKey: 'laying-base-laying-rate',
+    defaultValue: null,
+    parser: (s: string) => s ? parseRate(s) : null,
+    formatter: (x: number|null): string => formatRate(x ?? baseLayingRate.value),
+});
+const baseShippingRateSetting = createTextInputSetting<number|null>({
+    localStorageKey: 'laying-base-shipping-rate',
+    defaultValue: null,
+    parser: (s: string) => s ? parseRate(s) : null,
+    formatter: (x: number|null): string => formatRate(x ?? baseShippingRate.value),
+});
 
 
 // State variables
 const errorMessage = ref<string>("");
+const baseLayingRate = computed<number>(() => baseLayingRateSetting.value ??
+                                              (userData.value?.maxedEffects ?? Effects.initial).max_laying_rate);
+const baseShippingRate = computed<number>(() => baseShippingRateSetting.value ??
+                                                (userData.value?.maxedEffects ?? Effects.initial).shipping_rate);
 
 
 // Data variables
 const userData = shallowRef<T.UserData>(); // loaded via load-eid component
 const entries = shallowRef<EntryType[]>([]); // List of solutions (sets along additional info), populated via updateEntries
+const visibleIdx = ref<number>(0);
+const visibleBefore = ref<number>(0);
+const visibleAfter = ref<number>(0);
 
 
 
 // Watchers for triggering recomputations
 watch([userData, reslottingSetting], updateEntries);
+watch([baseLayingRate, baseShippingRate], updateVisible);
 
 
 /**
@@ -81,7 +111,7 @@ function updateEntries() {
     try {
         errorMessage.value = "";
 
-        sets = computeOptimalSets(userData.value?.virtueItems ?? [],
+        sets = computeOptimalSets(userData.value?.items ?? [],
                                   maxSlot,
                                   reslottingSetting.value,
                                   T.DeflectorMode.NONE,
@@ -117,18 +147,17 @@ function updateEntries() {
     // Update the artifacts shown on the view
     entries.value = [];
     for (const equivalentSets of sets) {
-        const set = equivalentSets[0] as AnnotatedSet<T.Artifact | null> & { rainbowed: boolean };
+        const set = equivalentSets[0] as AnnotatedSet<T.Artifact | null>;
         if (!set || set.artifacts.length === 0) continue;
 
         const seen = new Set();
         seen.add(generateKey(set));
         const variants = [];
         for (const eqSet of equivalentSets) {
-            const variant = eqSet as AnnotatedSet<T.Artifact | null> & { rainbowed: boolean };
+            const variant = eqSet as AnnotatedSet<T.Artifact | null>;
             const key = generateKey(variant);
             if (seen.has(key)) continue;
             seen.add(key);
-            variant.rainbowed = variant.artifacts.some(artifact => artifact && artifact.family === 0);
             variants.push(variant);
             if (seen.size >= 6) break;
         }
@@ -138,6 +167,30 @@ function updateEntries() {
             variants: variants,
         });
     }
+
+    updateVisible();
+}
+
+function updateVisible() {
+
+    let prevShippingRate = 0;
+
+    visibleIdx.value = 0;
+    for (var idx = 0; idx < entries.value.length; idx++) {
+        const entry = entries.value[idx];
+        const shippingRate = baseShippingRate.value * entry.set.shippingBonus;
+        const layingRate = baseLayingRate.value * entry.set.layingBonus;
+
+        const lowerThreshold = prevShippingRate/layingRate - 1;
+
+        if (lowerThreshold >= 0) {
+            visibleIdx.value = idx;
+            break;
+        }
+
+        prevShippingRate = shippingRate;
+    }
+
 }
 
 </script>
