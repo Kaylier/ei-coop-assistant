@@ -8,7 +8,7 @@ main .invalid-text {
     display: flex;
     flex-direction: column;
     align-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
     text-align: center;
 }
 
@@ -21,6 +21,17 @@ main .invalid-text {
     overflow: auto;
     background: #333333;
     border-radius: 1.4em;
+    width: min(18em, 60vw);
     max-width: 50vw;
+}
+
+.targeted {
+    margin: 1em;
+    width: min(21em, 65vw);
+}
+
+
+.main a {
+    font-size: 0.85em;
 }
 

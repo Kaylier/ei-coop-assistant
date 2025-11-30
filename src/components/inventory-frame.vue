@@ -32,6 +32,8 @@ const props = defineProps<{
     boosts?: T.BoostCategory[],
     column?: number,
     row?: number,
+    virtue?: boolean,
+    enlightenment?: boolean,
 }>();
 
 const sandboxLink = ref<string | null>(null);
@@ -155,6 +157,8 @@ async function updateSandboxLink() {
                                                  props.userData, {
                                                  deflectorBonus: props.deflectorBonus,
                                                  boosts: props.boosts,
+                                                 virtue: props.virtue,
+                                                 enlightenment: props.enlightenment,
                                                  });
     } catch {
         sandboxLink.value = null;

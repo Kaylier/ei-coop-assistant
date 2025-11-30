@@ -27,14 +27,40 @@
     <pre v-if="errorMessage" class="invalid-text" style="white-space:preserve">{{ errorMessage }}</pre>
 
     <section class="main">
-        <div v-if="entries.length" class="sets">
-            <inventory-frame v-for="entry in entries.slice(visibleIdx-visibleBefore, visibleIdx+1+visibleAfter)"
+        <div v-if="visibleBefore > 0 || visibleIdx - visibleBefore - 1 >= 0" class="sets">
+            <a href='#' v-if="visibleIdx - visibleBefore - 1 >= 0" @click="visibleBefore += 1">
+                {{ visibleBefore ? "more sets" : "show set" }} for higher shipping
+            </a>
+            <inventory-frame v-for="entry in entries.slice(visibleIdx-visibleBefore, visibleIdx)"
                              :key="JSON.stringify(entry.set.artifacts)"
                              :artifacts="entry.set.artifacts"
                              :isSet="true"
                              :userData="userData"
                              :column="4" :row="1"
+                             :virtue="true"
                              />
+        </div>
+        <div v-if="entries.length" class="sets targeted">
+            <inventory-frame :key="JSON.stringify(entries[visibleIdx].set.artifacts)"
+                             :artifacts="entries[visibleIdx].set.artifacts"
+                             :isSet="true"
+                             :userData="userData"
+                             :column="4" :row="1"
+                             :virtue="true"
+                             />
+        </div>
+        <div v-if="visibleAfter > 0 || visibleIdx + visibleAfter + 1 < entries.length" class="sets">
+            <inventory-frame v-for="entry in entries.slice(visibleIdx+1, visibleIdx+1+visibleAfter)"
+                             :key="JSON.stringify(entry.set.artifacts)"
+                             :artifacts="entry.set.artifacts"
+                             :isSet="true"
+                             :userData="userData"
+                             :column="4" :row="1"
+                             :virtue="true"
+                             />
+            <a href='#' v-if="visibleIdx + visibleAfter + 1 < entries.length" @click="visibleAfter += 1">
+                {{ visibleAfter ? "more sets" : "show set" }} for higher laying
+            </a>
         </div>
         <span v-if="!entries.length && !errorMessage" class="invalid-text">
             You don't have enough artifacts to build a laying set.
@@ -111,7 +137,7 @@ function updateEntries() {
     try {
         errorMessage.value = "";
 
-        sets = computeOptimalSets(userData.value?.items ?? [],
+        sets = computeOptimalSets(userData.value?.virtueItems ?? [],
                                   maxSlot,
                                   reslottingSetting.value,
                                   T.DeflectorMode.NONE,
@@ -176,7 +202,7 @@ function updateVisible() {
     let prevShippingRate = 0;
 
     visibleIdx.value = 0;
-    for (var idx = 0; idx < entries.value.length; idx++) {
+    for (let idx = 0; idx < entries.value.length; idx++) {
         const entry = entries.value[idx];
         const shippingRate = baseShippingRate.value * entry.set.shippingBonus;
         const layingRate = baseLayingRate.value * entry.set.layingBonus;
