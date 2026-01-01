@@ -41,7 +41,11 @@ export function searchDiliSet(items: T.Item[],
         ];
     }
 
-    return searchSet(artifacts, stones, maxSlot, scoreFn, {
+    function scoreFnReslot(effects: Effects): number[] {
+        return [ effects.boost_duration_mult ];
+    }
+
+    return searchSet(artifacts, stones, maxSlot, reslotting ? scoreFnReslot : scoreFn, {
         requiredFamilies,
         optionalFamilies,
         userEffects,
@@ -85,6 +89,13 @@ export function searchIHRSets(items: T.Item[],
         ];
     }
 
+    function scoreFnReslot(effects: Effects): number[] {
+        return [
+            effects.ihr_away*effects.boost_mult,
+            effects.hab_capacity_mult,
+        ];
+    }
+
     // Restrict to the highest deflector and ship bonus
     const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
     const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
@@ -100,7 +111,7 @@ export function searchIHRSets(items: T.Item[],
     let requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
 
     const ret = [];
-    let set = searchSet(artifacts, stones, maxSlot, scoreFn, {
+    let set = searchSet(artifacts, stones, maxSlot, reslotting ? scoreFnReslot : scoreFn, {
         requiredFamilies,
         optionalFamilies: [...artifacts.keys()],
         userEffects,
