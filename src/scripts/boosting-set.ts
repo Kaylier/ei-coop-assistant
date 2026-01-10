@@ -322,6 +322,18 @@ export const boostSets = new Map<string, {
         boosts: [{ id: T.Boost.TACHYON_100X120, amount: 2 }, { id: T.Boost.BOOST_5X60 }],
     }],
 
+    // 4-hour boosts
+    ["tach_10x240x2", {
+        default: false,
+        freePermit: true, proPermit: false,
+        boosts: [{ id: T.Boost.TACHYON_10X240, amount: 2 }],
+    }],
+    ["tach_10x240x5", {
+        default: false,
+        freePermit: false, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_10X240, amount: 5 }],
+    }],
+
     // Expensive boosts
     ["tach_1000x60x3+boost_50x10x2", {
         proPermit: true,
