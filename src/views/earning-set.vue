@@ -33,14 +33,13 @@
                                  If swapping is enabled, this is the highest gusset<br/>
                                  Disabled on 'any'"
                         :options="allowedGussetOptions"
-                        @focusin="allowedGussetOptionsAll = allowedGussetOptionsAll"
                         @focusout="allowedGussetOptionsAll = false">
             <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
             </template>
             <template #extra>
-                <button v-if="allowedGussetOptions.length < 10"
+                <button
                    href="#"
                    class="switch-option extra-gusset-button"
                    @click="allowedGussetOptionsAll = true">

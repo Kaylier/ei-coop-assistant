@@ -32,14 +32,13 @@
                                  Only your best gussets are shown.<br/>
                                  Disabled on 'any'."
                         :options="allowedGussetOptions"
-                        @focusin="allowedGussetOptionsAll = allowedGussetOptionsAll"
                         @focusout="allowedGussetOptionsAll = false">
             <template #option="{ label, img, cls }">
                 <img v-if="img" :src="img" :alt="label" :class="cls"/>
                 <span v-else v-html="label"/>
             </template>
             <template #extra>
-                <button v-if="allowedGussetOptions.length < 10"
+                <button
                    href="#"
                    class="switch-option extra-gusset-button"
                    @click="allowedGussetOptionsAll = true">
@@ -188,7 +187,7 @@ const allowedGussetSetting = createSetting<T.AllowedGusset>({
 
 
 // When true, show every possible gussets
-const allowedGussetOptionsAll = focusRef(0, 200);
+const allowedGussetOptionsAll = focusRef(0, 500);
 const allowedGussetOptions = computed(() => {
     const choices = allowedGussetOptionsAll.value ? Object.values(T.AllowedGusset) :
         [
