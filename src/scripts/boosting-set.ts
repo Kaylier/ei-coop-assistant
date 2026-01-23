@@ -217,6 +217,10 @@ export const boostSets = new Map<string, {
     proPermit?: boolean,
 }>([
     // 10-minute boosts
+    ["tach_1000x10", {
+        freePermit: true, proPermit: true,
+        boosts: [{ id: T.Boost.TACHYON_1000X10 }],
+    }],
     ["tach_1000x10+boost_2x30", {
         freePermit: true, proPermit: true,
         boosts: [{ id: T.Boost.TACHYON_1000X10 }, { id: T.Boost.BOOST_2X30}],
