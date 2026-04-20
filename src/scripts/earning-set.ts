@@ -60,15 +60,17 @@ export function searchEBSet(items: T.Item[],
     }
 
     // Restrict to the highest deflector and ship bonus
-    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
-    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
-    const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
-    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+    // cf. searchIHRSets for explanation on why it's commented
 
-    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
-    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
-    const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
-    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+    //const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    //const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
+    //const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
+    //artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    //const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    //const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
+    //const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
+    //artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
     const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
     if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
@@ -144,15 +146,17 @@ export function searchEarningSet(items: T.Item[],
     }
 
     // Restrict to the highest deflector and ship bonus
-    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
-    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
-    const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
-    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+    // cf. searchIHRSets for explanation on why it's commented
 
-    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
-    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
-    const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
-    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+    //const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    //const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
+    //const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
+    //artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    //const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    //const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
+    //const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
+    //artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
     const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
     if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
@@ -216,15 +220,17 @@ export function searchMirrorSet(items: T.Item[],
     }
 
     // Restrict to the highest deflector and ship bonus
-    const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
-    const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
-    const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
-    artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+    // cf. searchIHRSets for explanation on why it's commented
 
-    const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
-    const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
-    const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
-    artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
+    //const deflectors = (artifacts.get(T.ArtifactFamily.TACHYON_DEFLECTOR) ?? []);
+    //const bestLayingBonus = deflectors.reduce((tot,cur) => Math.max(tot, cur.effects.team_laying_bonus), 0);
+    //const bestDeflectors = deflectors.filter(x => isclose(x.effects.team_laying_bonus, bestLayingBonus));
+    //artifacts.set(T.ArtifactFamily.TACHYON_DEFLECTOR, bestDeflectors);
+
+    //const ships = (artifacts.get(T.ArtifactFamily.SHIP_IN_A_BOTTLE) ?? []);
+    //const bestEarningBonus = ships.reduce((tot,cur) => Math.max(tot, cur.effects.team_earning_bonus), 0);
+    //const bestShips = ships.filter(x => isclose(x.effects.team_earning_bonus, bestEarningBonus));
+    //artifacts.set(T.ArtifactFamily.SHIP_IN_A_BOTTLE, bestShips);
 
     const requiredFamilies: T.ArtifactFamily[] = [...includedFamilies];
     if (allowedGusset !== T.AllowedGusset.ANY && allowedGusset !== T.AllowedGusset.NONE) {
