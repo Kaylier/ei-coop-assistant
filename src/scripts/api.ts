@@ -347,8 +347,8 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     /*
      * Permit
      */
-    userEffects.set('earning_mult', (proPermit ? 1 : 0.5));
-    //userEffects.set(''             , (proPermit ? 10 : 2)); // silo amount
+    userEffects.apply('earning_away_mult', (proPermit ? 1 : 0.5));
+    //userEffects.set('', (proPermit ? 10 : 2)); // silo amount
 
     /*
      * Mystical Eggs
