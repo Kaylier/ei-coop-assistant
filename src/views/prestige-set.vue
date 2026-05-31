@@ -26,6 +26,24 @@
                       v-model="eventDurationSetting"
                       label="Boost dur. event"
                       :small="true"/>
+        <setting-text :hide="!showExtraSettings"
+                      id="custom-pe"
+                      v-model="customPESetting"
+                      label="Eggs of Prophecy"
+                      :small="true"/>
+        <setting-text :hide="!showExtraSettings"
+                      id="custom-te"
+                      v-model="customTESetting"
+                      label="Eggs of Truth"
+                      :small="true"/>
+        <setting-text :hide="!showExtraSettings"
+                      id="custom-se"
+                      v-model="customSESetting"
+                      label="Soul Eggs"
+                      :small="true"/>
+        <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
+            more settings
+        </a>
 
     </section>
     <section id="inputs">
@@ -89,7 +107,7 @@
             :title="(onlineSetting.value ? 'RCB' : 'Lunar') + ' ' +
                     (multistigeSetting.value ? 'Multi set' : 'AIO set')"
             description="Maximizes your Soul Egg gains<br/>with Bird Feeds, Soul Beacons and Tachyons boosts"
-            :userData="userData"
+            :userData="userDataOverlay"
             :set="setAIO"
             :stats="[ onlineSetting.value ? 'sercb' : 'seaway' ]"
             :substats="['sercb', 'seaway', 'rcb', 'away', 'ihr']"
@@ -133,7 +151,7 @@
             :title="(onlineSetting.value ? 'RCB' : 'Lunar') + ' ' +
                     (multistigeSetting.value ? 'Piggystige set' : 'Preload set')"
             description="Maximizes your Soul Egg gains<br/>with Bird Feeds and Soul Beacons"
-            :userData="userData"
+            :userData="userDataOverlay"
             :set="setPreload"
             :stats="[ onlineSetting.value ? 'sercb' : 'seaway' ]"
             :substats="['sercb', 'seaway', 'rcb', 'away', 'ihr']"
@@ -247,6 +265,42 @@ const eventDurationSetting = createTextInputSetting<number>({
     formatter: formatNumber,
     spinner: spinNumber,
 });
+const customPESetting = createTextInputSetting<number|null>({
+    localStorageKey: 'prestige-custom-pe',
+    queryParamKey: 'custom_pe',
+    defaultValue: null,
+    parser: (s: string) => {
+        const v = s ? parseNumber(s) : null;
+        if (v && v < 0) throw new Error("PE is out of range");
+        return v;
+    },
+    formatter: (x: number|null): string => formatNumber(x || userEffects.value.prophecy_eggs || 0),
+    spinner: (x, inc) => x && inc ? spinNumber(x, inc) : null,
+});
+const customTESetting = createTextInputSetting<number|null>({
+    localStorageKey: 'prestige-custom-te',
+    queryParamKey: 'custom_te',
+    defaultValue: null,
+    parser: (s: string) => {
+        const v = s ? parseNumber(s) : null;
+        if (v && v < 0) throw new Error("TE is out of range");
+        return v;
+    },
+    formatter: (x: number|null): string => formatNumber(x || userEffects.value.truth_eggs || 0),
+    spinner: (x, inc) => x && inc ? spinNumber(x, inc) : null,
+});
+const customSESetting = createTextInputSetting<number|null>({
+    localStorageKey: 'prestige-custom-se',
+    queryParamKey: 'custom_se',
+    defaultValue: null,
+    parser: (s: string) => {
+        const v = s ? parseNumber(s) : null;
+        if (v && v <= 0) throw new Error("SE is out of range");
+        return v;
+    },
+    formatter: (x: number|null): string => formatNumber(x || userEffects.value.soul_eggs || 1),
+    spinner: (x, inc) => x && inc ? spinBigNumber(x, inc) : null,
+});
 const legCountSetting = createTextInputSetting<number|null>({
     localStorageKey: 'prestige-leg-count',
     defaultValue: null,
@@ -273,6 +327,7 @@ const startingPopulationSetting = createTextInputSetting<number|null>({
 
 
 
+const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
 
 const userData = shallowRef<T.UserData>(); // loaded via load-eid component
@@ -283,11 +338,34 @@ const setAIO = shallowRef<T.ArtifactSet|null>(null);
 
 
 
-const userEffects = computed(() => (userData.value?.maxedEffects ?? Effects.initial).set('egg_value_base', 100e12));
+const userEffects = computed<Effects>(() => {
+    const eff = new Effects(userData.value?.maxedEffects ?? Effects.initial);
+    eff.set('egg_value_base', 100e12);
+    if (customPESetting.value) eff.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value) eff.set('truth_eggs'   , customTESetting.value);
+    if (customSESetting.value) eff.set('soul_eggs'    , customSESetting.value);
+    return eff;
+});
 const boostTime = computed<number>(() => 600*(setDili.value?.effects.boost_duration_mult ?? 1)
                                             *eventDurationSetting.value);
 const ihrBonus = computed<number>(() => (setIHR.value?.effects.ihr_mult ?? 1)
                                        *(setIHR.value?.effects.boost_mult ?? 1));
+const userDataOverlay = computed(() => {
+    const base = userData.value;
+    if (!base) return base;
+
+    const baseEffects = new Effects(base.baseEffects);
+    const maxedEffects = new Effects(base.maxedEffects);
+
+    if (customPESetting.value) baseEffects.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value) baseEffects.set('truth_eggs'   , customTESetting.value);
+    if (customSESetting.value) baseEffects.set('soul_eggs'    , customSESetting.value);
+    if (customPESetting.value) maxedEffects.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value) maxedEffects.set('truth_eggs'   , customTESetting.value);
+    if (customSESetting.value) maxedEffects.set('soul_eggs'    , customSESetting.value);
+
+    return { ...base, baseEffects, maxedEffects };
+});
 
 function getStartPopulation(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
     const min = 0;
@@ -342,7 +420,7 @@ function getLegCount(boostIHRBonus: number = DEFAULT_BOOST_IHR) {
 
 
 watch([userData, reslottingSetting], updateBaseSets);
-watch([userData,
+watch([userData, userEffects,
        reslottingSetting,
        onlineSetting,
        multistigeSetting,
@@ -468,6 +546,9 @@ const infoPreload = computed<Info[]>(() => {
 
     const eff = new Effects(userEffects.value, setPreload.value.effects);
     eff.set('egg_value_base', 100e12);
+    if (customPESetting.value) eff.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value) eff.set('truth_eggs', customTESetting.value);
+    if (customSESetting.value) eff.set('soul_eggs', customSESetting.value);
 
     const multi: boolean = multistigeSetting.value;
 
@@ -535,6 +616,9 @@ const infoAIO = computed<Info[]>(() => {
 
     const eff = new Effects(userEffects.value, setAIO.value.effects);
     eff.set('egg_value_base', 100e12);
+    if (customPESetting.value) eff.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value) eff.set('truth_eggs', customTESetting.value);
+    if (customSESetting.value) eff.set('soul_eggs', customSESetting.value);
 
     const multi: boolean = multistigeSetting.value;
 
@@ -578,6 +662,7 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
     startPop = Math.min(e.hab_capacity, startPop);
 
     const ihr = (onlineSetting.value ? e.ihr : e.ihr_away)*e.boost_mult*ihrBoost;
+    const soul_eggs = e.soul_eggs || 1;
 
     const legs = multistigeSetting.value ? getLegCount(ihrBoost) : 1;
 
@@ -605,7 +690,7 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
 
     let result = 0;
     for (let i = 0; i < legs; i++) {
-        result += gains*(1 + result/e.soul_eggs)**0.21;
+        result += gains*(1 + result/soul_eggs)**0.21;
     };
 
     const buildTime = buildTimeSetting.value;

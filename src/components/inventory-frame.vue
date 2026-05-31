@@ -148,7 +148,7 @@ async function changeFocus(index?: number) {
     return true;
 }
 
-watch(() => [props.artifacts, props.deflectorBonus], updateSandboxLink, { immediate: true });
+watch(() => [props.userData, props.artifacts, props.deflectorBonus], updateSandboxLink, { immediate: true });
 
 async function updateSandboxLink() {
     if (!props.isSet) return;
