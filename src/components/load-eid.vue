@@ -1,5 +1,13 @@
 <template>
     <section class="loading" @focusin="focused = true" @focusout="focused = false">
+        <div v-if="Object.keys(savedEIDS.value).length > 1" id="saved-eids">
+            <button v-for="[key, label] in Object.entries(savedEIDS.value)"
+                    :key="key"
+                    @click="loadSavedEid(key);">
+                → {{ label || key }}
+                <button @click="renameSavedEid(key, label)">✎</button>
+            </button>
+        </div>
         <form action="javascript:void(0);" id="eid">
             <input type="text"
                    placeholder="EIxxxxxxxxxxxxxxxx"
@@ -8,7 +16,7 @@
                    />
             <button :disabled="!checkEID(eid) || isLoadingEID"
                     :class="{ invalid: !checkEID(eid), 'tooltip-icon': !checkEID(eid) }"
-                    @click="load(eid)">
+                    @click="fetch(eid)">
                 Load from EID
                 <span v-if="!checkEID(eid)" class="tooltip-text invalid-text">
                     Player EID must be of the form<br/>
@@ -43,6 +51,7 @@
 import { onMounted, ref, computed } from 'vue';
 import * as T from '@/scripts/types.ts';
 import { checkEID, checkSID } from '@/scripts/utils.ts';
+import { createSetting } from '@/scripts/settings.ts';
 import { getUserData } from '@/scripts/api.ts';
 import { Effects } from '@/scripts/effects.ts';
 import type { EffectKey } from '@/scripts/effects.ts';
@@ -54,6 +63,10 @@ const focused = ref<boolean>(false);
 const eid = ref<string>("");
 const isLoadingEID = ref<boolean>(false);
 const errorMsg = ref<string>("");
+const savedEIDS = createSetting<Record<string, string>>({
+    localStorageKey: 'saved-eids',
+    defaultValue: {},
+});
 
 const itemCount = computed((): number => {
     return userData.value?.items?.reduce((tot: number, cur: T.Item) => tot + (cur.quantity ?? 1), 0) ?? 0;
@@ -72,7 +85,35 @@ onMounted(async () => {
         eid.value = storedEID;
     }
 
-    const saved = localStorage.getItem('user-data');
+    await load(eid.value, reload);
+
+    // Clean up obsolete entries
+    if ('user-data' in localStorage) {
+        localStorage.removeItem('user-data')
+    }
+});
+
+async function loadSavedEid(saved: string) {
+    const reload = (eid.value == saved);
+    eid.value = saved;
+    await load(saved, reload);
+}
+
+function renameSavedEid(key: string, label: string) {
+    const newLabel = prompt('Enter a name for this EID, leave empty to remove:', label)
+    if (newLabel) {
+        savedEIDS.value[key] = newLabel;
+    } else if (newLabel != null) {
+        delete savedEIDS.value[key];
+        if ('user-data-'+key in localStorage) {
+            localStorage.removeItem('user-data-'+key);
+        }
+    }
+    savedEIDS.value = { ...savedEIDS.value };
+}
+
+async function load(eid: string, reload: boolean) {
+    const saved = localStorage.getItem('user-data-'+eid);
     let loaded = null;
     if (!reload && saved) {
         try {
@@ -85,23 +126,20 @@ onMounted(async () => {
                 loaded.maxedEffects = Effects.fromJSON(loaded.maxedEffects as Record<EffectKey, number>);
         } catch (err) {
             console.warn('Clearing invalid JSON from user-data:', err);
-            localStorage.removeItem('user-data');
+            localStorage.removeItem('user-data-'+eid);
             loaded = null;
         }
     }
 
-    // TODO: remove the tests for baseEffects and maxedEffects in the future
-    // This is for forcing transition for old inventories
-    if (loaded && loaded.baseEffects && loaded.maxedEffects) {
+    if (loaded) {
         // User data found in localStorage, use it
         userData.value = loaded;
-    } else if (checkEID(eid.value)) {
-        await load(eid.value);
+    } else if (checkEID(eid)) {
+        await fetch(eid);
     }
-});
+}
 
-
-async function load(eid: string) {
+async function fetch(eid: string) {
     if (!checkEID(eid))
         throw new Error("Invalid EID format");
 
@@ -127,7 +165,8 @@ async function load(eid: string) {
         userData.value = loaded;
         if (!checkSID(eid)) {
             localStorage.setItem('player-eid', eid);
-            localStorage.setItem('user-data', JSON.stringify(loaded));
+            localStorage.setItem('user-data-'+eid, JSON.stringify(loaded));
+            savedEIDS.value = { ...savedEIDS.value, [eid]: eid };
         }
     }
 }
@@ -140,6 +179,29 @@ async function load(eid: string) {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#saved-eids {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1em;
+}
+
+#saved-eids button {
+    padding: 0.4em 1.6em 0.4em 0.8em;
+    position: relative;
+}
+
+#saved-eids button button {
+    padding: 0 0 0.4em 0.4em;
+    background: transparent;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#saved-eids button button:hover {
+    color: black;
 }
 
 #eid {
