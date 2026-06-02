@@ -166,7 +166,9 @@ async function fetch(eid: string) {
         if (!checkSID(eid)) {
             localStorage.setItem('player-eid', eid);
             localStorage.setItem('user-data-'+eid, JSON.stringify(loaded));
-            savedEIDS.value = { ...savedEIDS.value, [eid]: eid };
+            if (!(eid in savedEIDS.value)) {
+                savedEIDS.value = { ...savedEIDS.value, [eid]: eid };
+            }
         }
     }
 }
