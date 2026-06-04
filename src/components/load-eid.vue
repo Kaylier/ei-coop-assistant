@@ -32,6 +32,10 @@
                     Load it again to take new artifacts into account.
                 </span>
             </span>
+            <br/>
+            <span v-if="userData.colleggtibles === null" class="warning-text">
+                Colleggtible bonuses will be ignored, failed to detect them.
+            </span>
         </div>
         <div v-else class="invalid-text">
             Empty inventory
@@ -191,6 +195,7 @@ async function load(eid: string) {
     font-style: italic;
     height: 3em;
     align-content: center;
+    text-align: center;
 }
 
 .loading img {
