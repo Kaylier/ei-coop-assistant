@@ -10,6 +10,8 @@ import { Effects } from '@/scripts/effects.ts';
 
 import eiProto from '@/assets/proto/ei.proto?raw';
 import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
+import customEggInfo from '@/assets/custom_egg_info.json';
+import colleggtibleContractsEggs from '@/assets/colleggtible_contracts_eggs.json';
 
 
 
@@ -20,8 +22,8 @@ import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
 const ENDPOINT = "/auxbrain_api";
 
 const CLIENT_VERSION = 72;
-const APP_VERSION = '1.35.6';
-const APP_BUILD = '111341';
+const APP_VERSION = '1.35.7';
+const APP_BUILD = '111343';
 const DEVICE_ID = 'ei-coop-assistant';
 
 
@@ -615,9 +617,14 @@ function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, num
     const farmSizeThresholds = [10000000, 100000000, 1000000000, 10000000000];
     const maxFarmSizeReached = new Map<string, number>();
 
+    const colleggtibleContracts = new Map<string, string>(Object.entries(colleggtibleContractsEggs));
+
     if (backup.contracts?.contracts) {
         for (const contract of backup.contracts?.contracts) {
-            if (contract.contract.egg === protoEgg.values.CUSTOM_EGG) {
+            const egg = colleggtibleContracts.get(contract.contractIdentifier);
+            if (egg) {
+                maxFarmSizeReached.set(egg, 11340000000);
+            } else if (contract.contract?.egg === protoEgg.values.CUSTOM_EGG) {
                 maxFarmSizeReached.set(contract.contract.customEggId, 11340000000);
             }
         }
@@ -625,9 +632,15 @@ function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, num
 
     if (backup.contracts?.archive) {
         for (const contract of backup.contracts?.archive) {
-            if (contract.contract.egg === protoEgg.values.CUSTOM_EGG &&
-                (maxFarmSizeReached.get(contract.contract.customEggId) ?? 0) < contract.maxFarmSizeReached) {
-                maxFarmSizeReached.set(contract.contract.customEggId, contract.maxFarmSizeReached);
+            const egg = colleggtibleContracts.get(contract.contractIdentifier);
+            if (egg) {
+                if ((maxFarmSizeReached.get(egg) ?? 0) < contract.maxFarmSizeReached) {
+                    maxFarmSizeReached.set(egg, contract.maxFarmSizeReached);
+                }
+            } else if (contract.contract?.egg === protoEgg.values.CUSTOM_EGG) {
+                if ((maxFarmSizeReached.get(contract.contract.customEggId) ?? 0) < contract.maxFarmSizeReached) {
+                    maxFarmSizeReached.set(contract.contract.customEggId, contract.maxFarmSizeReached);
+                }
             }
         }
     }
@@ -635,19 +648,17 @@ function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, num
     const buffs = new Map<any, number>();
     const tiers = new Map<string, number>();
 
-    if (backup.contracts?.customEggInfo) {
-        for (const customEgg of backup.contracts?.customEggInfo) {
-            // Handle colleggtible with multiple dimensions, just in case. Maybe overkill, let's call it future-proof.
-            const finalBuffs = new Map();
-            for (let i = 0; i < customEgg.buffs.length; i++) {
-                if (farmSizeThresholds[i] <= (maxFarmSizeReached.get(customEgg.identifier) ?? 0)) {
-                    const buff = customEgg.buffs[i];
-                    finalBuffs.set(buff.dimension, buff.value);
-                    tiers.set(customEgg.identifier, i);
-                }
+    for (const customEgg of customEggInfo) {
+        // Handle colleggtible with multiple dimensions, just in case. Maybe overkill, let's call it future-proof.
+        const finalBuffs = new Map();
+        for (let i = 0; i < customEgg.buffs.length; i++) {
+            if (farmSizeThresholds[i] <= (maxFarmSizeReached.get(customEgg.identifier) ?? 0)) {
+                const buff = customEgg.buffs[i];
+                finalBuffs.set(buff.dimension, buff.value);
+                tiers.set(customEgg.identifier, i);
             }
-            finalBuffs.forEach((value, key) => buffs.set(key, (buffs.get(key) ?? 1)*value));
         }
+        finalBuffs.forEach((value, key) => buffs.set(key, (buffs.get(key) ?? 1)*value));
     }
 
     return { tiers, buffs };
