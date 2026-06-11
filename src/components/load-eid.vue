@@ -1,12 +1,12 @@
 <template>
     <section class="loading" @focusin="focused = true" @focusout="focused = false">
         <div v-if="Object.keys(savedEIDS.value).length > 1" id="saved-eids">
-            <button v-for="[key, label] in Object.entries(savedEIDS.value)"
-                    :key="key"
-                    @click="loadSavedEid(key);">
-                → {{ label || key }}
-                <button @click="renameSavedEid(key, label)">✎</button>
-            </button>
+            <div v-for="[key, label] in Object.entries(savedEIDS.value)" :key="key">
+                <button id="load-saved-eid" @click="loadSavedEid(key);">
+                Load {{ label || key }}
+                </button>
+                <button id="edit-saved-eid" @click="renameSavedEid(key, label)">✎</button>
+            </div>
         </div>
         <form action="javascript:void(0);" id="eid">
             <input type="text"
@@ -100,7 +100,7 @@ async function loadSavedEid(saved: string) {
 }
 
 function renameSavedEid(key: string, label: string) {
-    const newLabel = prompt('Enter a name for this EID, leave empty to remove:', label)
+    const newLabel = prompt('Enter an alias for this EID, leave empty to remove:', label)
     if (newLabel) {
         savedEIDS.value[key] = newLabel;
     } else if (newLabel != null) {
@@ -190,20 +190,27 @@ async function fetch(eid: string) {
 }
 
 #saved-eids button {
-    padding: 0.4em 1.6em 0.4em 0.8em;
-    position: relative;
+    padding: 0.4em 0.4em 0.4em 0.4em;
 }
 
-#saved-eids button button {
-    padding: 0 0 0.4em 0.4em;
-    background: transparent;
-    position: absolute;
-    top: 0;
-    right: 0;
+#saved-eids button:first-child {
+    border-radius: 10px 0 0 10px;
 }
 
-#saved-eids button button:hover {
-    color: black;
+#saved-eids button:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+#saved-eids #load-saved-eid {
+    padding-inline: 0.8em;
+}
+
+#saved-eids #edit-saved-eid {
+    background-color: var(--invalid-color);
+}
+
+#saved-eids #edit-saved-eid:hover {
+    background-color: var(--invalid-hover-color);
 }
 
 #eid {
@@ -253,7 +260,7 @@ async function fetch(eid: string) {
     margin: auto;
     font-size: 0.75em;
     font-style: italic;
-    height: 3em;
+    min-height: 3em;
     align-content: center;
 }
 
