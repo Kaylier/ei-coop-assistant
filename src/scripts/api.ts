@@ -334,7 +334,12 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     const epicResearches: Map<string, number> = new Map(backup.game?.epicResearch?.map((er: any) => [er.id, er.level]));
 
     const protoBuffDimension = proto.lookupEnum('GameModifier.GameDimension');
-    const colleggs = getColleggtibleBuffs(proto, backup);
+    let colleggs = null;
+    try {
+        colleggs = getColleggtibleBuffs(proto, backup);
+    } catch {
+        console.warn("Failed to read colleggtible data");
+    }
 
 
     /*
@@ -390,15 +395,17 @@ export async function getUserData(eid: string): Promise<T.UserData> {
     /*
      * Colleggtibles
      */
-    userEffects.apply('earning_mult'      , colleggs.buffs.get(protoBuffDimension.values.EARNINGS              ) ?? 1);
-    userEffects.apply('earning_away_mult' , colleggs.buffs.get(protoBuffDimension.values.AWAY_EARNINGS         ) ?? 1);
-    userEffects.apply('ihr_mult'          , colleggs.buffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1);
-    userEffects.apply('laying_rate'       , colleggs.buffs.get(protoBuffDimension.values.EGG_LAYING_RATE       ) ?? 1);
-    userEffects.apply('shipping_mult'     , colleggs.buffs.get(protoBuffDimension.values.SHIPPING_CAPACITY     ) ?? 1);
-    userEffects.apply('hab_capacity_mult' , colleggs.buffs.get(protoBuffDimension.values.HAB_CAPACITY          ) ?? 1);
-    userEffects.apply('vehicle_cost_mult' , colleggs.buffs.get(protoBuffDimension.values.VEHICLE_COST          ) ?? 1);
-    userEffects.apply('hab_cost_mult'     , colleggs.buffs.get(protoBuffDimension.values.HAB_COST              ) ?? 1);
-    userEffects.apply('research_cost_mult', colleggs.buffs.get(protoBuffDimension.values.RESEARCH_COST         ) ?? 1);
+    if (colleggs) {
+        userEffects.apply('earning_mult'      , colleggs.buffs.get(protoBuffDimension.values.EARNINGS              ) ?? 1);
+        userEffects.apply('earning_away_mult' , colleggs.buffs.get(protoBuffDimension.values.AWAY_EARNINGS         ) ?? 1);
+        userEffects.apply('ihr_mult'          , colleggs.buffs.get(protoBuffDimension.values.INTERNAL_HATCHERY_RATE) ?? 1);
+        userEffects.apply('laying_rate'       , colleggs.buffs.get(protoBuffDimension.values.EGG_LAYING_RATE       ) ?? 1);
+        userEffects.apply('shipping_mult'     , colleggs.buffs.get(protoBuffDimension.values.SHIPPING_CAPACITY     ) ?? 1);
+        userEffects.apply('hab_capacity_mult' , colleggs.buffs.get(protoBuffDimension.values.HAB_CAPACITY          ) ?? 1);
+        userEffects.apply('vehicle_cost_mult' , colleggs.buffs.get(protoBuffDimension.values.VEHICLE_COST          ) ?? 1);
+        userEffects.apply('hab_cost_mult'     , colleggs.buffs.get(protoBuffDimension.values.HAB_COST              ) ?? 1);
+        userEffects.apply('research_cost_mult', colleggs.buffs.get(protoBuffDimension.values.RESEARCH_COST         ) ?? 1);
+    }
 
 
 
@@ -487,7 +494,7 @@ export async function getUserData(eid: string): Promise<T.UserData> {
         items, sets, virtueItems,
         proPermit,
         baseEffects, maxedEffects,
-        colleggtibles: Object.fromEntries(colleggs.tiers),
+        colleggtibles: colleggs ? Object.fromEntries(colleggs.tiers) : null,
         date: new Date(backup.approxTime*1000),
         ephemeral: checkSID(eid),
     };
