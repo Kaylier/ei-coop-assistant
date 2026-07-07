@@ -144,6 +144,12 @@
                         later (<span class="highlighted">{{ formatNumber(info.endPop) }}</span> chickens)
                     </span>
                 </span>
+                <span v-if="multistigeSetting.value && onlineSetting.value && info.habsFilled" class="tooltip-icon warning-text">
+                    ⚠
+                    <span class="tooltip-text">
+                        Filled habs will prevent running chickens
+                    </span>
+                </span>
             </div>
         </artifact-set-card>
 
@@ -185,6 +191,12 @@
                         Prestige
                         <span class="highlighted">{{ formatTime(info.earningTime) }}</span>
                         later (<span class="highlighted">{{ formatNumber(info.endPop) }}</span> chickens)
+                    </span>
+                </span>
+                <span v-if="multistigeSetting.value && onlineSetting.value && info.habsFilled" class="tooltip-icon warning-text">
+                    ⚠
+                    <span class="tooltip-text">
+                        Filled habs will prevent running chickens
                     </span>
                 </span>
             </span>
@@ -538,6 +550,7 @@ type Info = {
     earningTime: number,
     startPop: number,
     endPop: number,
+    habsFilled: boolean,
 };
 
 const infoPreload = computed<Info[]>(() => {
@@ -697,6 +710,7 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
     const legTime = (boostTime.value + buildTimeSetting.value)/legs;
     const earningTime = legTime - buildTimeSetting.value;
     const endPop = Math.min(e.hab_capacity, startPop + earningTime*ihr);
+    const habsFilled = (endPop == e.hab_capacity);
     return {
         gains: result,
         legs,
@@ -705,6 +719,7 @@ function calculateGains(e: Effects, startPop: number, earnBoost: number, ihrBoos
         earningTime,
         startPop,
         endPop,
+        habsFilled,
     };
 }
 
