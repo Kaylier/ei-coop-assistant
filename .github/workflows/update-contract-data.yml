@@ -2,6 +2,8 @@ name: update-contract-data
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "30 15-18,23 * * *"
 
 jobs:
   sync:
