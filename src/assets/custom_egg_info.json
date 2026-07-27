@@ -105,6 +105,27 @@
         ]
     },
     {
+        "identifier": "gatoregg",
+        "buffs": [
+            {
+                "dimension": 4,
+                "value": 1.01
+            },
+            {
+                "dimension": 4,
+                "value": 1.02
+            },
+            {
+                "dimension": 4,
+                "value": 1.03
+            },
+            {
+                "dimension": 4,
+                "value": 1.05
+            }
+        ]
+    },
+    {
         "identifier": "ice",
         "buffs": [
             {
