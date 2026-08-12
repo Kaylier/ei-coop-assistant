@@ -11,7 +11,6 @@ import { Effects } from '@/scripts/effects.ts';
 import eiProto from '@/assets/proto/ei.proto?raw';
 import sandboxProto from '@/assets/proto/wasmegg-sandbox.proto?raw';
 import customEggInfo from '@/assets/custom_egg_info.json';
-import colleggtibleContractsEggs from '@/assets/colleggtible_contracts_eggs.json';
 
 
 
@@ -21,9 +20,9 @@ import colleggtibleContractsEggs from '@/assets/colleggtible_contracts_eggs.json
 // A CORS proxy is deployed at this url
 const ENDPOINT = "/auxbrain_api";
 
-const CLIENT_VERSION = 72;
-const APP_VERSION = '1.35.7';
-const APP_BUILD = '111343';
+const CLIENT_VERSION = 73;
+const APP_VERSION = '1.37';
+const APP_BUILD = '111353';
 const DEVICE_ID = 'ei-coop-assistant';
 
 
@@ -621,51 +620,42 @@ function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, num
      * For ongoing contracts, assumes the population is maxed
      */
     const protoEgg = proto.lookupEnum('Egg');
-    const farmSizeThresholds = [10000000, 100000000, 1000000000, 10000000000];
-    const maxFarmSizeReached = new Map<string, number>();
-
-    const colleggtibleContracts = new Map<string, string>(Object.entries(colleggtibleContractsEggs));
-
-    if (backup.contracts?.contracts) {
-        for (const contract of backup.contracts?.contracts) {
-            const egg = colleggtibleContracts.get(contract.contractIdentifier);
-            if (egg) {
-                maxFarmSizeReached.set(egg, 11340000000);
-            } else if (contract.contract?.egg === protoEgg.values.CUSTOM_EGG) {
-                maxFarmSizeReached.set(contract.contract.customEggId, 11340000000);
-            }
-        }
-    }
-
-    if (backup.contracts?.archive) {
-        for (const contract of backup.contracts?.archive) {
-            const egg = colleggtibleContracts.get(contract.contractIdentifier);
-            if (egg) {
-                if ((maxFarmSizeReached.get(egg) ?? 0) < contract.maxFarmSizeReached) {
-                    maxFarmSizeReached.set(egg, contract.maxFarmSizeReached);
-                }
-            } else if (contract.contract?.egg === protoEgg.values.CUSTOM_EGG) {
-                if ((maxFarmSizeReached.get(contract.contract.customEggId) ?? 0) < contract.maxFarmSizeReached) {
-                    maxFarmSizeReached.set(contract.contract.customEggId, contract.maxFarmSizeReached);
-                }
-            }
-        }
-    }
+    const farmSizeThresholds = [
+        10_000_000,
+        100_000_000,
+        1_000_000_000,
+        10_000_000_000,
+    ];
 
     const buffs = new Map<any, number>();
     const tiers = new Map<string, number>();
+    const maxFarmSizeReached = new Map<string, number>();
 
-    for (const customEgg of customEggInfo) {
-        // Handle colleggtible with multiple dimensions, just in case. Maybe overkill, let's call it future-proof.
-        const finalBuffs = new Map();
-        for (let i = 0; i < customEgg.buffs.length; i++) {
-            if (farmSizeThresholds[i] <= (maxFarmSizeReached.get(customEgg.identifier) ?? 0)) {
-                const buff = customEgg.buffs[i];
-                finalBuffs.set(buff.dimension, buff.value);
-                tiers.set(customEgg.identifier, i);
-            }
+    const contracts = backup.contracts;
+    if (!contracts) {
+        return { tiers, buffs };
+    }
+
+    for (const collegg of contracts.colleggtibleMaxFarmSizeReached ?? []) {
+        maxFarmSizeReached.set(collegg.eggId, collegg.maxFarmSizeReached);
+    }
+
+    // For ongoing contracts, assume max bonus directly
+    for (const contract of contracts.contracts ?? []) {
+        if (contract.contract?.egg === protoEgg.values.CUSTOM_EGG) {
+            maxFarmSizeReached.set(contract.contract.customEggId, 11340000000);
         }
-        finalBuffs.forEach((value, key) => buffs.set(key, (buffs.get(key) ?? 1)*value));
+    }
+
+    // backup.contracts.customEggInfo is not populated, we need to cache them ourselves
+    for (const customEgg of customEggInfo) {
+        const maxFarmSize = maxFarmSizeReached.get(customEgg.identifier) ?? 0;
+
+        const tier = farmSizeThresholds.findLastIndex(threshold => threshold <= maxFarmSize);
+
+        const buff = customEgg.buffs[tier];
+        buffs.set(buff.dimension, (buffs.get(buff.dimension) ?? 1)*buff.value);
+        tiers.set(customEgg.identifier, tier);
     }
 
     return { tiers, buffs };
