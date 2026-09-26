@@ -283,7 +283,7 @@ const customPESetting = createTextInputSetting<number|null>({
     defaultValue: null,
     parser: (s: string) => {
         const v = s ? parseNumber(s) : null;
-        if (v && v < 0) throw new Error("PE is out of range");
+        if (v != null && v < 0) throw new Error("PE is out of range");
         return v;
     },
     formatter: (x: number|null): string => formatNumber(x || userEffects.value.prophecy_eggs || 0),
@@ -295,7 +295,7 @@ const customTESetting = createTextInputSetting<number|null>({
     defaultValue: null,
     parser: (s: string) => {
         const v = s ? parseNumber(s) : null;
-        if (v && v < 0) throw new Error("TE is out of range");
+        if (v != null && v < 0) throw new Error("TE is out of range");
         return v;
     },
     formatter: (x: number|null): string => formatNumber(x || userEffects.value.truth_eggs || 0),
@@ -307,7 +307,7 @@ const customSESetting = createTextInputSetting<number|null>({
     defaultValue: null,
     parser: (s: string) => {
         const v = s ? parseNumber(s) : null;
-        if (v && v <= 0) throw new Error("SE is out of range");
+        if (v != null && v <= 0) throw new Error("SE is out of range");
         return v;
     },
     formatter: (x: number|null): string => formatNumber(x || userEffects.value.soul_eggs || 1),
@@ -353,9 +353,9 @@ const setAIO = shallowRef<T.ArtifactSet|null>(null);
 const userEffects = computed<Effects>(() => {
     const eff = new Effects(userData.value?.maxedEffects ?? Effects.initial);
     eff.set('egg_value_base', 100e12);
-    if (customPESetting.value) eff.set('prophecy_eggs', customPESetting.value);
-    if (customTESetting.value) eff.set('truth_eggs'   , customTESetting.value);
-    if (customSESetting.value) eff.set('soul_eggs'    , customSESetting.value);
+    if (customPESetting.value != null) eff.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value != null) eff.set('truth_eggs'   , customTESetting.value);
+    if (customSESetting.value != null) eff.set('soul_eggs'    , customSESetting.value);
     return eff;
 });
 const boostTime = computed<number>(() => 600*(setDili.value?.effects.boost_duration_mult ?? 1)
@@ -369,12 +369,12 @@ const userDataOverlay = computed(() => {
     const baseEffects = new Effects(base.baseEffects);
     const maxedEffects = new Effects(base.maxedEffects);
 
-    if (customPESetting.value) baseEffects.set('prophecy_eggs', customPESetting.value);
-    if (customTESetting.value) baseEffects.set('truth_eggs'   , customTESetting.value);
-    if (customSESetting.value) baseEffects.set('soul_eggs'    , customSESetting.value);
-    if (customPESetting.value) maxedEffects.set('prophecy_eggs', customPESetting.value);
-    if (customTESetting.value) maxedEffects.set('truth_eggs'   , customTESetting.value);
-    if (customSESetting.value) maxedEffects.set('soul_eggs'    , customSESetting.value);
+    if (customPESetting.value != null) baseEffects.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value != null) baseEffects.set('truth_eggs'   , customTESetting.value);
+    if (customSESetting.value != null) baseEffects.set('soul_eggs'    , customSESetting.value);
+    if (customPESetting.value != null) maxedEffects.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value != null) maxedEffects.set('truth_eggs'   , customTESetting.value);
+    if (customSESetting.value != null) maxedEffects.set('soul_eggs'    , customSESetting.value);
 
     return { ...base, baseEffects, maxedEffects };
 });
@@ -559,9 +559,9 @@ const infoPreload = computed<Info[]>(() => {
 
     const eff = new Effects(userEffects.value, setPreload.value.effects);
     eff.set('egg_value_base', 100e12);
-    if (customPESetting.value) eff.set('prophecy_eggs', customPESetting.value);
-    if (customTESetting.value) eff.set('truth_eggs', customTESetting.value);
-    if (customSESetting.value) eff.set('soul_eggs', customSESetting.value);
+    if (customPESetting.value != null) eff.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value != null) eff.set('truth_eggs', customTESetting.value);
+    if (customSESetting.value != null) eff.set('soul_eggs', customSESetting.value);
 
     const multi: boolean = multistigeSetting.value;
 
@@ -629,9 +629,9 @@ const infoAIO = computed<Info[]>(() => {
 
     const eff = new Effects(userEffects.value, setAIO.value.effects);
     eff.set('egg_value_base', 100e12);
-    if (customPESetting.value) eff.set('prophecy_eggs', customPESetting.value);
-    if (customTESetting.value) eff.set('truth_eggs', customTESetting.value);
-    if (customSESetting.value) eff.set('soul_eggs', customSESetting.value);
+    if (customPESetting.value != null) eff.set('prophecy_eggs', customPESetting.value);
+    if (customTESetting.value != null) eff.set('truth_eggs', customTESetting.value);
+    if (customSESetting.value != null) eff.set('soul_eggs', customSESetting.value);
 
     const multi: boolean = multistigeSetting.value;
 

@@ -82,6 +82,11 @@
                                   { value: false, label: 'no' },
                                   { value: true, label: 'yes' },
                                   ]"/>
+        <setting-text :hide="!showExtraSettings"
+                      id="custom-te"
+                      v-model="customTESetting"
+                      label="Eggs of Truth"
+                      :small="true"/>
         <a href='#' v-if="!showExtraSettings" @click="showExtraSettings = true;">
             more settings
         </a>
@@ -97,7 +102,7 @@
             title="Dilithium set"
             description="Equip when starting boosts</br>to extend their durations."
             :set="setDili"
-            :userData="userData"
+            :userData="userDataOverlay"
             :stats="['dili']"
             :substats="['ihr']"
             />
@@ -105,7 +110,7 @@
             title="Slow-boost set"
             description="Equip when using large tachyons</br>to maximize your contribution."
             :set="setSlow"
-            :userData="userData"
+            :userData="userDataOverlay"
             :stats="['lay', 'ihr']"
             :substats="['hab']"
             :boosts="[T.BoostCategory.TACHYON_PRISM]"
@@ -128,7 +133,7 @@
             :title="setIHR.length > 1 ? `IHR set ${i+1}/${setIHR.length}` : 'IHR set'"
             description="Equip when boosting</br>with tachyon prisms."
             :set="set"
-            :userData="userData"
+            :userData="userDataOverlay"
             :stats="['ihr']"
             :substats="['hab', 'lay']"
             :boosts="[T.BoostCategory.TACHYON_PRISM]"
@@ -225,6 +230,18 @@ const showOverfillSetting = createSetting<boolean>({
     localStorageKey: 'boosting-show-overfill',
     defaultValue: false,
 });
+const customTESetting = createTextInputSetting<number|null>({
+    localStorageKey: 'boosting-custom-te',
+    queryParamKey: 'custom_te',
+    defaultValue: null,
+    parser: (s: string) => {
+        const v = s ? parseNumber(s) : null;
+        if (v != null && v < 0) throw new Error("TE is out of range");
+        return v;
+    },
+    formatter: (x: number|null): string => formatNumber(x || baseEffects.value.truth_eggs || 0),
+    spinner: (x, inc) => x && inc ? spinNumber(x, inc) : null,
+});
 const pinnedBoostSetting = createSetting<Set<string>>({
     localStorageKey: 'boosting-favourite-boost-sets',
     defaultValue: new Set([...boostSets.entries()].filter(([,x]) => x.default).map(([k,]) => k)),
@@ -300,7 +317,24 @@ function changePin(id: string, checked: boolean) {
 const showExtraSettings = ref<boolean>(false);
 const errorMessage = ref<string>("");
 const durationBonus = computed(() => (setDili.value?.effects.boost_duration_mult ?? 1)*durationBonusSetting.value);
-const baseEffects = computed(() => userData.value?.maxedEffects ?? Effects.initial);
+const baseEffects = computed(() => {
+    const eff = new Effects(userData.value?.maxedEffects ?? Effects.initial);
+    if (customTESetting.value != null) eff.set('truth_eggs', customTESetting.value);
+    return eff;
+});
+const userDataOverlay = computed(() => {
+    const base = userData.value;
+    if (!base) return base;
+
+    const baseEffects = new Effects(base.baseEffects);
+    const maxedEffects = new Effects(base.maxedEffects);
+
+    if (customTESetting.value != null) baseEffects.set('truth_eggs' , customTESetting.value);
+    if (customTESetting.value != null) maxedEffects.set('truth_eggs', customTESetting.value);
+
+    return { ...base, baseEffects, maxedEffects };
+});
+
 const boostAmount = computed(() => userData.value?.proPermit ? 5 : 2);
 const boostSetCardStats = computed(() => {
     const ret = [];
@@ -359,7 +393,13 @@ const setIHR  = shallowRef<T.ArtifactSet[]>([]);
 const setSlow = shallowRef<T.ArtifactSet|null>();
 
 
-watch([userData, includesSetting, reslottingSetting, swappingSetting, allowedGussetSetting, ihcSetting], updateSet);
+watch([userData,
+       includesSetting,
+       reslottingSetting,
+       swappingSetting,
+       allowedGussetSetting,
+       ihcSetting
+      ], updateSet);
 
 
 /**
