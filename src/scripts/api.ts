@@ -652,8 +652,10 @@ function getColleggtibleBuffs(proto: any, backup: any): { tiers: Map<string, num
 
         const tier = farmSizeThresholds.findLastIndex(threshold => threshold <= maxFarmSize);
 
-        const buff = customEgg.buffs[tier];
-        buffs.set(buff.dimension, (buffs.get(buff.dimension) ?? 1)*buff.value);
+        if (tier >= 0) {
+            const buff = customEgg.buffs[tier];
+            buffs.set(buff.dimension, (buffs.get(buff.dimension) ?? 1)*buff.value);
+        }
         tiers.set(customEgg.identifier, tier);
     }
 
