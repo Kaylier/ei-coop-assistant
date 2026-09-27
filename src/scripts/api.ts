@@ -20,9 +20,9 @@ import customEggInfo from '@/assets/custom_egg_info.json';
 // A CORS proxy is deployed at this url
 const ENDPOINT = "/auxbrain_api";
 
-const CLIENT_VERSION = 73;
-const APP_VERSION = '1.37';
-const APP_BUILD = '111353';
+const CLIENT_VERSION = 75;
+const APP_VERSION = '1.37.2';
+const APP_BUILD = '111359';
 const DEVICE_ID = 'ei-coop-assistant';
 
 
