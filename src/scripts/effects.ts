@@ -621,7 +621,7 @@ export class Effects {
     /**
      * Various shortcuts for common formula
      */
-    get ihr() { return this.ihr_base * this.ihr_mult; }
+    get ihr() { return this.ihr_base * this.ihr_mult * Math.pow(1.01, this.truth_eggs); }
     get ihr_away() { return this.ihr * this.ihr_away_mult; }
     get hab_capacity() { return this.hab_capacity_base * this.hab_capacity_mult; }
     get max_laying_rate() { return this.hab_capacity * this.laying_rate; }
