@@ -1677,11 +1677,8 @@ export function getDescriptions(item: T.Item | null): [string, string][] {
     if (!item) return [];
     const itemData = (artifactMetadata[item.category] as any)?.[item.family]?.tiers?.[item.tier-1];
     // @ts-ignore
-    const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects;
+    const effects: Effect[] = itemData?.effects ?? itemData?.rarities?.[item.rarity]?.effects ?? [];
     const ret: [string, string][] = []
-    if (!effects) {
-        return [["", "Reload your EID"], ["", "Contact the dev if the problem persists"]];
-    }
     for (const effect of effects) {
         let desc: string;
         switch (effect.target) {
